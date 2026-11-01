@@ -42,6 +42,10 @@ public class ErebosSkyEffects extends DimensionSpecialEffects {
 
     public static final ResourceLocation ID = new ResourceLocation(Medals.MODID, "erebos_sky");
 
+    /** 星球贴图（气态紫色星球，带 alpha）。 */
+    private static final ResourceLocation TEX_PLANET =
+            new ResourceLocation(Medals.MODID, "textures/environment/erebos_planet.png");
+
     /** 天球半径 —— 只要比渲染距离内的所有东西远，又不会被远裁剪面切掉。 */
     private static final float R = 100.0F;
 
@@ -130,6 +134,7 @@ public class ErebosSkyEffects extends DimensionSpecialEffects {
         tess.end();
 
         // ---- 2. 巨大星体 + 星环 ----
+        // 先画光晕与星环（纯色，继续用 POSITION_COLOR）
         buf.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
         float sunAng = (ticks + partialTick) * 0.00035F;
         float sunEl = 0.30F;
@@ -141,14 +146,24 @@ public class ErebosSkyEffects extends DimensionSpecialEffects {
         disc(buf, mat, sx, sy, sz, 34.0F, 0.42F, 0.30F, 0.62F, 0.05F + 0.05F * intensity);
         disc(buf, mat, sx, sy, sz, 26.0F, 0.55F, 0.40F, 0.78F, 0.12F + 0.06F * intensity);
         disc(buf, mat, sx, sy, sz, 17.0F, 0.78F, 0.62F, 0.95F, 0.85F);
-
         // 星环：绕星体的两个椭圆环，转速随阶段加快
         float ringSpin = (ticks + partialTick) * (0.006F + 0.010F * intensity);
         ring(buf, mat, sx, sy, sz, 40.0F, 46.0F, ringSpin, 0.62F, 0.44F, 0.92F, 0.30F);
         ring(buf, mat, sx, sy, sz, 52.0F, 58.0F, ringSpin + 0.5F, 0.40F, 0.28F, 0.62F, 0.20F);
         tess.end();
 
-        // ---- 3. 星光：不同周期闪烁 ----
+        // ---- 2b. 星球本体：贴图圆盘，替换原来的纯色像素圆 ----
+        // 单独一批，切到带纹理的 shader，绑定气态星球贴图。
+        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+        RenderSystem.setShaderTexture(0, TEX_PLANET);
+        buf.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        texturedPlanet(buf, mat, sx, sy, sz, 17.0F);
+        tess.end();
+
+        // 切回无纹理 shader，供后面的星光继续用
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+
+        // ---- 3. 星光：不同周期闪烁，大小分级 ----
         buf.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
         RandomSource srnd = RandomSource.create(8848L);
         for (int i = 0; i < STAR_COUNT; i++) {
@@ -158,7 +173,13 @@ public class ErebosSkyEffects extends DimensionSpecialEffects {
             float speed = 0.9F + srnd.nextFloat() * 2.6F;      // 每颗星自己的周期
             float twinkle = 0.45F + 0.55F * Mth.sin((ticks + partialTick) * 0.05F * speed + phase);
             float a = twinkle * (0.55F + 0.35F * intensity);
-            float size = 0.9F + srnd.nextFloat() * 1.4F;
+            // ★ beta35：星星缩小、分级。旧值 0.9~2.3 格太大，看着像"糊在屏幕上的像素"。
+            //   现在大部分是 0.25~0.6 格的小星点，少数几颗亮星 0.8~1.2 格，
+            //   拉开层次，才像"星空"而不是"撒了一把豆子"。
+            float roll = srnd.nextFloat();
+            float size = roll < 0.80F
+                    ? 0.25F + srnd.nextFloat() * 0.35F        // 80% 小星
+                    : 0.8F + srnd.nextFloat() * 0.4F;          // 20% 亮星
 
             double cy = Math.sin(elev);
             double cz = Math.cos(elev) * Math.cos(ang);
@@ -201,6 +222,35 @@ public class ErebosSkyEffects extends DimensionSpecialEffects {
             float py = (float) (cy + (vy * c[1]) * size);
             float pz = (float) (cz + (uz * c[0] + vz * c[1]) * size);
             buf.vertex(mat, px, py, pz).color(r, g, b, a).endVertex();
+        }
+    }
+
+    /** 星球表面的气态贴图圆盘 —— 带 UV 的四边形，替换纯色 disc。 */
+    private static void texturedPlanet(BufferBuilder buf, Matrix4f mat,
+                                        double dx, double dy, double dz, float radius) {
+        double[] u = ortho(dx, dy, dz);
+        double[] v = cross(dx, dy, dz, u[0], u[1], u[2]);
+        int seg = 28;
+        for (int i = 0; i < seg; i++) {
+            double a0 = Mth.TWO_PI * i / seg;
+            double a1 = Mth.TWO_PI * (i + 1) / seg;
+            float u0 = (float) (i / (double) seg);
+            float u1 = (float) ((i + 1) / (double) seg);
+            // 中心点 UV 0.5,0.5
+            buf.vertex(mat, (float) (dx * R), (float) (dy * R), (float) (dz * R))
+                    .uv(0.5F, 0.5F).color(1, 1, 1, 1).endVertex();
+            buf.vertex(mat,
+                    (float) (dx * R + (u[0] * Math.cos(a0) + v[0] * Math.sin(a0)) * radius),
+                    (float) (dy * R + (u[1] * Math.cos(a0) + v[1] * Math.sin(a0)) * radius),
+                    (float) (dz * R + (u[2] * Math.cos(a0) + v[2] * Math.sin(a0)) * radius))
+                    .uv(0.5F + (float) Math.cos(a0) * 0.5F, 0.5F + (float) Math.sin(a0) * 0.5F)
+                    .color(1, 1, 1, 1).endVertex();
+            buf.vertex(mat,
+                    (float) (dx * R + (u[0] * Math.cos(a1) + v[0] * Math.sin(a1)) * radius),
+                    (float) (dy * R + (u[1] * Math.cos(a1) + v[1] * Math.sin(a1)) * radius),
+                    (float) (dz * R + (u[2] * Math.cos(a1) + v[2] * Math.sin(a1)) * radius))
+                    .uv(0.5F + (float) Math.cos(a1) * 0.5F, 0.5F + (float) Math.sin(a1) * 0.5F)
+                    .color(1, 1, 1, 1).endVertex();
         }
     }
 

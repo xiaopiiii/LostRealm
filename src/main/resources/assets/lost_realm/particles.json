@@ -1,0 +1,14 @@
+{
+  "particles": {
+    "erebos_orb": {
+      "textures": [
+        "lost_realm:erebos_orb"
+      ]
+    },
+    "erebos_burst": {
+      "textures": [
+        "lost_realm:erebos_burst"
+      ]
+    }
+  }
+}

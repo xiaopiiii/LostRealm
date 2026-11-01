@@ -265,6 +265,9 @@ public class ErebosBoss extends Monster {
      */
     private boolean exposed;
 
+    /** 上一次 tick 是否已完全展开 —— 用于检测"刚登场"那一刻放特效。 */
+    private boolean wasEmerged;
+
     /**
      * 服务端瞬移标记：这一 tick 是否发生了星门穿门瞬移。
      *
@@ -847,7 +850,21 @@ public class ErebosBoss extends Monster {
     private void syncStateToClient(@Nullable Player target) {
         this.entityData.set(DATA_PHASE, this.phase().index());
         this.entityData.set(DATA_ACTION, this.brain.action().ordinal());
-        this.entityData.set(DATA_EMERGED, this.isFullyEmerged());
+        boolean emerged = this.isFullyEmerged();
+        this.entityData.set(DATA_EMERGED, emerged);
+
+        // ★ 登场完成那一刻放一个自绘爆发（暗黑星渊星芒），替代"默默出现"。
+        if (emerged && !this.wasEmerged && !this.level().isClientSide) {
+            this.wasEmerged = true;
+            if (this.level() instanceof ServerLevel sl) {
+                sl.sendParticles(
+                        com.lost_realm.client.particle.ModParticles.EREBOS_BURST.get(),
+                        this.getX(), this.getY() + 1.0D, this.getZ(), 6, 2.0D, 1.0D, 2.0D, 0.1D);
+                sl.sendParticles(
+                        com.lost_realm.client.particle.ModParticles.EREBOS_ORB.get(),
+                        this.getX(), this.getY(), this.getZ(), 60, 4.0D, 3.0D, 4.0D, 0.4D);
+            }
+        }
 
         // 招式写入的渲染参数只在"确实在出招"时提交。
         // 不这么挡一下的话，招式演完的那一 tick 会因为 pending 还是旧值，
@@ -1177,10 +1194,10 @@ public class ErebosBoss extends Monster {
             ErebosFx.playPhaseShift(level, this.position());
         }
         if (this.deathTime == total - 2) {
-            level.sendParticles(net.minecraft.core.particles.ParticleTypes.FLASH,
-                    this.getX(), this.getY(), this.getZ(), 1, 0, 0, 0, 0);
-            level.sendParticles(net.minecraft.core.particles.ParticleTypes.EXPLOSION_EMITTER,
-                    this.getX(), this.getY(), this.getZ(), 3, 2.0D, 2.0D, 2.0D, 0);
+            level.sendParticles(com.lost_realm.client.particle.ModParticles.EREBOS_BURST.get(),
+                    this.getX(), this.getY(), this.getZ(), 4, 0, 0, 0, 0);
+            level.sendParticles(com.lost_realm.client.particle.ModParticles.EREBOS_ORB.get(),
+                    this.getX(), this.getY(), this.getZ(), 40, 2.0D, 2.0D, 2.0D, 0.3D);
         }
 
         if (this.deathTime >= total) {

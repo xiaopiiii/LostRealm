@@ -480,19 +480,25 @@ public class ErebosEffect extends Entity {
                 }
             }
             case GATE -> {
-                int points = 6;
+                // ★ beta35：星门粒子从「原版 REVERSE_PORTAL 紫色方块 + 零散 dust」
+                //   换成自绘光点，沿门环铺一圈 + 中心漩涡。
+                int points = 16;
                 double radius = this.major();
                 for (int i = 0; i < points; i++) {
-                    double angle = random.nextDouble() * Math.PI * 2.0D;
-                    level.addParticle(dust(0.75F, 0.48F, 1.0F, 1.0F),
+                    double angle = (this.age * 0.12D) + Math.PI * 2.0D * i / points;
+                    level.addParticle(
+                            com.lost_realm.client.particle.ModParticles.EREBOS_ORB.get(),
                             this.getX() + Math.cos(angle) * radius,
-                            this.getY() + 1.2D + Math.sin(angle) * radius,
-                            this.getZ(), 0.0D, 0.0D, 0.0D);
+                            this.getY() + 1.2D + Math.sin(angle) * radius * 0.6D,
+                            this.getZ(),
+                            0.0D, 0.0D, 0.0D);
                 }
-                if (random.nextInt(3) == 0) {
-                    level.addParticle(ParticleTypes.REVERSE_PORTAL,
-                            this.getX() + (random.nextDouble() - 0.5D) * radius,
-                            this.getY() + 1.2D + (random.nextDouble() - 0.5D) * radius,
+                // 中心漩涡光点
+                if (random.nextInt(2) == 0) {
+                    level.addParticle(
+                            com.lost_realm.client.particle.ModParticles.EREBOS_ORB.get(),
+                            this.getX() + (random.nextDouble() - 0.5D) * radius * 0.6D,
+                            this.getY() + 1.2D + (random.nextDouble() - 0.5D) * radius * 0.6D,
                             this.getZ(), 0.0D, 0.0D, 0.0D);
                 }
             }
