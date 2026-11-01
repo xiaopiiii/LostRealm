@@ -547,17 +547,23 @@ public class ConfigScreen extends Screen {
                     height - 28 - FOOTER_H, delta);
             return true;
         }
+        // ★ 右侧内容区之前多取了一次反（-delta），与左侧分类栏方向相反，
+        //   滚动方向就"搞反"了。这里两处统一用 delta，方向交给 scrollList 内部处理。
         scroll = scrollList(scroll, current.size(),
-                contentBottom() - contentTop(), -delta);
+                contentBottom() - contentTop(), delta);
         rebuildRows();
         return true;
     }
 
-    /** 通用滚动计算:把 offset 限制在 [0, 内容高 - 可视高]。 */
+    /**
+     * 通用滚动计算:把 offset 限制在 [0, 内容高 - 可视高]。
+     *
+     * <p>约定与 MC 其它滚动列表一致：向上滚 delta>0，offset 减小（列表上移）。
+     */
     private int scrollList(int offset, int count, int viewH, double delta) {
         int totalH = count * ROW_H;
         int max = Math.max(0, totalH - viewH);
-        return Mth.clamp(offset + (int) (-delta * ROW_H), 0, max);
+        return Mth.clamp(offset - (int) (delta * ROW_H), 0, max);
     }
 
     // ================================================================

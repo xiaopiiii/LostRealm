@@ -147,12 +147,26 @@ public class ErebosPart extends Entity {
      * 因此"共享血量"是天然成立的，也不存在"打头部和打身体掉两份血"的问题。
      *
      * <p>本体自己的 {@code hurt} 会处理无敌帧、动态减伤、阶段切换。
+     *
+     * <h2>补跳劈暴击（beta33）</h2>
+     * 原版跳劈暴击的判定在 {@code Player.attack()} 里，且硬性要求
+     * {@code target instanceof LivingEntity}。本部件是纯 {@code Entity}，
+     * 于是玩家下落攻击身体时那一刀照常扣血、却永远不吃 ×1.5 暴击倍率 ——
+     * 玩家实测"打身体无法触发跳击暴击、打头就行"。
+     * 这里在转发前自行补一次暴击判定：攻击者满足原版条件（空中、非疾跑、
+     * 非攀爬/水中/失明/骑乘）时，用 {@code ForgeHooks.getCriticalHit} 触发
+     * 一次 {@code CriticalHitEvent} 拿到倍率（本模组会在该事件里把它抬到
+     * {@code crit_damage} 属性值），再乘进伤害。
      */
     @Override
     public boolean hurt(DamageSource source, float amount) {
         ErebosBoss p = this.parent;
         if (p == null || p.isRemoved() || !p.isAlive()) {
             return false;
+        }
+        // 仅对玩家直接攻击补暴击（避免弹射物、环境伤害误判）
+        if (source.getEntity() instanceof net.minecraft.world.entity.player.Player attacker) {
+            amount = com.lost_realm.attribute.RealmAttributeEffects.applyJumpCrit(attacker, this, amount);
         }
         return p.hurt(source, amount);
     }

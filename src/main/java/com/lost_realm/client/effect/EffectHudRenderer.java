@@ -67,6 +67,14 @@ public final class EffectHudRenderer {
     private static final int BAR_HEIGHT = 2;
 
     /**
+     * 每份效果的「历史最长剩余量」，进度条用它做满格基准。
+     *
+     * <p>键是 {@link MobEffect} 本体，值是该效果出现以来最大的 duration（tick）。
+     * 效果消失后由 {@link #render} 统一回收，避免 Map 越积越大。
+     */
+    private static final java.util.Map<MobEffect, Integer> DURATION_PEAK = new java.util.HashMap<>();
+
+    /**
      * 减益效果外框的颜色(不透明红)。
      *
      * <p>原版对增益与减益用同一套灰白底框,只能靠图标本身区分,
@@ -113,6 +121,10 @@ public final class EffectHudRenderer {
         if (effects.isEmpty()) {
             return;
         }
+
+        // 回收已消失效果的进度条峰值，防止 Map 无限膨胀
+        DURATION_PEAK.keySet().retainAll(
+                effects.stream().map(MobEffectInstance::getEffect).collect(java.util.stream.Collectors.toSet()));
 
         float scale = EffectHudOverrides.scale() / 100.0F;
         int slot = Math.max(8, Math.round(BASE_SLOT * scale));
@@ -348,16 +360,23 @@ public final class EffectHudRenderer {
     /**
      * 进度条:画在图标下方。
      *
-     * <p>进度 = 剩余时间 / 总时间。由于原版不保留「施加时的总时长」,
-     * 这里用 {@code getDuration()} 作为总时长基准 —— 即进度条表示
-     * 「当前剩余量相对于进入本轮计时时的量」,是一个单调递减的直观提示。
+     * <p>进度 = 剩余时间 / 总时间。但 {@link MobEffectInstance} 只暴露<b>剩余</b>
+     * duration，拿不到「施加时的总时长」—— 所以这里自己记一份「历史最长剩余量」
+     * 作为满格基准：效果刚上身时记下峰值，之后每帧拿当前剩余 / 峰值，
+     * 就是一条单调递减、会动的进度条。
+     *
+     * <p>峰值会在效果消失后清除（避免残留），也能承受「续杯」导致的剩余量
+     * 变大的情况（峰值会被抬到新的最大值，进度条相应重新拉满）。
      */
     private static void drawTimerBar(GuiGraphics gfx, MobEffectInstance inst,
                                      int x, int y, int slot) {
         int duration = Math.max(0, inst.getDuration());
-        // 以 30 秒为满格基准,超过则视为满格(避免长时效药水条永远不动)
-        int full = Math.max(duration, 600);
-        float progress = Math.min(1.0F, duration / (float) full);
+        // 满格基准 = 这份效果出现以来见过的最大剩余量（封底 600 tick = 30 秒，
+        // 避免一条超长药水从头到尾只动一点点）。Math.max 保证至少 600，
+        // 让 30 秒以内的效果能用满格表达。
+        int peak = DURATION_PEAK.merge(inst.getEffect(), duration, Math::max);
+        int full = Math.max(peak, 600);
+        float progress = duration <= 0 ? 0.0F : Math.min(1.0F, duration / (float) full);
 
         int barW = Math.max(4, Math.round(slot * BAR_WIDTH_RATIO));
         int barX = x + (slot - barW) / 2;

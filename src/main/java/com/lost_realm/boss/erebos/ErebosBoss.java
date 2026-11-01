@@ -215,14 +215,22 @@ public class ErebosBoss extends Monster {
         }
 
         // ★ 瞬移必须"硬切"。
-        //   正常是 spinePrev → spineNow 插值，让 20Hz 的数据在 60fps 下平滑。
+        //   正常是 spinePrev → spineNow 插值，让每 tick 的数据在 60fps 下平滑。
         //   但跨星门是<b>瞬移</b>：两步之间隔着几十格，若照常插值，
         //   屏幕会看到整条身体在那两点之间被拉长并且"扫"过去一帧 ——
         //   比不插值还难看。所以位移超过阈值就直接把 prev 也设成新帧，
         //   插值退化成原地，视觉上是干净的闪切。
+        //
+        // ★ 阈值从 30 格降到 8 格（beta33）。
+        //   旧值 30 是根据"星门间距约 26 格"拍脑袋定的，但两门实际间距
+        //   = gateA(head+26×0.65≈17 格) 到 gateB(玩家周围 15 格)，会落在 20~40 格。
+        //   间距一旦 < 30 格就不触发硬切 → 脊线在 A/B 之间插值 → 身体被拉成
+        //   一条横跨几十格的"线"，玩家看到的就是"二阶段放星门后整条虫消失"。
+        //   正常巡航最快 4.5 格/tick（GATE_SPEED），8 格阈值能稳定区分
+        //   "瞬移"和"高速移动"，不会误伤正常游动。
         boolean jumped = this.spineNow != null
                 && this.spineNow.length == arr.length
-                && sqDistance(arr, this.spineNow, 3) > 30.0D * 30.0D;
+                && sqDistance(arr, this.spineNow, 3) > 8.0D * 8.0D;
 
         this.spinePrev = jumped ? arr : this.spineNow;
         this.spineNow = arr;

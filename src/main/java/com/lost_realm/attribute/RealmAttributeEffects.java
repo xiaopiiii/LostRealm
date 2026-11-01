@@ -144,6 +144,41 @@ public final class RealmAttributeEffects {
         event.setDamageModifier(Math.max(event.getDamageModifier(), critDamage));
     }
 
+    /**
+     * 给「打非 LivingEntity 目标」补一次跳劈暴击判定。
+     *
+     * <p>原版跳劈暴击在 {@code Player.attack()} 里硬性要求
+     * {@code target instanceof LivingEntity}，所以打 {@code ErebosPart}（纯 Entity）
+     * 这类碰撞部件时，那一刀不吃 ×1.5 暴击倍率。本方法复刻原版的判定条件
+     * （空中、非疾跑、非攀爬/水中/失明/骑乘），命中则调
+     * {@code ForgeHooks.getCriticalHit} 触发一次 {@code CriticalHitEvent}
+     * —— 这样 {@link #onVanillaCrit} 会把倍率抬到 {@code crit_damage} 属性值，
+     * 与打头部本体完全一致。
+     *
+     * @return 乘过暴击倍率后的伤害（未暴击则原样返回）
+     */
+    public static float applyJumpCrit(Player player, net.minecraft.world.entity.Entity target, float amount) {
+        // 复刻原版 Player.attack 里计算 critical 的物理条件
+        boolean canCrit = !player.onGround()
+                && !player.onClimbable()
+                && !player.isInWater()
+                && !player.hasEffect(net.minecraft.world.effect.MobEffects.BLINDNESS)
+                && !player.isPassenger()
+                && !player.isSprinting();
+        if (!canCrit) {
+            return amount;
+        }
+        // 触发一次 CriticalHitEvent：vanillaCritical=true、默认倍率 1.5，
+        // onVanillaCrit 会在事件里把倍率抬到 crit_damage 属性值。
+        var event = net.minecraftforge.common.ForgeHooks.getCriticalHit(
+                player, target, true, 1.5F);
+        if (event == null) {
+            return amount * 1.5F;   // 事件被取消（罕见），退回默认倍率
+        }
+        float mult = event.isVanillaCritical() ? event.getDamageModifier() : 1.0F;
+        return amount * mult;
+    }
+
     // ================================================================
     // 吸血 / 过量治疗 / 元素附加伤害
     // ================================================================
