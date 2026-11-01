@@ -1167,7 +1167,7 @@
   "config.lost_realm.opt.sword_break_blocks.desc": "是否破坏剑气路径上的方块。硬度为负的(基岩等)始终保留",
   "config.lost_realm.opt.sword_hit_players": "斩击玩家",
   "config.lost_realm.opt.sword_hit_players.desc": "是否连同玩家一起斩。默认关闭,免得误伤队友",
-  "entity.lost_realm.erebos": "遗落之主·厄瑞玻斯",
+  "entity.lost_realm.erebos": "遗落之主·晦星",
   "entity.lost_realm.erebos_part": "遗落之主·躯节",
   "item.lost_realm.darkstar_beacon": "黯星信标",
   "item.lost_realm.darkstar_beacon.tip": "右键使用，呼唤晦星之主降临。",

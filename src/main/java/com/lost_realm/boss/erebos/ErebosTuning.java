@@ -503,7 +503,16 @@ public final class ErebosTuning {
      */
     public static final double ARENA_RADIUS = 32.0D;
 
-    /** 围圈时虫身离圈心的半径 —— 贴着圈走，视觉上像"把场地围起来"。 */
+    /**
+     * 限制圈的<b>内侧</b>盘旋半径 —— 星核脉冲 / 裂界回廊 / 延迟星痕在用。
+     *
+     * <p>刻意比圈小一圈（0.72）：这几招是「圈内作业」，虫身留在圈内侧当压力源，
+     * 玩家沿圈边跑时不至于一直在身体里穿进穿出。
+     *
+     * <p>⚠️ 但<b>围圈招式（囚星天环）不能用这个值</b> —— 原设计明确要求
+     * 「虫身和限制圈重叠」，那一招用 {@link #RING_ORBIT_RADIUS}（= 圈半径）。
+     * 两个常量别合并。
+     */
     public static final double ARENA_ORBIT_RADIUS = ARENA_RADIUS * 0.72D;
 
     // ================================================================
@@ -581,6 +590,48 @@ public final class ErebosTuning {
 
     /** 星弹生成半径（格）。原设计 420 px ≈ 26 格。 */
     public static final double RING_SPAWN_RADIUS = 26.0D;
+
+    // ---- beta31：围圈过程 ----
+    //
+    // 原设计："Boss 在约 3 秒内沿轨迹逐节围到限制圈上，形成过程可见，
+    // 并持续沿圈旋转。虫身和限制圈重叠。不能瞬间传送所有体节形成圆圈。"
+    //
+    // beta30 及以前的实现有三个问题：
+    //   ① 轨道半径是 ARENA_RADIUS × 0.72 = 23 格，而限制圈在 32 格 ——
+    //      身体整个缩在圈**里面** 9 格，根本不与圈重叠；
+    //   ② 周长 2π×23 = 145 格，而身体 50×4.2 = 206 格 → 要缠 1.4 圈，
+    //      必然自我压叠；
+    //   ③ 用的是巡航速度（1.25×1.15 ≈ 1.44 格/tick），
+    //      头部走完 206 格要 143 tick ≈ 7.2 秒，"3 秒"从来没兑现过。
+    //
+    // 修法：轨道半径提到与限制圈一致（周长 201 格 ≈ 身体 1.02 圈，正好贴成一圈），
+    // 并单独加一个「环布」阶段，用 3.43 格/tick 在 60 tick 内把身体铺上去。
+
+    /** 围圈时的轨道半径 —— 与限制圈同半径，身体才会「贴着圈」。 */
+    public static final double RING_ORBIT_RADIUS = ARENA_RADIUS;
+
+    /** 「环布」阶段时长（tick）。原设计约 3 秒 = 60 tick。 */
+    public static final int RING_WRAP_TICKS = 60;
+
+    /**
+     * 「环布」阶段头部切向速度（格/tick）。
+     *
+     * <p>= 身体全长 / 环布时长 = 49×4.2 / 60 ≈ 3.43。
+     * 这是让<b>整条身体</b>在 3 秒内全部落到圆上的唯一速度 ——
+     * 慢了围不完，快了会甩尾拉直。
+     */
+    public static final double RING_WRAP_SPEED =
+            (SEGMENTS - 1) * SEGMENT_SPACING / RING_WRAP_TICKS;
+
+    /**
+     * 「环布」阶段每 tick 最大转向角（弧度）。
+     *
+     * <p>环布的角速度 = 3.43 / 32 ≈ 0.107 rad/tick，而巡航限幅只有 0.07 ——
+     * 沿用巡航限幅会转向不足，头部一边外扩一边绕，画出一圈螺旋。
+     * 这里放到 0.15，既能跟上圆，又不至于一眼看出"硬拐"。
+     */
+    public static final double RING_WRAP_TURN = 0.15D;
+
 
     /** 波数。原设计四波。 */
     public static final int RING_WAVES = 4;

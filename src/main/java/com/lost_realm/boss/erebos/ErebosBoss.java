@@ -916,6 +916,12 @@ public class ErebosBoss extends Monster {
         if (this.brain.action() == Action.EMERGE) {
             return;
         }
+        // 招式级的保护窗口（原设计第 5.3 条同样适用于围圈）：
+        // 囚星天环在环布阶段以 3.4 格/tick 掠过整圈，那一段是演出不是考验。
+        var activeMove = this.brain.current();
+        if (activeMove != null && activeMove.suppressesContact()) {
+            return;
+        }
 
         AABB range = new AABB(this.cullMinX, this.cullMinY, this.cullMinZ,
                 this.cullMaxX, this.cullMaxY, this.cullMaxZ).inflate(1.0D);

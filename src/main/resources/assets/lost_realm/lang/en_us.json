@@ -1167,7 +1167,7 @@
   "config.lost_realm.opt.sword_break_blocks.desc": "Whether blocks along the path are destroyed. Negative-hardness blocks always stay",
   "config.lost_realm.opt.sword_hit_players": "Hit Players",
   "config.lost_realm.opt.sword_hit_players.desc": "Whether the sweep also hits players. Off by default to avoid friendly fire",
-  "entity.lost_realm.erebos": "Erebos, Lord of the Lost",
+  "entity.lost_realm.erebos": "Erebos, the Umbral Star",
   "entity.lost_realm.erebos_part": "Erebos Segment",
   "item.lost_realm.darkstar_beacon": "Darkstar Beacon",
   "item.lost_realm.darkstar_beacon.tip": "Use to call down the Lord of the Dim Stars.",

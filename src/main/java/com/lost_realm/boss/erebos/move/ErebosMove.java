@@ -132,6 +132,19 @@ public abstract class ErebosMove {
         return false;
     }
 
+    /**
+     * 当前是否<b>不该造成接触伤害</b>。
+     *
+     * <p>原设计对围圈的要求："准备期间保护玩家，围好后身体和尾部恢复接触伤害。"
+     * 环布阶段头部以 3.4 格/tick 掠过整圈，玩家站在圈内也可能被扫到 ——
+     * 那一段属于"演出"而不是"考验"，所以关掉接触伤害。
+     *
+     * <p>默认 false；只有需要演出保护的招式才覆写。
+     */
+    public boolean suppressesContact() {
+        return false;
+    }
+
     // ================================================================
     // 通用
     // ================================================================
@@ -236,6 +249,23 @@ public abstract class ErebosMove {
      * @param direction +1 / -1，决定绕行方向
      */
     protected Vec3 orbitTowards(Vec3 center, double radius, double speed, double direction) {
+        return orbitTowards(center, radius, speed, direction, ErebosTuning.CRUISE_TURN);
+    }
+
+    /**
+     * 同上，但可以指定每 tick 的最大转向角。
+     *
+     * <h2>为什么需要这个重载</h2>
+     * 绕圈的角速度 = 切向速度 / 半径。巡航时 1.44 / 32 ≈ 0.045 rad/tick，
+     * 远小于 {@code CRUISE_TURN}（0.07），所以永远转得过来。
+     * 但「环布」阶段要用 3.43 格/tick —— 角速度 0.107 rad/tick，
+     * <b>超过 0.07 的限幅</b>：头部根本跟不上圆，会一边加速一边外扩，
+     * 绕成一圈螺旋，身体永远闭不上环。
+     *
+     * <p>所以环布阶段必须放开转向限幅（不超过 0.15，否则看起来像瞬移）。
+     */
+    protected Vec3 orbitTowards(Vec3 center, double radius, double speed, double direction,
+                                double maxTurn) {
         Vec3 from = this.boss.position().subtract(center);
         Vec3 radial = new Vec3(from.x, 0.0D, from.z);
         if (radial.lengthSqr() < 1.0E-6D) {
@@ -255,7 +285,7 @@ public abstract class ErebosMove {
             desired = tangent;
         }
         return turnTowards(this.velocity, desired.normalize().scale(speed),
-                ErebosTuning.CRUISE_TURN, speed * 0.65D);
+                maxTurn, speed * 0.65D);
     }
 
     /**

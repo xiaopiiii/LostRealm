@@ -21,13 +21,26 @@ import com.lost_realm.boss.erebos.ErebosTuning;
  * 它的唯一作用是<b>把可躲范围收窄</b>，让原本"跑远点就行"的弹幕
  * 突然变得必须认真处理。所以这里只做位置纠正，一点伤害都不给。
  *
- * <h2>流程</h2>
+ * <h2>流程（beta31 起真的分两段了）</h2>
  * <pre>
- *   在你脚下立起限制圈，虫身绕圈盘旋（约 3 秒绕到位，过程可见）
- *      ↓ 共四波
- *   每波从圆周上生成 18 发星弹，朝圈内飘去，留一个通道
+ *   ① 环布：在你脚下立起限制圈，虫身用 60 tick（≈3 秒）
+ *      以 3.43 格/tick 沿圈掠过，把 50 节身体逐节铺到圈上 → 过程可见
+ *      ↓（此段不开火、不压接触伤害，属于演出）
+ *   ② 围成后：贴着圈持续盘旋，共四波
+ *      每波从圆周上生成弹幕，朝圈内飘去，留一个通道
  *      ↓ 最后一波放完收招
  * </pre>
+ *
+ * <h2>beta30 及以前是"瞬间成形"，原因有三</h2>
+ * <ol>
+ *   <li>轨道半径 32×0.72 = 23 格，限制圈却在 32 格 —— 身体缩在圈内 9 格，
+ *       玩家看到的是"一圈墙 + 里面一条虫转圈"，而不是"虫把场地围起来"；</li>
+ *   <li>周长 2π×23 ≈ 145 格 &lt; 身体 206 格，缠 1.4 圈必然自我压叠；</li>
+ *   <li>用的是巡航速度 1.44 格/tick，走完 206 格要 143 tick（7.2 秒），
+ *       而且转向限幅 0.07 跟不上 0.107 的角速度，绕出来的是螺旋不是圆。</li>
+ * </ol>
+ * 现在半径与圈同值（周长 201 格 ≈ 身体 1.02 圈，正好贴成一整圈），
+ * 环布阶段单独给速度和转向限幅，三条一起解决。
  *
  * <h2>为什么这一招让星核暴露</h2>
  * 围圈时虫身是"摊开"的，物理上没有藏住核心的余地。这给了第三阶段
@@ -36,7 +49,13 @@ import com.lost_realm.boss.erebos.ErebosTuning;
 public final class MoveStarRing extends ErebosMove {
 
     private int wavesLeft;
+
+    /** 围好之后的波次计时，环布阶段不累加。 */
     private int timer;
+
+    /** 环布已进行的 tick。 */
+    private int wrapTicks;
+
     private Vec3 center = Vec3.ZERO;
     private double orbitDir = 1.0D;
 
@@ -73,10 +92,22 @@ public final class MoveStarRing extends ErebosMove {
         return true;
     }
 
+    /** 环布期间是演出，不压接触伤害 —— 原设计「准备期间保护玩家」。 */
+    @Override
+    public boolean suppressesContact() {
+        return isWrapping();
+    }
+
+    /** 还在把身体铺上圈的那一段。 */
+    private boolean isWrapping() {
+        return this.wrapTicks < ErebosTuning.RING_WRAP_TICKS;
+    }
+
     @Override
     public void begin(@Nullable Player target) {
         this.wavesLeft = ErebosTuning.RING_WAVES;
-        this.timer = ErebosTuning.RING_WAVE_INTERVAL;
+        this.timer = 0;
+        this.wrapTicks = 0;
         this.orbitDir = this.boss.getRandom().nextBoolean() ? 1.0D : -1.0D;
 
         Vec3 anchor = target != null ? target.position() : this.boss.position();
@@ -93,18 +124,30 @@ public final class MoveStarRing extends ErebosMove {
     @Override
     public Vec3 tick(@Nullable Player target) {
         this.ticks++;
-        this.timer++;
 
-        // 沿圈盘旋 —— 不是瞬间摆成圆，而是"飞着飞着就围上了"
-        double speed = ErebosTuning.CRUISE_SPEED * 1.15D;
-        this.velocity = orbitTowards(this.center, ErebosTuning.ARENA_ORBIT_RADIUS,
-                speed, this.orbitDir);
+        boolean wrapping = isWrapping();
+        if (wrapping) {
+            this.wrapTicks++;
+        }
+
+        // 环布段：快、允许大转角，把身体铺上去
+        // 围成后：回到巡航速度，贴着圈慢慢转
+        double speed = wrapping ? ErebosTuning.RING_WRAP_SPEED : ErebosTuning.CRUISE_SPEED * 1.15D;
+        double maxTurn = wrapping ? ErebosTuning.RING_WRAP_TURN : ErebosTuning.CRUISE_TURN;
+        this.velocity = orbitTowards(this.center, ErebosTuning.RING_ORBIT_RADIUS,
+                speed, this.orbitDir, maxTurn);
 
         this.boss.syncMove(kind());
         this.boss.syncAim(this.velocity.lengthSqr() > 1.0E-6D
                 ? this.velocity.normalize() : new Vec3(0, 0, 1));
         this.boss.syncWarning(0);
 
+        // 环布阶段不开火 —— 一边铺身体一边撒弹幕，玩家只会觉得"莫名其妙就挨打"
+        if (wrapping) {
+            return this.velocity;
+        }
+
+        this.timer++;
         if (this.wavesLeft > 0 && this.timer >= ErebosTuning.RING_WAVE_INTERVAL) {
             this.timer = 0;
             this.wavesLeft--;
