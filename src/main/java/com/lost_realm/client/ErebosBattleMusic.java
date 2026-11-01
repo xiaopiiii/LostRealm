@@ -39,6 +39,14 @@ public class ErebosBattleMusic extends AbstractSoundInstance {
         this.looping = true;
         // 不受距离衰减
         this.relative = false;
+        // ★ attenuation 必须显式设成 NONE。
+        //    AbstractSoundInstance 的默认值是 LINEAR，而我们的 x/y/z 是 (0,0,0)：
+        //    SoundEngine 会把"玩家到世界原点"当成距离去衰减 ——
+        //    竞技场离原点几百格，音量直接被算成 0，
+        //    表现就是"BGM 完全不响"，而且日志里一句报错都没有。
+        //    之前只把 volume 从 0.01 起抬，解决的是"source 不被创建"，
+        //    跟这个衰减是两回事，两个坑都得填。
+        this.attenuation = SoundInstance.Attenuation.NONE;
         // ★ 不能从 0.0 起。
         //   SoundEngine#play 里会算一遍 calculateVolume，
         //   结果为 0 时压根不会创建 OpenAL source —— 之后再把 volume 推上去，

@@ -66,6 +66,14 @@ public class ErebosRenderer extends EntityRenderer<ErebosBoss> {
      */
     private static final double MAX_RENDER_DIST_SQ = 256.0D * 256.0D;
 
+    /**
+     * 相邻体节的最小间距（平方）：小于它的节视为「堆在同一点」，直接跳过不画。
+     *
+     * <p>正常节距 4.2 格，弦长恒在 4 格上下；只有"轨迹不够长、剩余节全堆在一点"
+     * 时才会接近 0。取 1.5 格作阈值，两边都留足余量。
+     */
+    private static final double MIN_SEGMENT_GAP_SQ = 1.5D * 1.5D;
+
     private final ModelPart head;
     private final ModelPart body;
     private final ModelPart tail;
@@ -174,11 +182,35 @@ public class ErebosRenderer extends EntityRenderer<ErebosBoss> {
         VertexConsumer bodyBuf = buffer.getBuffer(RenderType.entityCutoutNoCull(TEX_BODY));
         VertexConsumer tailBuf = buffer.getBuffer(RenderType.entityCutoutNoCull(TEX_TAIL));
 
+        // 上一节实际画出去的位置 —— 用来丢弃"堆在同一点"的重复节（见下）。
+        double lastX = Double.NaN;
+        double lastY = 0.0D;
+        double lastZ = 0.0D;
+
         for (int i = 0; i < count; i++) {
             // ---- 插值位置 ----
             double x = Mth.lerp(partialTick, prev[i * 3], curr[i * 3]);
             double y = Mth.lerp(partialTick, prev[i * 3 + 1], curr[i * 3 + 1]);
             double z = Mth.lerp(partialTick, prev[i * 3 + 2], curr[i * 3 + 2]);
+
+            // ---- 丢掉与上一节重合的体节（beta32）----
+            //
+            //   ErebosTrail#sample 在"轨迹不够长"时会把剩下的节<b>全部堆在同一个点</b>
+            //   （开场没铺开、跨星门撞断点、以及贴身缠斗被挤短的时候）。
+            //   几十个一模一样的立方体重叠在一起，共面就是 z-fighting ——
+            //   玩家看到的是"身体某一处一直在闪"。
+            //   合法的相邻节弦长恒在 4 格左右（节距 4.2），留 1.5 格的判定余量足够安全。
+            if (!Double.isNaN(lastX)) {
+                double ddx = x - lastX;
+                double ddy = y - lastY;
+                double ddz = z - lastZ;
+                if (ddx * ddx + ddy * ddy + ddz * ddz < MIN_SEGMENT_GAP_SQ) {
+                    continue;
+                }
+            }
+            lastX = x;
+            lastY = y;
+            lastZ = z;
 
             // 到摄像机的世界距离 —— 只用来"太远就不画"（性能剔除），不参与摆放
             double cdx = x - camera.x;

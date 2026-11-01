@@ -80,9 +80,13 @@ public class ErebosSkyEffects extends DimensionSpecialEffects {
                              Camera camera, Matrix4f projection, boolean isFoggy, Runnable setupFog) {
 
         pose.pushPose();
-        // 天空球跟着视角转，但**不跟位置平移** —— 这样它永远是"无穷远"
-        pose.mulPose(Axis.YP.rotationDegrees(-camera.getYRot()));
-        pose.mulPose(Axis.XP.rotationDegrees(camera.getXRot()));
+        // ★ 不要再套一次相机旋转。
+        //   LevelRenderer#renderLevel 在调 renderSky 之前已经做过
+        //       pose.mulPose(Axis.XP.rotationDegrees(camera.getXRot()));
+        //       pose.mulPose(Axis.YP.rotationDegrees(camera.getYRot() + 180));
+        //   这里再反向转一次等于把相机旋转「抵消」掉 ——
+        //   几何就退化成视空间（贴在屏幕上不动），正是 beta31 出现的现象。
+        //   什么都不做，才是"固定在世界上、随视角转动"。位置不平移则保证它在无穷远。
 
         Matrix4f mat = pose.last().pose();
 

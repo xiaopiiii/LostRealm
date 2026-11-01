@@ -340,6 +340,17 @@ public class ErebosBoss extends Monster {
         this.noPhysics = true;
         // 不注册任何 Goal —— 行为由 ErebosBrain 直接驱动
         this.setNoAi(true);
+        // ★ 关掉原版剔除。
+        //
+        //   这条虫 210 格长，而原版只肯拿<b>一个 AABB</b> 去和视锥做一次相交测试。
+        //   无论那个盒怎么算，都必然有一批"人在虫身上/贴着某一节"的机位会判成不可见 ——
+        //   玩家实测的「靠近头部整条消失、靠近身体没事、飞高也没用」就是这一类。
+        //   之前用 spineNow 拼盒缓解过，但只要盒的来源和摄像机位置错开一帧仍会误杀。
+        //
+        //   关掉之后渲染器每帧都会被调用，而 ErebosRenderer 内部本来就按
+        //   MAX_RENDER_DIST_SQ 逐节做了距离剔除 —— 性能代价是"一条虫多一次调用"，
+        //   换的是绝不会再出现"莫名其妙整个不见"。
+        this.noCulling = true;
         this.xpReward = 500;
     }
 
@@ -528,7 +539,16 @@ public class ErebosBoss extends Monster {
      * 与服务端有极细微的差别，但玩家看不出来，这正是原版末影龙的做法。
      */
     private void clientStep() {
-        this.advanceTrail();
+        // ★ 只有「没收到服务端脊线」时才自己算。
+        //
+        //   原来的写法是每 tick 都先 advanceTrail() 再 syncSegmentsFromSpine()，
+        //   于是每一 tick 的 segmentsPrev 被写成**本地采样值**、segments 被写成
+        //   **服务端下发值** —— 渲染插值在两套时间轴之间来回跳，
+        //   表现就是玩家说的"抽搐/一卡一卡"。
+        //   服务端每 tick 都会发包（见 broadcastSpine），正常情况下根本轮不到本地自算。
+        if (!this.hasFreshSpine()) {
+            this.advanceTrail();
+        }
         this.syncSegmentsFromSpine();
         this.spawnMoveWarningFx();
         this.spawnAmbience();

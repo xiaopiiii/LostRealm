@@ -409,15 +409,31 @@ public final class ErebosBrain {
         }
         Vec3 moveVelocity = move.tick(target);
 
-        // ★ 招式要求"站住"时，不要立刻刹停 —— 用衰减的惯性滑一小段。
+        // ★ 招式要求"站住"时，不要一路刹到 0。
         //
-        //   很多招式开头有几 tick 的准备动作（velocity 返回 ZERO）。
-        //   直接照搬会让这条 210 格的巨虫「啪」地钉在原地，
-        //   玩家反馈的"有时候会突然停顿一下，像是技能搞的鬼"就是这个。
-        //   0.93/tick 衰减大约 30 tick 收住（1.5 秒），观感是"甩一下尾巴滑停下来"。
-        //   之前用 0.82 太急，10 tick 就钉住了，玩家仍然觉得"突然停"。
+        //   原来的做法是按 0.93/tick 衰减，约 30 tick（1.5 秒）收住 ——
+        //   也就是说除了开头那一下"滑停"，剩下的十几秒里这条 210 格的巨物
+        //   是**完全钉死**的。玩家反馈"放技能还是会停下来"就是这个。
+        //
+        //   现在改成「保持最低巡航速度继续漂移」：速度不低于巡航的 45%，
+        //   并掺一点朝玩家的切向分量，让它绕着玩家慢慢打转，
+        //   而不是径直漂到墙边顶着。观感是"悬停着伺机而动"，不是"卡住了"。
         if (moveVelocity.lengthSqr() < 1.0E-8D && this.velocity.lengthSqr() > 1.0E-4D) {
-            moveVelocity = this.velocity.scale(0.93D);
+            double speed = Math.max(ErebosTuning.CRUISE_SPEED * 0.45D,
+                    this.velocity.length() * 0.97D);
+            Vec3 dir = this.velocity.normalize();
+
+            Vec3 flat = target.position().subtract(this.boss.position());
+            flat = new Vec3(flat.x, 0.0D, flat.z);
+            if (flat.lengthSqr() > 4.0D) {
+                Vec3 tangent = new Vec3(-flat.z, 0.0D, flat.x).normalize();
+                // 必须与当前朝向同侧，否则会"拧"向反方向，看着又是一次抽搐
+                if (tangent.dot(dir) < 0.0D) {
+                    tangent = tangent.scale(-1.0D);
+                }
+                dir = dir.scale(0.75D).add(tangent.scale(0.25D)).normalize();
+            }
+            moveVelocity = dir.scale(speed);
         }
         this.velocity = moveVelocity;
         if (move.isFinished()) {
