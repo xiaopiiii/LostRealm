@@ -195,6 +195,9 @@ public final class MoveStarGate extends ErebosMove {
         //   210 格身体约 42 tick 走完，否则会变成"慢慢抽出来"。
         this.boss.trail().push(this.boss.getX(), this.boss.getY(), this.boss.getZ());
         this.boss.trail().markBreak();
+        // ★ 通知客户端「这一帧瞬移了」—— 客户端据此硬切脊线插值，
+        //   而不是靠固定位移阈值去猜（阈值猜错才是"消失/抽搐"反复出现的根因）。
+        this.boss.markTeleport();
         this.boss.setPos(this.gateB.x, this.gateB.y, this.gateB.z);
 
         if (this.boss.level() instanceof ServerLevel level) {

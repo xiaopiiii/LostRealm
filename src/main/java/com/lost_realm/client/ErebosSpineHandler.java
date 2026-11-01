@@ -14,14 +14,14 @@ import net.minecraft.world.entity.Entity;
  */
 public final class ErebosSpineHandler {
 
-    public static void accept(int entityId, float[] points) {
+    public static void accept(int entityId, float[] points, boolean teleport) {
         var level = Minecraft.getInstance().level;
         if (level == null) {
             return;
         }
         Entity entity = level.getEntity(entityId);
         if (entity instanceof ErebosBoss boss) {
-            boss.acceptSpine(points);
+            boss.acceptSpine(points, teleport);
         }
     }
 

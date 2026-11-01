@@ -36,13 +36,25 @@ public class PacketErebosSpine {
     /** 扁平数组，长度 = 节数 × 3（x, y, z 依次排列）。 */
     private final float[] points;
 
+    /**
+     * 这一帧是否发生了<b>瞬移</b>（星门穿门），客户端收到后要「硬切」，
+     * 不做 prev→now 插值 —— 否则会在 A/B 门之间拉出一条超长身体。
+     */
+    private final boolean teleport;
+
     public PacketErebosSpine(int entityId, float[] points) {
+        this(entityId, points, false);
+    }
+
+    public PacketErebosSpine(int entityId, float[] points, boolean teleport) {
         this.entityId = entityId;
         this.points = points;
+        this.teleport = teleport;
     }
 
     public PacketErebosSpine(FriendlyByteBuf buf) {
         this.entityId = buf.readVarInt();
+        this.teleport = buf.readBoolean();
         int n = buf.readVarInt();
         this.points = new float[n];
         for (int i = 0; i < n; i++) {
@@ -52,6 +64,7 @@ public class PacketErebosSpine {
 
     public void encode(FriendlyByteBuf buf) {
         buf.writeVarInt(entityId);
+        buf.writeBoolean(teleport);
         buf.writeVarInt(points.length);
         for (float f : points) {
             buf.writeFloat(f);
@@ -62,7 +75,7 @@ public class PacketErebosSpine {
         NetworkEvent.Context context = ctx.get();
         // 包只从服务端发往客户端，enqueueWork 保证在主线程执行
         context.enqueueWork(() ->
-                com.lost_realm.client.ErebosSpineHandler.accept(entityId, points));
+                com.lost_realm.client.ErebosSpineHandler.accept(entityId, points, teleport));
         context.setPacketHandled(true);
     }
 }

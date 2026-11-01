@@ -206,6 +206,10 @@ public class ErebosBoss extends Monster {
      * 10Hz 的数据直接画会有明显的"一格一格"感。
      */
     public void acceptSpine(float[] points) {
+        acceptSpine(points, false);
+    }
+
+    public void acceptSpine(float[] points, boolean teleport) {
         if (!this.level().isClientSide) {
             return;
         }
@@ -214,37 +218,18 @@ public class ErebosBoss extends Monster {
             arr[i] = points[i];
         }
 
-        // ★ 瞬移必须"硬切"。
-        //   正常是 spinePrev → spineNow 插值，让每 tick 的数据在 60fps 下平滑。
-        //   但跨星门是<b>瞬移</b>：两步之间隔着几十格，若照常插值，
-        //   屏幕会看到整条身体在那两点之间被拉长并且"扫"过去一帧 ——
-        //   比不插值还难看。所以位移超过阈值就直接把 prev 也设成新帧，
-        //   插值退化成原地，视觉上是干净的闪切。
+        // ★ 瞬移「硬切」由服务端显式告知，不再用固定阈值猜。
         //
-        // ★ 阈值从 30 格降到 8 格（beta33）。
-        //   旧值 30 是根据"星门间距约 26 格"拍脑袋定的，但两门实际间距
-        //   = gateA(head+26×0.65≈17 格) 到 gateB(玩家周围 15 格)，会落在 20~40 格。
-        //   间距一旦 < 30 格就不触发硬切 → 脊线在 A/B 之间插值 → 身体被拉成
-        //   一条横跨几十格的"线"，玩家看到的就是"二阶段放星门后整条虫消失"。
-        //   正常巡航最快 4.5 格/tick（GATE_SPEED），8 格阈值能稳定区分
-        //   "瞬移"和"高速移动"，不会误伤正常游动。
-        boolean jumped = this.spineNow != null
-                && this.spineNow.length == arr.length
-                && sqDistance(arr, this.spineNow, 3) > 8.0D * 8.0D;
+        //   曾经用「头部单帧位移 > 阈值」判断瞬移：阈值 30 格时，星门两门间距
+        //   若 < 30 格就不硬切 → 脊线在 A/B 间插值拉成一条线 → 整条虫看似消失；
+        //   阈值降到 8 格后，穿门后头部以 5 格/tick 高速前进，连续帧位移逼近 8 格，
+        //   又触发连续误判硬切 → prev 恒等于 now → 插值失效 → 抽搐更严重。
+        //   两种阈值都错。服务端最清楚「这一帧是不是瞬移」，让它带标志下来最干净。
+        boolean jumped = teleport;
 
         this.spinePrev = jumped ? arr : this.spineNow;
         this.spineNow = arr;
         this.spineNanos = System.nanoTime();
-    }
-
-    /** 两段扁平坐标前 {@code n} 个分量的平方距离。 */
-    private static double sqDistance(double[] a, double[] b, int n) {
-        double sum = 0.0D;
-        for (int i = 0; i < n && i < a.length && i < b.length; i++) {
-            double d = a[i] - b[i];
-            sum += d * d;
-        }
-        return sum;
     }
 
     /** 最近一帧脊线；没有则 null。 */
@@ -279,6 +264,20 @@ public class ErebosBoss extends Monster {
      * <p>由当前招式决定（{@code ErebosMove#exposesCore()}），每 tick 刷新。
      */
     private boolean exposed;
+
+    /**
+     * 服务端瞬移标记：这一 tick 是否发生了星门穿门瞬移。
+     *
+     * <p>星门招式在 {@link com.lost_realm.boss.erebos.move.MoveStarGate#enterGate()}
+     * 里调 {@link #markTeleport()} 置位；{@link #broadcastSpine} 发完这一帧的脊线后
+     * 立即清位。客户端据此决定「硬切」（不做插值），而不是靠固定位移阈值去猜。
+     */
+    private boolean teleportThisTick;
+
+    /** 星门瞬移时调用，通知下一帧脊线包带上硬切标志。 */
+    public void markTeleport() {
+        this.teleportThisTick = true;
+    }
 
     /** 上一 tick 所处的阶段 —— 用来检测"刚刚换阶段了"。 */
     private ErebosPhase lastPhase = ErebosPhase.ONE;
@@ -530,7 +529,10 @@ public class ErebosBoss extends Monster {
         for (int i = 0; i < pts.length; i++) {
             pts[i] = (float) this.segments[i];
         }
-        var packet = new com.lost_realm.network.PacketErebosSpine(this.getId(), pts);
+        // 带上瞬移标志，发完即清位 —— 保证只有瞬移那一帧是"硬切"
+        boolean teleported = this.teleportThisTick;
+        this.teleportThisTick = false;
+        var packet = new com.lost_realm.network.PacketErebosSpine(this.getId(), pts, teleported);
         for (ServerPlayer player : level.players()) {
             // ★ 门限从 256 提到 320，覆盖整个 250 格竞技场 + 余量。
             //
@@ -552,15 +554,14 @@ public class ErebosBoss extends Monster {
      * 与服务端有极细微的差别，但玩家看不出来，这正是原版末影龙的做法。
      */
     private void clientStep() {
-        // ★ 只有「从未收到过脊线」时才自己算兜底。
+        // ★ 客户端<b>不再自己算身体</b>。
         //
-        //   上一版用 hasFreshSpine()（1 秒窗口），结果引入一个新 bug：
-        //   出场 / 被打飞那几秒脊线没到 → 退回自算 → 而自算链路（advanceTrail）
-        //   在整合包里是断的（客户端位置收不到更新）→ 头部位置每 tick 跳 → "出场抽搐"。
-        //   所以改成：只要拿到过一份脊线就永远不自算，宁可停在上一个已知位置。
-        if (this.spineNow == null) {
-            this.advanceTrail();
-        }
+        //   整条虫的位置由服务端每 tick 下发的脊线包（broadcastSpine）决定，
+        //   渲染器直接用 spineNow/spinePrev 插值。客户端自算（advanceTrail）
+        //   这条链路在整合包环境里是断的（头部位置收不到更新），一旦触发
+        //   就会让 segments 塌缩、剔除盒变小、身体抽搐 —— 历次"抽搐/消失"
+        //   几乎都跟它有关。所以这里彻底移除自算，只做「把脊线抄进 segments」
+        //   供剔除盒使用这一件事。
         this.syncSegmentsFromSpine();
         this.spawnMoveWarningFx();
         this.spawnAmbience();
@@ -606,13 +607,11 @@ public class ErebosBoss extends Monster {
      */
     private void syncSegmentsFromSpine() {
         double[] src = this.spineNow;
-        // 只要拿到过一份脊线就永远用它，不再用 hasFreshSpine() 的 1 秒窗口卡它
-        // —— 脊线一旦"过期"被拒，segments 就退回塌缩的自算值，剔除盒几格大，
-        // 特定机位整条虫又被剔掉。宁可停在已知位置，也不要退回自算。
         if (src == null || src.length != this.segments.length) {
             return;
         }
-        System.arraycopy(this.segments, 0, this.segmentsPrev, 0, this.segments.length);
+        // 只抄「当前」这一份给剔除盒用；渲染器不读 segments（它直接用 spineNow/spinePrev），
+        // 所以这里不写 segmentsPrev，避免再引入一套时间轴。
         System.arraycopy(src, 0, this.segments, 0, this.segments.length);
         this.updateCullBox();
     }
