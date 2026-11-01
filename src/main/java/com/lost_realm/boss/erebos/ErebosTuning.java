@@ -119,9 +119,10 @@ public final class ErebosTuning {
      * 打到 80%（进阶段Ⅱ）只要 80 秒，60%（阶段Ⅲ）约 160 秒 ——
      * 这个节奏才对得上"4~6 分钟"的设计目标。
      *
-     * <p>配置文件里的 {@code boss_max_health} 仍可覆盖此值。
+     * <p>配置里的 {@code boss_max_health} 是旧 WardenBoss 的，Erebos 不读它，
+     * 要调血量只能改这里。</p>
      */
-    public static final double MAX_HEALTH = 12000.0D;
+    public static final double MAX_HEALTH = 500.0D;   // ★ beta32 测试期临时调低，正式发布前恢复 12000
 
     /** 阶段Ⅰ结束（100% → 80%）。 */
     public static final float PHASE_1_END = 0.80F;

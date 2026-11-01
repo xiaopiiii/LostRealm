@@ -74,6 +74,14 @@ public class ErebosRenderer extends EntityRenderer<ErebosBoss> {
      */
     private static final double MIN_SEGMENT_GAP_SQ = 1.5D * 1.5D;
 
+    /**
+     * 体节沿身体方向的压缩比 = 节距 / 体径 = 4.2 / 4.8。
+     *
+     * <p>小于 1 时相邻体节不再互相插进对方，转弯时也不会共面闪烁。
+     */
+    private static final float SEGMENT_Z_SQUASH =
+            (float) (ErebosTuning.SEGMENT_SPACING / ErebosTuning.BODY_DIAMETER);
+
     private final ModelPart head;
     private final ModelPart body;
     private final ModelPart tail;
@@ -112,21 +120,23 @@ public class ErebosRenderer extends EntityRenderer<ErebosBoss> {
         }
 
         // ------------------------------------------------------------
-        // 位置数据源：优先用服务端下发的脊线。
+        // 位置数据源：永远只用服务端下发的脊线。
         //
-        // 原设计与末影龙相同 —— 客户端自己跑一遍路径跟随。但实测发现
-        // 客户端位置收不到更新（/lrdebug 显示轨迹永远 1 个点、40 节完全重合），
-        // 而服务端那边身体是正常铺开的。也就是说"客户端自算"这条链路
-        // 在当前环境（手机端 + 200 模组）里断了，画出来就是一个头。
+        //   原设计是「客户端自己跑一遍路径跟随」（和末影龙一样），但那条链路
+        //   在整合包环境里是断的（/lrdebug 显示轨迹永远 1 个点、40 节完全重合）。
+        //   所以后来改成「优先服务端脊线、超 1 秒退回自算」——
+        //   可这正是「打一会儿整条虫消失」的元凶：脊线包每 tick 只在玩家 256 格内才发，
+        //   玩家被逼退/被打飞到 256 格外（或网络卡顿积压）→ 超过 1 秒判「不新鲜」
+        //   → 退回那条已知会塌的自算链路 → 整条虫消失，而 BGM（128 格）还在。
         //
-        // 所以这里改成：只要服务端的脊线还新鲜，就直接画它；
-        // 只有超过 1 秒没收到（比如刚生成、或者网络断了）才退回自算。
-        // 两份数据都是 double[]，后面的代码完全不用区分。
+        //   正确做法：只要拿到过一份脊线就<b>永远画它</b>。没更新就停在原地
+        //   （虫在远处不动也合理），绝不切回自算。只有从来没收到过（实体刚生成
+        //   的那一瞬）才退回自算兜底。
         // ------------------------------------------------------------
         double[] curr;
         double[] prev;
         double[] syncNow = entity.spineNow();
-        if (entity.hasFreshSpine() && syncNow != null && syncNow.length == count * 3) {
+        if (syncNow != null && syncNow.length == count * 3) {
             curr = syncNow;
             double[] syncPrev = entity.spinePrev();
             prev = (syncPrev != null && syncPrev.length == syncNow.length) ? syncPrev : syncNow;
@@ -286,6 +296,16 @@ public class ErebosRenderer extends EntityRenderer<ErebosBoss> {
             pose.mulPose(Axis.YP.rotationDegrees(yaw));
             pose.mulPose(Axis.XP.rotationDegrees(pitch));
             pose.scale(scale, scale, scale);
+            // ★ 沿身体方向把体节压短，消除相邻节的重叠（beta32）。
+            //
+            //   体节模型 16px 宽，scale 后直径 4.8 格；但节距只有 4.2 格 ——
+            //   相邻两节沿身体方向必然重叠 0.6 格，转弯时弦长更短、重叠更狠。
+            //   装甲环还比主体外扩一圈（18px），重叠时两个环的侧面共面，
+            //   就 z-fighting：玩家看到的"两节叠一起、两个颜色闪来闪去"。
+            //
+            //   把 +Z（行进方向）压到 4.2/4.8 = 0.875，相邻节就首尾相接、不再插进彼此。
+            //   X/Y 不动，截面直径仍是 4.8 格，观感不受影响。
+            pose.scale(1.0F, 1.0F, SEGMENT_Z_SQUASH);
             // ★ MC 的模型空间是「+Y 向下、+X 向左」，与原版 LivingEntityRenderer
             //   里那句 scale(-1,-1,1) 对应。本渲染器继承的是 EntityRenderer，
             //   那条链上没有这一步 —— 不补的话整条虫上下颠倒：

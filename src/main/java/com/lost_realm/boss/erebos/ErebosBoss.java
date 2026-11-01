@@ -524,8 +524,13 @@ public class ErebosBoss extends Monster {
         }
         var packet = new com.lost_realm.network.PacketErebosSpine(this.getId(), pts);
         for (ServerPlayer player : level.players()) {
-            // 与 clientTrackingRange(16 区块) 对齐
-            if (player.distanceToSqr(this) < 256.0D * 256.0D) {
+            // ★ 门限从 256 提到 320，覆盖整个 250 格竞技场 + 余量。
+            //
+            //   旧值 256 是「整条虫消失」和「出场抽搐」的共同诱因：
+            //   玩家一旦被打飞到 256 格外（开放场地里很常见），脊线就停发，
+            //   客户端退回到那条断掉的自算链路 → 抽搐或整条消失。
+            //   320 格保证只要玩家还在这场战斗里，就永远收得到脊线。
+            if (player.distanceToSqr(this) < 320.0D * 320.0D) {
                 com.lost_realm.network.MedalsNetwork.sendToPlayer(player, packet);
             }
         }
@@ -539,14 +544,13 @@ public class ErebosBoss extends Monster {
      * 与服务端有极细微的差别，但玩家看不出来，这正是原版末影龙的做法。
      */
     private void clientStep() {
-        // ★ 只有「没收到服务端脊线」时才自己算。
+        // ★ 只有「从未收到过脊线」时才自己算兜底。
         //
-        //   原来的写法是每 tick 都先 advanceTrail() 再 syncSegmentsFromSpine()，
-        //   于是每一 tick 的 segmentsPrev 被写成**本地采样值**、segments 被写成
-        //   **服务端下发值** —— 渲染插值在两套时间轴之间来回跳，
-        //   表现就是玩家说的"抽搐/一卡一卡"。
-        //   服务端每 tick 都会发包（见 broadcastSpine），正常情况下根本轮不到本地自算。
-        if (!this.hasFreshSpine()) {
+        //   上一版用 hasFreshSpine()（1 秒窗口），结果引入一个新 bug：
+        //   出场 / 被打飞那几秒脊线没到 → 退回自算 → 而自算链路（advanceTrail）
+        //   在整合包里是断的（客户端位置收不到更新）→ 头部位置每 tick 跳 → "出场抽搐"。
+        //   所以改成：只要拿到过一份脊线就永远不自算，宁可停在上一个已知位置。
+        if (this.spineNow == null) {
             this.advanceTrail();
         }
         this.syncSegmentsFromSpine();
@@ -594,7 +598,10 @@ public class ErebosBoss extends Monster {
      */
     private void syncSegmentsFromSpine() {
         double[] src = this.spineNow;
-        if (src == null || src.length != this.segments.length || !this.hasFreshSpine()) {
+        // 只要拿到过一份脊线就永远用它，不再用 hasFreshSpine() 的 1 秒窗口卡它
+        // —— 脊线一旦"过期"被拒，segments 就退回塌缩的自算值，剔除盒几格大，
+        // 特定机位整条虫又被剔掉。宁可停在已知位置，也不要退回自算。
+        if (src == null || src.length != this.segments.length) {
             return;
         }
         System.arraycopy(this.segments, 0, this.segmentsPrev, 0, this.segments.length);
