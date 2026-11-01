@@ -1,0 +1,37 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "item": "lost_realm:chain_crystal"
+    },
+    {
+      "item": "lost_realm:sniper_crystal"
+    },
+    {
+      "item": "lost_realm:circle_crystal"
+    },
+    {
+      "item": "lost_realm:soulfire_crystal"
+    },
+    {
+      "item": "lost_realm:overdraft_crystal"
+    },
+    {
+      "item": "lost_realm:ember_crystal"
+    },
+    {
+      "item": "lost_realm:hexnail_crystal"
+    },
+    {
+      "item": "lost_realm:echo_crystal"
+    },
+    {
+      "item": "lost_realm:swift_crystal"
+    }
+  ],
+  "result": {
+    "item": "lost_realm:sovereign_crystal",
+    "count": 1
+  }
+}

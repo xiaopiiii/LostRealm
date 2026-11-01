@@ -1,0 +1,74 @@
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+authors="${mod_authors}"
+description='''${mod_description}'''
+
+# ============================ 依赖声明 ============================
+# minecraft
+[[dependencies.${mod_id}]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+# Forge
+[[dependencies.${mod_id}]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+# ---- ★ beta30:不再声明 Apothic Attributes(attributeslib)与 Placebo ----
+# 原先这里挂着两条 mandatory 依赖,因为暴击/吸血/破甲/闪避/拉弓等 12 条属性
+# 借的是 attributeslib 的注册。beta30 起这些属性由本模组自行注册
+# (attribute/RealmAttributes),前置只剩 Curios 一个硬依赖。
+#
+# ⚠️ 不要再把 mandatory 加回来。玩家装不装 Apothic 与本模组无关;
+#    加回来会让「不装属性库」的整合包直接拒绝加载。
+
+# ---- 必需前置:Curios API(饰品槽位) ----
+[[dependencies.${mod_id}]]
+    modId="curios"
+    mandatory=true
+    versionRange="[${curios_version},)"
+    ordering="AFTER"
+    side="BOTH"
+
+# ---- 必需前置:GeckoLib(实体骨骼动画引擎,dv13 起) ----
+# 遗落之主三形态的造型与动画(触手 / 骨刺 / 换阶段演出)依赖 GeckoLib 的
+# 骨骼模型与关键帧动画系统。原版渲染管线不消费 Entity#getScale(),
+# 且 HumanoidModel 只有 7 根固定骨骼,无法表达触手一类造型。
+# 坐标:software.bernie.geckolib:geckolib-forge-1.20.1:4.4.9
+[[dependencies.${mod_id}]]
+    modId="geckolib"
+    mandatory=true
+    versionRange="[${geckolib_version},)"
+    ordering="AFTER"
+    side="BOTH"
+
+# ---- 可选前置:Configured(配置屏幕模组) ----
+[[dependencies.${mod_id}]]
+    modId="configured"
+    mandatory=false
+    versionRange="[2.2.0,)"
+    ordering="AFTER"
+    side="CLIENT"
+
+# ---- 可选前置:诡厄巫法 Goety(法师勋章底座) ----
+# 提供灵魂能量(SEHelper)、法术属性(spell_potency / soul_discount /
+# cooldown_discount 等)、仆从接口(IOwned)与魔杖接口(IWand)。
+# 未安装时法师勋章自动软禁用,其余勋章不受影响。
+[[dependencies.${mod_id}]]
+    modId="goety"
+    mandatory=false
+    versionRange="[2.5.0,)"
+    ordering="AFTER"
+    side="BOTH"

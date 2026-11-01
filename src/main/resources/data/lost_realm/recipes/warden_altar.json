@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "FSF",
+    "SAS",
+    "FSF"
+  ],
+  "key": {
+    "F": {
+      "item": "lost_realm:lost_realm_fragment"
+    },
+    "S": {
+      "item": "lost_realm:void_stone"
+    },
+    "A": {
+      "item": "lost_realm:altar_core"
+    }
+  },
+  "result": {
+    "item": "lost_realm:warden_altar",
+    "count": 1
+  }
+}

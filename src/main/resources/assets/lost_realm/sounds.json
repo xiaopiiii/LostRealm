@@ -1,0 +1,20 @@
+{
+  "music.erebos_battle_1": {
+    "sounds": [
+      {
+        "name": "lost_realm:music/erebos_battle_1",
+        "stream": true,
+        "volume": 1.0
+      }
+    ]
+  },
+  "music.erebos_battle_2": {
+    "sounds": [
+      {
+        "name": "lost_realm:music/erebos_battle_2",
+        "stream": true,
+        "volume": 1.0
+      }
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "order": 10,
+  "size": 0,
+  "operation": "SET",
+  "use_native_gui": true,
+  "icon": "lost_realm:slot/contract",
+  "validators": [
+    "curios:tag"
+  ]
+}

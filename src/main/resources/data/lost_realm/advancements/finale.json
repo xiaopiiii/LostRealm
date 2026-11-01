@@ -1,0 +1,27 @@
+{
+  "parent": "lost_realm:sentinel",
+  "display": {
+    "icon": {
+      "item": "lost_realm:realm_crown"
+    },
+    "title": {
+      "translate": "advancement.lost_realm.finale.title"
+    },
+    "description": {
+      "translate": "advancement.lost_realm.finale.desc"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "killed_warden": {
+      "trigger": "minecraft:player_killed_entity",
+      "conditions": {
+        "entity": {
+          "type": "lost_realm:warden"
+        }
+      }
+    }
+  }
+}

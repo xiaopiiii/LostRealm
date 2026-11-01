@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "lost_realm:lost_realm_fragment"
+    },
+    {
+      "item": "lost_realm:altar_core"
+    },
+    {
+      "item": "lost_realm:warden_core"
+    },
+    {
+      "item": "minecraft:ender_eye"
+    },
+    {
+      "item": "minecraft:obsidian"
+    },
+    {
+      "item": "minecraft:obsidian"
+    }
+  ],
+  "result": {
+    "item": "lost_realm:realm_key",
+    "count": 1
+  }
+}

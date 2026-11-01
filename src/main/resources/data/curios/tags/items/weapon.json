@@ -1,0 +1,49 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "#minecraft:swords",
+      "required": false
+    },
+    {
+      "id": "#minecraft:axes",
+      "required": false
+    },
+    {
+      "id": "lost_realm:sweeping_blade",
+      "required": false
+    },
+    {
+      "id": "lost_realm:dual_blade",
+      "required": false
+    },
+    {
+      "id": "lost_realm:crit_blade",
+      "required": false
+    },
+    {
+      "id": "lost_realm:backstab_blade",
+      "required": false
+    },
+    {
+      "id": "lost_realm:disarm_blade",
+      "required": false
+    },
+    {
+      "id": "lost_realm:luck_blade",
+      "required": false
+    },
+    {
+      "id": "lost_realm:charging_blade",
+      "required": false
+    },
+    {
+      "id": "lost_realm:dash_blade",
+      "required": false
+    },
+    {
+      "id": "lost_realm:toughness_blade",
+      "required": false
+    }
+  ]
+}

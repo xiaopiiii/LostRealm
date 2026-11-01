@@ -1,0 +1,32 @@
+{
+  "display": {
+    "icon": {
+      "item": "lost_realm:lost_realm_fragment"
+    },
+    "title": {
+      "translate": "advancement.lost_realm.root.title"
+    },
+    "description": {
+      "translate": "advancement.lost_realm.root.desc"
+    },
+    "frame": "task",
+    "background": "minecraft:textures/block/sculk.png",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "has_fragment": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "lost_realm:lost_realm_fragment"
+            ],
+            "count": 3
+          }
+        ]
+      }
+    }
+  }
+}

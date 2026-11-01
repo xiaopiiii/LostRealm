@@ -1,0 +1,11 @@
+{
+  "type": "lost_realm:lost_realm",
+  "generator": {
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "lost_realm:lost_realm_void"
+    },
+    "settings": "lost_realm:void_arena"
+  }
+}

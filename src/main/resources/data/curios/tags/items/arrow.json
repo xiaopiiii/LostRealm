@@ -1,0 +1,15 @@
+{
+  "replace": false,
+  "values": [
+    "lost_realm:potion_arrow",
+    "lost_realm:explosive_arrow",
+    "lost_realm:piercing_arrow",
+    "lost_realm:antigravity_arrow",
+    "lost_realm:star_arrow",
+    "lost_realm:thunder_arrow",
+    "lost_realm:twin_arrow",
+    "lost_realm:armor_pierce_arrow",
+    "lost_realm:hold_arrow",
+    "lost_realm:summon_arrow"
+  ]
+}

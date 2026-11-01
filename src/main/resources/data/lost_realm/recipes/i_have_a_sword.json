@@ -1,0 +1,37 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "item": "lost_realm:sweeping_blade"
+    },
+    {
+      "item": "lost_realm:dual_blade"
+    },
+    {
+      "item": "lost_realm:crit_blade"
+    },
+    {
+      "item": "lost_realm:backstab_blade"
+    },
+    {
+      "item": "lost_realm:disarm_blade"
+    },
+    {
+      "item": "lost_realm:luck_blade"
+    },
+    {
+      "item": "lost_realm:charging_blade"
+    },
+    {
+      "item": "lost_realm:dash_blade"
+    },
+    {
+      "item": "lost_realm:toughness_blade"
+    }
+  ],
+  "result": {
+    "item": "lost_realm:i_have_a_sword",
+    "count": 1
+  }
+}

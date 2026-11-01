@@ -1,0 +1,35 @@
+# ---- 构建产物 ----
+build/
+out/
+*.class
+
+# ---- Gradle ----
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+
+# ---- 开发运行目录（相当于 .minecraft）----
+run/
+runs/
+
+# ---- IDE ----
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.classpath
+.project
+bin/
+
+# ---- 前置模组 jar：不提交，避免二次分发 ----
+# 需要哪个版本见 libs/README.md，自行下载放入。
+libs/*.jar
+!libs/README.md
+
+# ---- 系统/临时 ----
+.DS_Store
+Thumbs.db
+*.log
+__pycache__/
+*.pyc

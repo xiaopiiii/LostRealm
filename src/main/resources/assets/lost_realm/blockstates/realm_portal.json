@@ -1,0 +1,11 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "lost_realm:block/realm_portal_ns",
+      "y": 90
+    },
+    "axis=z": {
+      "model": "lost_realm:block/realm_portal_ew"
+    }
+  }
+}

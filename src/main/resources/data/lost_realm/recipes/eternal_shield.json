@@ -1,0 +1,37 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "item": "lost_realm:thorns_shield"
+    },
+    {
+      "item": "lost_realm:adaptive_shield"
+    },
+    {
+      "item": "lost_realm:shockwave_shield"
+    },
+    {
+      "item": "lost_realm:sacrifice_shield"
+    },
+    {
+      "item": "lost_realm:earth_shield"
+    },
+    {
+      "item": "lost_realm:devouring_shield"
+    },
+    {
+      "item": "lost_realm:nourish_shield"
+    },
+    {
+      "item": "lost_realm:vitality_shield"
+    },
+    {
+      "item": "lost_realm:vanguard_shield"
+    }
+  ],
+  "result": {
+    "item": "lost_realm:eternal_shield",
+    "count": 1
+  }
+}

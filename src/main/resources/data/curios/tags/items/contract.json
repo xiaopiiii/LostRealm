@@ -1,0 +1,45 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "lost_realm:dominion_contract",
+      "required": false
+    },
+    {
+      "id": "lost_realm:legion_contract",
+      "required": false
+    },
+    {
+      "id": "lost_realm:symbiosis_contract",
+      "required": false
+    },
+    {
+      "id": "lost_realm:martyr_contract",
+      "required": false
+    },
+    {
+      "id": "lost_realm:soulchain_contract",
+      "required": false
+    },
+    {
+      "id": "lost_realm:flesh_contract",
+      "required": false
+    },
+    {
+      "id": "lost_realm:bone_contract",
+      "required": false
+    },
+    {
+      "id": "lost_realm:fission_contract",
+      "required": false
+    },
+    {
+      "id": "lost_realm:decree_contract",
+      "required": false
+    },
+    {
+      "id": "lost_realm:overlord_contract",
+      "required": false
+    }
+  ]
+}

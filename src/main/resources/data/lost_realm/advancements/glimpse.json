@@ -1,0 +1,31 @@
+{
+  "parent": "lost_realm:resonance",
+  "display": {
+    "icon": {
+      "item": "lost_realm:realm_key"
+    },
+    "title": {
+      "translate": "advancement.lost_realm.glimpse.title"
+    },
+    "description": {
+      "translate": "advancement.lost_realm.glimpse.desc"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "has_key": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "lost_realm:realm_key"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

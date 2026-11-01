@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "CCC",
+    "CSC",
+    "CCC"
+  ],
+  "key": {
+    "C": {
+      "item": "lost_realm:warden_core"
+    },
+    "S": {
+      "item": "lost_realm:realm_source"
+    }
+  },
+  "result": {
+    "item": "lost_realm:realm_crown",
+    "count": 1
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "parent": "lost_realm:root",
+  "display": {
+    "icon": {
+      "item": "lost_realm:archer_medal"
+    },
+    "title": {
+      "translate": "advancement.lost_realm.resonance.title"
+    },
+    "description": {
+      "translate": "advancement.lost_realm.resonance.desc"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "granted": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

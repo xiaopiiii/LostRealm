@@ -1,0 +1,53 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "minecraft:shield",
+      "required": false
+    },
+    {
+      "id": "#forge:shields",
+      "required": false
+    },
+    {
+      "id": "lost_realm:thorns_shield",
+      "required": false
+    },
+    {
+      "id": "lost_realm:adaptive_shield",
+      "required": false
+    },
+    {
+      "id": "lost_realm:shockwave_shield",
+      "required": false
+    },
+    {
+      "id": "lost_realm:sacrifice_shield",
+      "required": false
+    },
+    {
+      "id": "lost_realm:earth_shield",
+      "required": false
+    },
+    {
+      "id": "lost_realm:devouring_shield",
+      "required": false
+    },
+    {
+      "id": "lost_realm:nourish_shield",
+      "required": false
+    },
+    {
+      "id": "lost_realm:vitality_shield",
+      "required": false
+    },
+    {
+      "id": "lost_realm:vanguard_shield",
+      "required": false
+    },
+    {
+      "id": "lost_realm:eternal_shield",
+      "required": false
+    }
+  ]
+}

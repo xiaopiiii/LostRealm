@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "lost_realm:warden_echo"
+    }
+  ],
+  "result": {
+    "item": "lost_realm:lost_realm_fragment",
+    "count": 2
+  }
+}

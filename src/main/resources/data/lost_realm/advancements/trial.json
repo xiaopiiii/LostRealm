@@ -1,0 +1,25 @@
+{
+  "parent": "lost_realm:glimpse",
+  "display": {
+    "icon": {
+      "item": "lost_realm:void_stone"
+    },
+    "title": {
+      "translate": "advancement.lost_realm.trial.title"
+    },
+    "description": {
+      "translate": "advancement.lost_realm.trial.desc"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "entered_realm": {
+      "trigger": "minecraft:changed_dimension",
+      "conditions": {
+        "to": "lost_realm:lost_realm"
+      }
+    }
+  }
+}

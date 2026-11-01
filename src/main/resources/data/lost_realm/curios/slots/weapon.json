@@ -1,0 +1,10 @@
+{
+  "order": 7,
+  "size": 0,
+  "operation": "SET",
+  "use_native_gui": true,
+  "icon": "lost_realm:slot/weapon",
+  "validators": [
+    "curios:tag"
+  ]
+}

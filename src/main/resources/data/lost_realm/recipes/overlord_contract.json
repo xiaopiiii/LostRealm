@@ -1,0 +1,37 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "item": "lost_realm:dominion_contract"
+    },
+    {
+      "item": "lost_realm:legion_contract"
+    },
+    {
+      "item": "lost_realm:symbiosis_contract"
+    },
+    {
+      "item": "lost_realm:martyr_contract"
+    },
+    {
+      "item": "lost_realm:soulchain_contract"
+    },
+    {
+      "item": "lost_realm:flesh_contract"
+    },
+    {
+      "item": "lost_realm:bone_contract"
+    },
+    {
+      "item": "lost_realm:fission_contract"
+    },
+    {
+      "item": "lost_realm:decree_contract"
+    }
+  ],
+  "result": {
+    "item": "lost_realm:overlord_contract",
+    "count": 1
+  }
+}

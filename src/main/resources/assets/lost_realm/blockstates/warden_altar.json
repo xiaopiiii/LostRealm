@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "altar=soul,lit=false": {
+      "model": "lost_realm:block/warden_altar_soul"
+    },
+    "altar=soul,lit=true": {
+      "model": "lost_realm:block/warden_altar_soul"
+    },
+    "altar=apotheosis,lit=false": {
+      "model": "lost_realm:block/warden_altar_apotheosis"
+    },
+    "altar=apotheosis,lit=true": {
+      "model": "lost_realm:block/warden_altar_apotheosis"
+    },
+    "altar=medal,lit=false": {
+      "model": "lost_realm:block/warden_altar_medal"
+    },
+    "altar=medal,lit=true": {
+      "model": "lost_realm:block/warden_altar_medal"
+    },
+    "altar=pure,lit=false": {
+      "model": "lost_realm:block/warden_altar_pure"
+    },
+    "altar=pure,lit=true": {
+      "model": "lost_realm:block/warden_altar_pure"
+    }
+  }
+}

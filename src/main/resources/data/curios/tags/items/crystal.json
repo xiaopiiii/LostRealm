@@ -1,0 +1,545 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "goety:arrow_rain_focus",
+      "required": false
+    },
+    {
+      "id": "goety:banish_focus",
+      "required": false
+    },
+    {
+      "id": "goety:barricade_focus",
+      "required": false
+    },
+    {
+      "id": "goety:biomine_focus",
+      "required": false
+    },
+    {
+      "id": "goety:biting_focus",
+      "required": false
+    },
+    {
+      "id": "goety:blackguard_focus",
+      "required": false
+    },
+    {
+      "id": "goety:blasting_focus",
+      "required": false
+    },
+    {
+      "id": "goety:blazing_focus",
+      "required": false
+    },
+    {
+      "id": "goety:blink_focus",
+      "required": false
+    },
+    {
+      "id": "goety:blizzard_focus",
+      "required": false
+    },
+    {
+      "id": "goety:blossoming_focus",
+      "required": false
+    },
+    {
+      "id": "goety:bolting_focus",
+      "required": false
+    },
+    {
+      "id": "goety:bombardment_focus",
+      "required": false
+    },
+    {
+      "id": "goety:bouncy_bubble_focus",
+      "required": false
+    },
+    {
+      "id": "goety:bulwark_focus",
+      "required": false
+    },
+    {
+      "id": "goety:burrowing_focus",
+      "required": false
+    },
+    {
+      "id": "goety:call_focus",
+      "required": false
+    },
+    {
+      "id": "goety:carrion_focus",
+      "required": false
+    },
+    {
+      "id": "goety:charge_focus",
+      "required": false
+    },
+    {
+      "id": "goety:chilling_focus",
+      "required": false
+    },
+    {
+      "id": "goety:command_focus",
+      "required": false
+    },
+    {
+      "id": "goety:corruption_focus",
+      "required": false
+    },
+    {
+      "id": "goety:crafting_focus",
+      "required": false
+    },
+    {
+      "id": "goety:cushion_focus",
+      "required": false
+    },
+    {
+      "id": "goety:cyclone_focus",
+      "required": false
+    },
+    {
+      "id": "goety:discharge_focus",
+      "required": false
+    },
+    {
+      "id": "goety:earth_punch_focus",
+      "required": false
+    },
+    {
+      "id": "goety:electrocute_focus",
+      "required": false
+    },
+    {
+      "id": "goety:empty_focus",
+      "required": false
+    },
+    {
+      "id": "goety:end_walk_focus",
+      "required": false
+    },
+    {
+      "id": "goety:ender_chest_focus",
+      "required": false
+    },
+    {
+      "id": "goety:entangling_focus",
+      "required": false
+    },
+    {
+      "id": "goety:eruption_focus",
+      "required": false
+    },
+    {
+      "id": "goety:feast_focus",
+      "required": false
+    },
+    {
+      "id": "goety:fire_blast_focus",
+      "required": false
+    },
+    {
+      "id": "goety:fire_breath_focus",
+      "required": false
+    },
+    {
+      "id": "goety:fireball_focus",
+      "required": false
+    },
+    {
+      "id": "goety:flame_strike_focus",
+      "required": false
+    },
+    {
+      "id": "goety:flying_focus",
+      "required": false
+    },
+    {
+      "id": "goety:frost_breath_focus",
+      "required": false
+    },
+    {
+      "id": "goety:frost_nova_focus",
+      "required": false
+    },
+    {
+      "id": "goety:frostborn_focus",
+      "required": false
+    },
+    {
+      "id": "goety:ghastly_focus",
+      "required": false
+    },
+    {
+      "id": "goety:ghost_fire_focus",
+      "required": false
+    },
+    {
+      "id": "goety:glow_light_focus",
+      "required": false
+    },
+    {
+      "id": "goety:grapple_focus",
+      "required": false
+    },
+    {
+      "id": "goety:guardian_focus",
+      "required": false
+    },
+    {
+      "id": "goety:hail_focus",
+      "required": false
+    },
+    {
+      "id": "goety:hogging_focus",
+      "required": false
+    },
+    {
+      "id": "goety:hunting_focus",
+      "required": false
+    },
+    {
+      "id": "goety:ice_spike_focus",
+      "required": false
+    },
+    {
+      "id": "goety:ice_storm_focus",
+      "required": false
+    },
+    {
+      "id": "goety:iceology_focus",
+      "required": false
+    },
+    {
+      "id": "goety:ignite_focus",
+      "required": false
+    },
+    {
+      "id": "goety:illuminate_focus",
+      "required": false
+    },
+    {
+      "id": "goety:illusion_focus",
+      "required": false
+    },
+    {
+      "id": "goety:iron_hide_focus",
+      "required": false
+    },
+    {
+      "id": "goety:killing_focus",
+      "required": false
+    },
+    {
+      "id": "goety:launch_focus",
+      "required": false
+    },
+    {
+      "id": "goety:lavaball_focus",
+      "required": false
+    },
+    {
+      "id": "goety:leaping_focus",
+      "required": false
+    },
+    {
+      "id": "goety:leeching_focus",
+      "required": false
+    },
+    {
+      "id": "goety:lightning_focus",
+      "required": false
+    },
+    {
+      "id": "goety:magic_bolt_focus",
+      "required": false
+    },
+    {
+      "id": "goety:magma_bomb_focus",
+      "required": false
+    },
+    {
+      "id": "goety:mauling_focus",
+      "required": false
+    },
+    {
+      "id": "goety:meteor_shower_focus",
+      "required": false
+    },
+    {
+      "id": "goety:ministrous_focus",
+      "required": false
+    },
+    {
+      "id": "goety:monsoon_focus",
+      "required": false
+    },
+    {
+      "id": "goety:order_focus",
+      "required": false
+    },
+    {
+      "id": "goety:osseous_focus",
+      "required": false
+    },
+    {
+      "id": "goety:overgrowth_focus",
+      "required": false
+    },
+    {
+      "id": "goety:phantasm_focus",
+      "required": false
+    },
+    {
+      "id": "goety:poison_dart_focus",
+      "required": false
+    },
+    {
+      "id": "goety:prisma_beam_focus",
+      "required": false
+    },
+    {
+      "id": "goety:pulverize_focus",
+      "required": false
+    },
+    {
+      "id": "goety:quaking_focus",
+      "required": false
+    },
+    {
+      "id": "goety:razor_wind_focus",
+      "required": false
+    },
+    {
+      "id": "goety:reaping_focus",
+      "required": false
+    },
+    {
+      "id": "goety:recall_focus",
+      "required": false
+    },
+    {
+      "id": "goety:rotation_focus",
+      "required": false
+    },
+    {
+      "id": "goety:rotting_focus",
+      "required": false
+    },
+    {
+      "id": "goety:rupture_focus",
+      "required": false
+    },
+    {
+      "id": "goety:scatter_focus",
+      "required": false
+    },
+    {
+      "id": "goety:sensing_focus",
+      "required": false
+    },
+    {
+      "id": "goety:shocking_focus",
+      "required": false
+    },
+    {
+      "id": "goety:shockwave_focus",
+      "required": false
+    },
+    {
+      "id": "goety:shredding_focus",
+      "required": false
+    },
+    {
+      "id": "goety:skull_focus",
+      "required": false
+    },
+    {
+      "id": "goety:slimy_focus",
+      "required": false
+    },
+    {
+      "id": "goety:smack_stone_focus",
+      "required": false
+    },
+    {
+      "id": "goety:snaring_focus",
+      "required": false
+    },
+    {
+      "id": "goety:sonic_boom_focus",
+      "required": false
+    },
+    {
+      "id": "goety:soul_bolt_focus",
+      "required": false
+    },
+    {
+      "id": "goety:soul_heal_focus",
+      "required": false
+    },
+    {
+      "id": "goety:soul_light_focus",
+      "required": false
+    },
+    {
+      "id": "goety:spooky_focus",
+      "required": false
+    },
+    {
+      "id": "goety:sprightly_focus",
+      "required": false
+    },
+    {
+      "id": "goety:steaming_focus",
+      "required": false
+    },
+    {
+      "id": "goety:stellar_focus",
+      "required": false
+    },
+    {
+      "id": "goety:surging_focus",
+      "required": false
+    },
+    {
+      "id": "goety:swarm_focus",
+      "required": false
+    },
+    {
+      "id": "goety:sword_focus",
+      "required": false
+    },
+    {
+      "id": "goety:teeth_focus",
+      "required": false
+    },
+    {
+      "id": "goety:telekinesis_focus",
+      "required": false
+    },
+    {
+      "id": "goety:temblor_clap_focus",
+      "required": false
+    },
+    {
+      "id": "goety:thunderbolt_focus",
+      "required": false
+    },
+    {
+      "id": "goety:thunderstorm_focus",
+      "required": false
+    },
+    {
+      "id": "goety:tidal_focus",
+      "required": false
+    },
+    {
+      "id": "goety:trembling_focus",
+      "required": false
+    },
+    {
+      "id": "goety:trident_storm_focus",
+      "required": false
+    },
+    {
+      "id": "goety:troop_focus",
+      "required": false
+    },
+    {
+      "id": "goety:tunnel_focus",
+      "required": false
+    },
+    {
+      "id": "goety:updraft_focus",
+      "required": false
+    },
+    {
+      "id": "goety:vanguard_focus",
+      "required": false
+    },
+    {
+      "id": "goety:vexing_focus",
+      "required": false
+    },
+    {
+      "id": "goety:void_flash_focus",
+      "required": false
+    },
+    {
+      "id": "goety:watching_focus",
+      "required": false
+    },
+    {
+      "id": "goety:water_jet_focus",
+      "required": false
+    },
+    {
+      "id": "goety:water_whip_focus",
+      "required": false
+    },
+    {
+      "id": "goety:weakening_focus",
+      "required": false
+    },
+    {
+      "id": "goety:whirlwind_focus",
+      "required": false
+    },
+    {
+      "id": "goety:whispering_focus",
+      "required": false
+    },
+    {
+      "id": "goety:wind_blast_focus",
+      "required": false
+    },
+    {
+      "id": "goety:wither_skull_focus",
+      "required": false
+    },
+    {
+      "id": "lost_realm:chain_crystal",
+      "required": false
+    },
+    {
+      "id": "lost_realm:sniper_crystal",
+      "required": false
+    },
+    {
+      "id": "lost_realm:circle_crystal",
+      "required": false
+    },
+    {
+      "id": "lost_realm:soulfire_crystal",
+      "required": false
+    },
+    {
+      "id": "lost_realm:overdraft_crystal",
+      "required": false
+    },
+    {
+      "id": "lost_realm:ember_crystal",
+      "required": false
+    },
+    {
+      "id": "lost_realm:hexnail_crystal",
+      "required": false
+    },
+    {
+      "id": "lost_realm:echo_crystal",
+      "required": false
+    },
+    {
+      "id": "lost_realm:swift_crystal",
+      "required": false
+    },
+    {
+      "id": "lost_realm:sovereign_crystal",
+      "required": false
+    }
+  ]
+}

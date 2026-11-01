@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    { "item": "lost_realm:potion_arrow" },
+    { "item": "lost_realm:explosive_arrow" },
+    { "item": "lost_realm:piercing_arrow" },
+    { "item": "lost_realm:antigravity_arrow" },
+    { "item": "lost_realm:thunder_arrow" },
+    { "item": "lost_realm:twin_arrow" },
+    { "item": "lost_realm:armor_pierce_arrow" },
+    { "item": "lost_realm:hold_arrow" },
+    { "item": "lost_realm:summon_arrow" }
+  ],
+  "result": {
+    "item": "lost_realm:star_arrow",
+    "count": 1
+  }
+}

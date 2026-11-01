@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "core=false,active=false": { "model": "lost_realm:block/lost_altar" },
+    "core=false,active=true":  { "model": "lost_realm:block/lost_altar" },
+    "core=true,active=false":  { "model": "lost_realm:block/lost_altar_core" },
+    "core=true,active=true":   { "model": "lost_realm:block/lost_altar_core" }
+  }
+}

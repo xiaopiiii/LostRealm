@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:entity",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "lost_realm:altar_core",
+          "weight": 1
+        }
+      ]
+    }
+  ]
+}

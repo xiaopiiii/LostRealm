@@ -1,0 +1,8 @@
+{
+  "order": 5,
+  "size": 1,
+  "operation": "SET",
+  "use_native_gui": true,
+  "icon": "lost_realm:slot/medal",
+  "validators": ["curios:tag"]
+}
