@@ -118,8 +118,6 @@ public class Medals {
         com.lost_realm.boss.relic.ErebosRelics.init(modBus);
         // 自定义声音（Boss 战 BGM）—— 全模组目前唯一一个自定义音效
         com.lost_realm.sound.ModSounds.init(modBus);
-        // 自定义粒子（暗黑星渊风格，替换原版丑粒子）
-        com.lost_realm.client.particle.ModParticles.init(modBus);
 
         // 客户端初始化(配置屏幕、HUD)
         com.lost_realm.client.ClientBootstrap.bootstrap();

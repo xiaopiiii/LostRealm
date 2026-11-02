@@ -1,7 +1,6 @@
 package com.lost_realm.boss.block;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -122,18 +121,14 @@ public class LostAltarBlockEntity extends BlockEntity {
         boolean dense = elapsed > 160;   // 8 秒后
         boolean climax = elapsed > 320;  // 16 秒后
 
-        // 自绘粒子（暗黑星渊风格），替代原版紫色方块 / 灵魂火
-        ParticleOptions orb = com.lost_realm.client.particle.ModParticles.EREBOS_ORB.get();
-        ParticleOptions burst = com.lost_realm.client.particle.ModParticles.EREBOS_BURST.get();
-
         // ---- 中央：一道向上抽起的光柱 ----
         int column = dense ? 10 : 5;
         double radius = dense ? 2.2D : 1.2D;
-        level.sendParticles(orb,
+        level.sendParticles(ParticleTypes.REVERSE_PORTAL,
                 cx, cy + 1.0D, cz, column, radius, 0.6D, radius, 0.08D);
         if ((elapsed & 3) == 0) {
-            level.sendParticles(burst,
-                    cx, cy + 0.4D, cz, dense ? 3 : 1, radius * 0.6D, 0.3D, radius * 0.6D, 0.02D);
+            level.sendParticles(ParticleTypes.SOUL_FIRE_FLAME,
+                    cx, cy + 0.4D, cz, dense ? 6 : 3, radius * 0.6D, 0.3D, radius * 0.6D, 0.02D);
         }
 
         // ---- 十二柱顶：向上喷，然后朝中央汇聚 ----
@@ -149,25 +144,25 @@ public class LostAltarBlockEntity extends BlockEntity {
                 double py = top.getY() + 1.2D;
                 double pz = top.getZ() + 0.5D;
 
-                level.sendParticles(orb,
+                level.sendParticles(ParticleTypes.SOUL,
                         px, py, pz, perPillar, 0.35D, 0.8D, 0.35D, 0.015D);
 
                 if (dense) {
                     // 朝中央的方向取中点，做一条「灵魂流」——视觉上柱子与祭坛连成一片
                     double mx = px + (cx - px) * 0.35D;
                     double mz = pz + (cz - pz) * 0.35D;
-                    level.sendParticles(orb,
+                    level.sendParticles(ParticleTypes.END_ROD,
                             mx, py + 0.5D, mz, 1, 0.15D, 0.15D, 0.15D, 0.01D);
                 }
             }
         }
 
-        // ---- 高潮：爆闪（换成自绘星芒爆发）----
+        // ---- 高潮：爆闪 ----
         if (climax) {
-            level.sendParticles(burst,
-                    cx, cy + 2.0D, cz, 2, 1.0D, 1.0D, 1.0D, 0.0D);
+            level.sendParticles(ParticleTypes.FLASH,
+                    cx, cy + 2.0D, cz, 1, 0.0D, 0.0D, 0.0D, 0.0D);
             if ((elapsed & 7) == 0) {
-                level.sendParticles(burst,
+                level.sendParticles(ParticleTypes.EXPLOSION,
                         cx + (level.random.nextDouble() - 0.5D) * 6.0D,
                         cy + level.random.nextDouble() * 3.0D,
                         cz + (level.random.nextDouble() - 0.5D) * 6.0D,
@@ -228,15 +223,11 @@ public class LostAltarBlockEntity extends BlockEntity {
         level.playSound(null, this.worldPosition, SoundEvents.GENERIC_EXPLODE,
                 SoundSource.HOSTILE, 9.0F, 0.45F);
 
-        // 自绘星芒爆发 + 光点，替代原版爆炸烟雾 / 紫色方块
-        ParticleOptions orb = com.lost_realm.client.particle.ModParticles.EREBOS_ORB.get();
-        ParticleOptions burst = com.lost_realm.client.particle.ModParticles.EREBOS_BURST.get();
-
-        level.sendParticles(burst,
+        level.sendParticles(ParticleTypes.EXPLOSION_EMITTER,
                 spot.x, spot.y, spot.z, 6, 3.0D, 1.5D, 3.0D, 0.0D);
-        level.sendParticles(burst,
-                spot.x, spot.y, spot.z, 4, 2.0D, 1.0D, 2.0D, 0.1D);
-        level.sendParticles(orb,
+        level.sendParticles(ParticleTypes.FLASH,
+                spot.x, spot.y, spot.z, 8, 2.0D, 1.0D, 2.0D, 0.0D);
+        level.sendParticles(ParticleTypes.REVERSE_PORTAL,
                 spot.x, spot.y, spot.z, 400, 6.0D, 6.0D, 6.0D, 0.6D);
 
         // ---- 召唤 ----

@@ -30,19 +30,6 @@ public class MedalsClient {
         // 纯客户端逻辑，服务端不需要知道音乐这件事。
         net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(
                 ErebosMusicController::onClientTick);
-
-        // 自绘粒子（暗黑星渊风格的星芒光点 / 爆发）—— 替换原版丑粒子
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(MedalsClient::registerParticles);
-    }
-
-    private static void registerParticles(
-            net.minecraftforge.client.event.RegisterParticleProvidersEvent event) {
-        event.registerSpriteSet(
-                com.lost_realm.client.particle.ModParticles.EREBOS_ORB.get(),
-                com.lost_realm.client.particle.ErebosGlowParticle.OrbProvider::new);
-        event.registerSpriteSet(
-                com.lost_realm.client.particle.ModParticles.EREBOS_BURST.get(),
-                com.lost_realm.client.particle.ErebosGlowParticle.BurstProvider::new);
     }
 
     private static void registerSky(

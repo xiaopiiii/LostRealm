@@ -182,22 +182,21 @@ public final class MoveStarGate extends ErebosMove {
         this.step = Step.THROUGH;
         this.stepTicks = 0;
 
-        // ★ beta35 起改用「整体平移」，不再 markBreak + 逐节抽出。
+        // ★ 设计稿原文：「头部先穿门，身体逐节跟进，尾部通过后正确结束穿门状态」
+        //   —— 所以是【打断轨迹】，不是整体平移。
         //
-        //   旧做法（markBreak）让穿门后身体 205 格全部堆在 A 门一个点，
-        //   头部孤零零在 B 门 —— 而星门特效又在这一帧被 clearGateVisuals 清掉，
-        //   玩家看到的就是"整条虫缩成一个点、凭空消失"，要 2 秒才慢慢抽出来。
-        //   这就是"穿门后消失"的根因。
+        //   曾经的教训：一度改成 trail.translate()（整条身体一起挪过去），
+        //   看起来是"瞬间消失又出现"，比原来更突兀。设计稿第 3 节也明确要求
+        //   「跨星门时必须标记轨迹断点，禁止将入口到出口之间插值成一条超长身体」。
         //
-        //   现在改成 trail.translate()：把所有历史采样点整体平移到 B 门，
-        //   身体形状原封不动地跟着头一起过去 —— 视觉上是干净的"整条虫瞬移"，
-        //   绝不会出现"身体消失"。
-        double dx = this.gateB.x - this.boss.getX();
-        double dy = this.gateB.y - this.boss.getY();
-        double dz = this.gateB.z - this.boss.getZ();
-        this.boss.trail().translate(dx, dy, dz);
-        this.boss.refreshSegments();
-        // ★ 通知客户端「这一帧瞬移了」—— 客户端据此硬切脊线插值。
+        //   markBreak 之后，采样回溯撞到断点就停，剩下的节堆在 A 门；
+        //   头部从 B 门高速前进，身体再一节节从断点解出来 ——
+        //   这就是"逐节跟进"的观感。速度必须够快（GATE_SPEED 5.0 格/tick），
+        //   210 格身体约 42 tick 走完，否则会变成"慢慢抽出来"。
+        this.boss.trail().push(this.boss.getX(), this.boss.getY(), this.boss.getZ());
+        this.boss.trail().markBreak();
+        // ★ 通知客户端「这一帧瞬移了」—— 客户端据此硬切脊线插值，
+        //   而不是靠固定位移阈值去猜（阈值猜错才是"消失/抽搐"反复出现的根因）。
         this.boss.markTeleport();
         this.boss.setPos(this.gateB.x, this.gateB.y, this.gateB.z);
 
@@ -207,9 +206,7 @@ public final class MoveStarGate extends ErebosMove {
             // 从<b>出口</b>发射，不是从头部 —— 原设计特意强调过这一点
             fireFromGate(level);
         }
-        // ★ 星门特效不要在这一帧清掉 —— 否则玩家看到的是"门凭空消失 + 虫凭空消失"。
-        //   让它自然走到寿命结束（ErebosEffect.gate 的 activeTicks=200）。
-        //   clearGateVisuals() 改由 finish() 里统一清理。
+        clearGateVisuals();
     }
 
     /** 出口位置射出 7 颗较稀疏的星弹。 */

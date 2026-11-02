@@ -87,8 +87,8 @@ public final class ErebosFx {
         if (take(24)) {
             level.sendParticles(new net.minecraft.core.particles.DustParticleOptions(PALE, 1.5F),
                     pos.x, pos.y, pos.z, 18, 0.6D, 0.6D, 0.6D, 0.18D);
-            level.sendParticles(com.lost_realm.client.particle.ModParticles.EREBOS_ORB.get(),
-                    pos.x, pos.y, pos.z, 8, 0.5D, 0.5D, 0.5D, 0.05D);
+            level.sendParticles(ParticleTypes.REVERSE_PORTAL,
+                    pos.x, pos.y, pos.z, 6, 0.5D, 0.5D, 0.5D, 0.05D);
         }
         playOnce(level, pos, SoundEvents.SHULKER_BULLET_HURT, 1.6F, 1.35F, 6);
     }
@@ -122,10 +122,9 @@ public final class ErebosFx {
     /** 阶段推进 / 转场。 */
     public static void playPhaseShift(ServerLevel level, Vec3 pos) {        playOnce(level, pos, SoundEvents.ENDER_DRAGON_GROWL, 3.0F, 0.7F, 20);
         if (take(40)) {
-            level.sendParticles(com.lost_realm.client.particle.ModParticles.EREBOS_BURST.get(),
-                    pos.x, pos.y, pos.z, 2, 0, 0, 0, 0);
-            level.sendParticles(com.lost_realm.client.particle.ModParticles.EREBOS_ORB.get(),
-                    pos.x, pos.y, pos.z, 40, 3.0D, 3.0D, 3.0D, 0.4D);
+            level.sendParticles(ParticleTypes.FLASH, pos.x, pos.y, pos.z, 1, 0, 0, 0, 0);
+            level.sendParticles(ParticleTypes.REVERSE_PORTAL,
+                    pos.x, pos.y, pos.z, 30, 3.0D, 3.0D, 3.0D, 0.4D);
         }
     }
 
