@@ -1,47 +1,64 @@
-# Lost Realm —— 五枚勋章熟练度系统(1.20.1 Forge)
+# Lost Realm（遗落境）—— 五枚勋章熟练度系统 + 遗落之都终局战
 
-> **原名 Medals,自 dv1 起更名为 Lost Realm(显示名 / 中文名:`遗落境`)。**
-> 版本号即更新序号(`dv1` → `dv2` → …)。
-> **每次改动内容都要把 `gradle.properties` 里 `mod_build` 的末尾数字 +1**
-> —— 否则无法区分哪个 jar 是哪个版本。详见 [`.codebuddy/项目规则.md`](.codebuddy/项目规则.md)。
-> `beta1` 起，`mod_build` 直接写 β 序号（`beta1` → `beta2` → …），
-> 它同时驱动 **模组列表里显示的版本号** 与 **jar 文件名**：
-> 列表里是「Lost Realm **1.0.0-beta1**」，文件是 `Lost Realm-1.0.0-beta1.jar`。
-> `mod_id` 同步更名为 `lost_realm`,Java 包名亦随之变更为 `com.lost_realm`。
-> **注意**:由于 `mod_id` 变更,`dv1` 之前(名为 `medals`)的旧存档需重新配置 —— 旧存档中的
-> 物品/配方/配置文件名均由 `medals:*` 改为 `lost_realm:*`。
+> **当前版本:`1.0.0-beta40`**（`gradle.properties` 的 `mod_build`）。
+> 编译用 Minecraft **1.20.1** / Forge **47.4.10**；玩家实例实测跑在 **47.4.28**。
+> 版本号规则：每次改动内容都要把 `mod_build` 末尾数字 +1 —— 它同时决定
+> 模组列表里显示的版本与 jar 文件名。完整约定见 [`.codebuddy/项目规则.md`](.codebuddy/项目规则.md)。
+>
+> `mod_id` 自 dv1 起为 `lost_realm`，显示名 `Lost Realm` / 中文名 `遗落境`。
+> `dv1` 之前叫 `medals` 的旧存档需要重新配置（物品/配方/配置文件名都变了）。
 
-**当前版本:`dv22`** —— **触手观感修正：变细 + 去掉"一节节方块"的台阶感**（见 §35.19）
-＋ **建模从零重做：人形基础 + 触手**（换阶段不再变大；一→二阶段长出 10 条 2 倍身长的蠕动触手，三阶段 16 条 + 头冠，见 §35.18）
-＋ **三阶段画面整改**（form3 背后之物缩小/贴脑后 + 巨长触手 + form2 陷地修复 + 三阶段发光描边全部移除，见 §35.16）
-＋ **修复 dv17 的加载期崩溃**（动画文件多套一层命名 → GeckoLib 报 `Missing animations`，见 §35.15）
-＋ **二阶段模型接入外部 AI 产出的 `遗落之主二阶段建模+动画.glb`**（见 §35.14，dv20 起改由 bbmodel 管线接管）
-＋ **形态感知贴图路由**：FORM_2 自动使用 `warden_phase2.png`，其它阶段沿用 `warden.png`
-＋ **新增转换器** `tools/glb_to_gecko.py`（GLB）与 `tools/bbmodel_to_gecko.py`（bbmodel）
-＋ **三形态造型重做**（dv16，兜帽幽影剑士 → 浮空幽魂镰刀使 → 角冠／光环／翼眼的终末之主，见 §35.13）
-＋ **修掉「模型恒定偏移半格」的老 bug**（dv13~dv15 一直把身体中心放在 x=8，而 GeckoLib 实体模型以 x=0 为轴）
-＋ **新增自发光**（glowmask）：兜帽里的眼睛／胸口符纹／脑后光环／翼眼／兵刃锋口在暗处自己发亮
-＋ 贴图扩到 `128×128`，新增 `uv_layout.py` 作为几何与贴图的唯一 UV 事实来源
-＋ 触手改为蜘蛛腿式细长触须（4 节剖面 `[-38,-22,48,78]`，先拱起后下扎）
-＋ 骨翼改为向后外侧掠出，装得进 UV 区
-＋ 新增矩阵世界坐标自检 A1~A7（链式接头误差 < 0.05px 才能落盘）
-＋ 修改 dv14 暴露的四个画面问题（触手朝向 / 纯色棒子 / 手脚串色 / 体型过大，见 §35.11）
-＋ 引入 GeckoLib，让「换阶段」真正换造型（触手 / 骨刺 / 骨翼，见 §35.10）
-＋ 修复「用 `/summon` 召唤的 Boss 半残」（会话自绑兜底，见 §35.9）
-＋ 补齐 12 个缺失的英文技能描述（中英语言键 494 ↔ 494 完全对齐）
-＋ 取消 Apotheosis 硬前置 + 换阶段造型/演出大改 + 修复 Boss 持剑不可见（见 §35.8）
-＋ 修复「对话决斗后挨打不消失 / 一瞬两下被打死」＋ 配置界面滚动错位（见 §35.7）
-＋ 修复「进维度即崩」（实体渲染器与方块模型两类资源注册缺失，见 §35.6）
-＋ 勋章架构重构（熟练度改存勋章 NBT + Curios 专属勋章槽 + 配置界面重新分类，见 §35.5）
-＋ 遗落之主（整合包终局 Boss：遗落之都超大建筑 + 零阶段对话 + 幽灵试炼 + 五波清场 + 三战斗形态锁血回满）
-＋ 修复 mods.toml 版本号非法 + 全域禁用 @Shadow 崩溃（见 §36）
-＋ 可视化配置界面（双栏分类 + 开关/步进/枚举三类控件）
-＋ 更好的状态效果 HUD（缩放 / 方位 / 方向 / 倒计时 / 负面 Buff 红框）
-＋ 药水与不死图腾堆叠 16 ＋ 末影珍珠堆叠 64 ＋ 无限附魔弓无需箭矢。
+## 一句话
 
+五枚勋章（射手 / 战士 / 坦克 / 法师 / 召唤师）各自 1~60 级熟练度与 6 个节点技能，
+外加一整套体验改进（QoL）、一个可视化配置界面、五档世界难度，
+以及一条 50 节、约 206 格长的巨虫终局 Boss —— **厄瑞玻斯**。
 
-一个为 Minecraft 1.20.1 Forge 打造的 RPG 饰品模组,提供 **射手 / 战士 / 坦克 / 法师 / 召唤师** 五枚勋章。
-每枚勋章拥有独立的熟练度等级(1~30)与 6 个节点技能。
+## 现状速览
+
+| 项 | 现状 |
+|---|---|
+| 版本 | `1.0.0-beta40` |
+| 注册名 / 包名 | `lost_realm` / `com.lost_realm` |
+| 勋章 | 5 枚，各 6 个节点技能（Lv.5 / 10 / 15 / 20 / 25 / 30 解锁） |
+| 熟练度 | Lv.1~60；六段成长率 7/6/5/4/3/2%；枷锁在 Lv.20 与 Lv.40 |
+| 阶位 | 1~20 / 21~40 / 41~60（射手：游射 · 游侠 · 箭神） |
+| 战斗属性 | 12 条自注册（beta30 起不依赖 Apothic Attributes）+ 坦克减伤 |
+| 配置界面 | 18 个分类 / **387 项**，含独立的「世界难度」页 |
+| 世界难度 | **5 档**，`/lr difficulty` 或配置界面切换，写进存档 |
+| 终局 Boss | **厄瑞玻斯**（`lost_realm:erebos`）：50 节 / ≈206 格 / 4 阶段 / 星门 / 暗星天幕 / 双 BGM |
+| 语言键 | 中英各 **1418** 条，逐键对齐 |
+| 源码规模 | **257** 个 Java 文件 |
+
+## 本文读法
+
+- **改代码前** → §二（核心机制的实现位置）+ §四（属性映射）+ 项目规则 §4「静默失效速查」。
+- **查功能在哪** → §六（体验改进）、§六·补充二（世界难度）、§六·补充三（厄瑞玻斯）。
+- **要构建** → §八。
+- **看历史** → `gradle.properties` 顶部的版本历史注释块（dv1 → beta40 逐条）。
+  本文 §35.x 是 **dv 期档案**，其中的造型/机制描述**已作废**，只作检索用。
+
+---
+
+## 零、两条版本线（dv 线与 beta 线）
+
+| 线 | 范围 | 说明 |
+|---|---|---|
+| `dv1` ~ `dv30` | 早期 | 勋章系统成型、遗落之都、终末之影（人形 Boss）三形态迭代 |
+| `beta1` ~ `beta40` | 当前 | 架构重构与实测修复期：属性自注册、Boss 换代为巨虫、配置界面重做 |
+
+近期关键节点：
+
+- **beta26** 等级上限 30 → 60，成长曲线改六段（7/6/5/4/3/2）。
+- **beta30** 彻底移除 Apothic Attributes / Placebo，12 条战斗属性自注册。
+- **beta32** 厄瑞玻斯血量临时降到 500 便于实测（`ErebosTuning.MAX_HEALTH`，发布前恢复 12000）。
+- **beta33 ~ beta35** 连修「整条消失 / 出场抽搐 / 体节闪烁 / 星门后消失」，
+  最终把客户端自算物理整段删除，改为**服务端唯一脊线**（`PacketErebosSpine` 带瞬移标志）。
+- **beta37** 新增五档世界难度（存档数据 + 指令）。
+- **beta38** 配置界面加「世界难度」页；新增 G 键作为配置界面第二入口。
+- **beta39** 配置项全量对账：补齐 97 项界面缺失、删除 6 项死配置。
+- **beta40** README 全量重写（本版只改文档，jar 内容与 beta39 一致）。
+
 
 > **法师勋章**以【诡厄巫法 / Goety】为底座,通过其官方公开 API 实现
 > 灵魂能量、聚晶法术与仆从三大系统的深度咬合。
@@ -59,7 +76,8 @@
 | **诡厄巫法 Goety** | `goety` | ⭕ 可选 | 法师勋章的底座(灵魂/法术/仆从) |
 | **Configured** | `configured` | ⭕ 可选 | 提供游戏内配置屏幕 |
 
-> 声明位于 `src/main/resources/META-INF/mods.toml`,其中 `mandatory=true` 的四项为强制前置。
+> 声明位于 `src/main/resources/META-INF/mods.toml`。`mandatory=true` 的只剩**两项**：
+> **Curios** 与 **GeckoLib**（后者只为遗落之都/旧 Boss 的骨骼模型服务，但仍是硬前置）。
 >
 > **`beta30` 起连 Apothic Attributes 也不需要了** —— 12 条战斗属性改由本模组注册
 > (`attribute/RealmAttributes`),效果在 `attribute/RealmAttributeEffects` 与
@@ -179,16 +197,28 @@ LivingDamageEvent(LOWEST) ──► 熟练度结算(取实际扣血量)
 
 | 区间 | 规则 |
 |---|---|
-| 最高等级 | 30 |
-| Lv.1 → Lv.2 | **100** 经验 |
-| 1~15 级 | 每级所需经验比上一级 **+10%** |
-| 15 级以后 | 每级所需经验比上一级 **+8%** |
+| 最高等级 | **60**（配置 `max_level`；beta26 起，旧存档自动迁移 30 → 60） |
+| Lv.1 → Lv.2 | **100** 经验（`base_exp`） |
+| 1~10 级 | 每级所需经验比上一级 **+7%** |
+| 11~20 级 | **+6%** |
+| 21~30 级 | **+5%** |
+| 31~40 级 | **+4%** |
+| 41~50 级 | **+3%** |
+| 51~60 级 | **+2%** |
 
-实现见 `util/ExpTable.java`,全部可由配置项调整。
+实现见 `util/ExpTable.java`：六段成长率编译进 `table[]`，配置改动时惰性重建。
+按 7/6/5/4/3/2 收窄后，1 → 60 级总需求约 **3.6 万**经验（≈1200 次击杀），
+最后一级 1,338 —— 固定 8% 的话到 60 级要 13.9 万，纯刷。
 
-阶位:**射手勋章为 1~10 游射 / 11~20 游侠 / 21~30 箭神**;
-其它勋章沿用通用阶位 **1~10 见习 / 11~20 精锐 / 21~30 宗师**。
-按勋章取阶位用 `ExpTable.tierOf(MedalType, int)`。
+阶位按 **20 级一档**，与三道枷锁对齐（`ExpTable#tierOf`）：
+
+| 等级 | 射手 | 其它四枚 |
+|---|---|---|
+| 1~20 | 游射 | 见习 |
+| 21~40 | 游侠 | 精锐 |
+| 41~60 | 箭神 | 宗师 |
+
+枷锁落在 **Lv.20 / Lv.40**（`MedalProgression`），破枷要消耗「遗落本源」。
 
 ---
 
@@ -223,8 +253,8 @@ LivingDamageEvent(LOWEST) ──► 熟练度结算(取实际扣血量)
 
 ### 射手勋章
 
-**阶位命名**:1~10 级 = **游射** / 11~20 级 = **游侠** / 21~30 级 = **箭神**
-(其它两枚勋章沿用通用阶位:见习 / 精锐 / 宗师。见 `util/ExpTable#tierOf`)
+**阶位命名**:1~20 级 = **游射** / 21~40 级 = **游侠** / 41~60 级 = **箭神**
+(其它四枚勋章沿用通用阶位:见习 / 精锐 / 宗师。见 `util/ExpTable#tierOf`)
 
 | 等级 | 技能 | 类型 | 实现类 |
 |---|---|---|---|
@@ -258,7 +288,7 @@ LivingDamageEvent(LOWEST) ──► 熟练度结算(取实际扣血量)
 
 ### 法师勋章(以【诡厄巫法 / Goety】为底座)
 
-**阶位命名**:1~10 **学徒** / 11~20 **术士** / 21~30 **大巫**
+**阶位命名**:1~20 **学徒** / 21~40 **术士** / 41~60 **大巫**
 
 **Lv.1 基础属性 + 每级成长**(全部作用于 Goety 自己注册的属性,因此与聚晶法术天生联动)
 
@@ -398,7 +428,7 @@ Goety 的法术投射物种类极多,逐一 Mixin 成本高且易冲突。但所
 
 > ⚠️ **注意区分**：本项修改的是 **Minecraft 原版玩家经验等级**
 > （屏幕下方的绿条、附魔台消耗的那个），
-> **与勋章熟练度（`ExpTable`，Lv.1~30）完全是两套独立系统**，互不影响。
+> **与勋章熟练度（`ExpTable`，Lv.1~60）完全是两套独立系统**，互不影响。
 
 原版经验需求是 3 段线性公式（`7+2×lv` / `37+5×(lv-15)` / `112+9×(lv-30)`），
 本项把它替换为指数增长曲线：
@@ -654,92 +684,93 @@ return false;
 > 因此二者恰好等价，无需往箭上打任何自定义标记，也不依赖 NBT。
 > 对**非玩家**发射者（骷髅等）直接跳过，不干扰原版行为。
 
-### 第 27 项 · 可视化配置界面（`dv3` 新增）
+### 第 27 项 · 可视化配置界面（`dv3` 起，beta38/39 大改）
 
-给整个模组做了一个**图形化配置界面**，把散落在两份 Forge 配置里的 **128 项**
-（`dv3` 时 118 项，`dv4`/`dv5` 陆续扩充）全部收进一个双栏窗口，不必再去手改 `.toml`。
+把两份 Forge 配置（`SPEC` / `CLIENT_SPEC`）里的 **387 项**全收进一个双栏窗口，
+不必再手改 `.toml`。侧边栏 18 个分类，其中 **「世界难度」不是配置项**，
+而是独立的一页（见 [§六·补充二](#六补充二世界难度系统beta37)）。
 
-**打开方式（两个入口）**
+**打开方式**
 
 | 入口 | 操作 |
 |---|---|
+| 快捷键 | **G** 或 **右 Ctrl**（两个独立键位，可在「选项 → 控制 → Lost Realm」分别改绑/解绑） |
 | 模组列表 | 主菜单 → 模组 → Lost Realm → **配置**（接管 Forge 原生配置按钮） |
-| 快捷键 | 默认 **右 Ctrl**（`key.lost_realm.config_screen`，可在按键设置里改） |
 
-**界面布局**
+**布局**
 
 ```
 ┌──────────┬──────────────────────────────────────────┐
-│ 全部配置  │  选项名                        [ 控件 ]   │
-│ ──────── │  ──────────────────────────────────────── │
-│ 药水与增益│  药水无限续杯                  [  开  ]    │
-│ 不死图腾  │  共享半径                     [−  32  +]  │
-│ 鞘翅      │  停靠位置          [ 左上 | ▶右上 | … ]  │
-│ 睡眠      │                                          │
-│ …（19 类）│  ← 滚轮翻页，右上角有滚动条                │
+│ 全部配置  │  选项名                     [ 控件 ]      │
+│ 世界难度  │ ──────────────────────────────────────── │
+│ 体验改进  │  药水无限续杯               [ 开 ]        │
+│ 状态效果HUD│ 共享半径                 [ 32 ] %        │
+│ 熟练度经验│  停靠位置   [左上 | ▶右上 | 左下 | 右下 ] │
+│ 射手数值  │                                          │
+│ …（17类）│  ← 滚轮翻页，右侧有滚动条                 │
 ├──────────┴──────────────────────────────────────────┤
-│ [保存] [取消] [重置本页] [全部重置]       共 N 项待存 │
+│ [保存] [取消] [重置本页] [全部重置]       N 项待保存  │
 └─────────────────────────────────────────────────────┘
 ```
 
-**三类控件对应三种配置类型**
+**四类控件**
 
 | 控件 | 用于 | 交互 |
 |---|---|---|
-| **开 / 关** | `BooleanValue` | 点击直接翻转 |
-| **`−` 数值 `+`** | `IntValue` / `DoubleValue` | 步进；大范围自动放大粒度 |
-| **多按钮高亮** | 枚举型（缩放 / 方位 / 方向 / 倒计时） | 点击切换，当前项描边高亮 |
+| **开 / 关** | `BooleanValue` | 点击翻转 |
+| **数字框** | `IntValue` / `DoubleValue` | **直接敲数字**（dv36 起不再用 −/+ 按钮），单位画在框右侧 |
+| **多按钮高亮** | 枚举型（缩放 / 方位 / 方向 / 倒计时） | 点击切换，当前项描边 |
+| **应用 / 当前** | 世界难度页 | 点「应用」立即生效，当前档置灰 |
 
-> **步进粒度自适应**：取值范围 ≤200 每次 ±1（如共享半径）；
-> ≤1000 每次 ±5；≤10000 每次 ±25；更大的（冷却 36000、护甲 100000）
-> 每次 ±100 —— 否则要按上千次才能调到目标值。
+> 枚举按钮上限 8 个（`switchOpt` 里硬断言）。连续数值误用成枚举会横排铺满屏幕 ——
+> dv36 就踩过：缩放 25~100 当成枚举，生成 76 个按钮并溢出到侧边栏外。
 
 **编辑模型：先缓冲、再提交**
 
-所有改动只写进内存缓冲，**不碰真实配置**；界面左下角实时显示「N 项改动未保存」，
-被改过的行名称变琥珀色。点 **保存** 才一次性落到配置并写盘，点 **取消** 则分毫不动。
+改动只写进 `ConfigOption` 的内存缓冲，**不碰真实配置**；改过的行名称变琥珀色，
+页脚实时显示「N 项改动未保存」。点保存才 `apply()` 到 `ConfigValue` 并写盘，取消则全部丢弃。
 
-> **为什么保存时只 save 被改过的 spec**：选项分属 `CLIENT_SPEC` 与 `SPEC`
-> 两份配置，无条件同时 `save()` 会多写一次盘。这里用 `LinkedHashSet<ForgeConfigSpec>`
-> 记录真正被动过的 spec，只存需要的那一份。
+> 保存时只 `save()` 真正被改过的那份 spec（`LinkedHashSet<ForgeConfigSpec>`），
+> 避免两份配置各写一次盘。
 
-**分类与实现**
+> **难度页是例外**：它没有缓冲，点「应用」直接发 `PacketDifficultySet`，
+> 服务端校验 OP 后执行并广播；底部只留「完成」，不摆保存/取消/重置。
 
-18 个分类（`全部配置` 为综合视图，固定置于侧边栏顶部，不参与滚动；
-`世界难度` 是独立页，不读配置项）：
-世界难度 / 体验改进（QoL 十类合一）/ 状态效果 HUD / 熟练度与经验 /
-射手数值 / 战士数值 / 坦克数值 / 法师数值 / 召唤师 /
-箭类饰品 / 战士饰品 / 法师晶石 / 召唤契约 / 终极武器 / 盾类饰品 / 职业槽位 / 遗落之主。
+**分类清单（18）**
+
+世界难度 · 体验改进 · 状态效果 HUD · 熟练度与经验 · 射手数值 · 战士数值 ·
+坦克数值 · 法师数值 · 召唤师 · 箭类饰品 · 战士饰品 · 法师晶石 · 召唤契约 ·
+终极武器 · 盾类饰品 · 职业槽位 · 遗落之主 ·（外加综合视图「全部配置」）
 
 | 文件 | 职责 |
 |---|---|
-| `client/config/ConfigOption.java` | 单个配置项抽象：读写后端 + 编辑缓冲 + 脏检查 + 重置 |
+| `client/config/ConfigOption.java` | 单项抽象：读写后端 + 编辑缓冲 + 脏检查 + 重置 |
 | `client/config/ConfigCategory.java` | 18 个分类注册表（侧边栏条目） |
-| `client/config/ConfigCatalog.java` | **387 项配置登记表** —— 界面唯一数据源 |
-| `client/config/ConfigScreen.java` | 双栏主界面：分类 / 选项行 / 页脚按钮 / 滚动 / 难度页 |
+| `client/config/ConfigCatalog.java` | **387 项登记表** —— 界面唯一数据源 |
+| `client/config/ConfigScreen.java` | 双栏界面；难度页在这里单独渲染 |
 
-> **为什么登记表是手写而非反射**：反射拿不到三样关键信息 ——
-> `defineInRange` 的 min/max 不暴露在公开 API、可读的中文标签需人工起名、
-> 分类归属需要人为判断（如 `refresh_enchant_cost_levels` 应归「附魔」
-> 而不是它字面所在的段）。代价是新增配置项要同步加一行，已写入
-> [`.codebuddy/项目规则.md`](.codebuddy/项目规则.md)。
+> **登记表为什么手写**：反射拿不到 `defineInRange` 的 min/max、中文标签、分类归属。
+> 代价是新增配置要同步加一行 —— 所以 beta39 做了全量对账，把漏掉的 97 项补齐、
+> 6 项死配置删掉。判据：**未登记 = 0、死配置 = 0、默认值/上下限与配置一致 = 0 差异**。
 
-> **beta39 全量对账**：`MedalsConfig` 的 390 个字段与登记表逐一对账，
-> 补齐 97 项「配置里有、界面上没有」的（各职业熟练度转化 / 等级成长 /
-> 技能细参 / 变速率曲线），删除 6 项「代码里除界面外零引用」的死配置
-> （溢出修正开关、反伤熟练度、军团号令寿命、第一人称星盾隐藏、祭坛进度、
-> 祭坛护盾）。对账脚本的判据是三条：**未登记 = 0、死配置 = 0、
-> 界面默认值/上下限与真实配置一致 = 0 差异**。以后改配置请照着跑一遍。
-
-**未安装 Configured 也能用** —— 本界面走的是 Forge **原生**扩展点
-`ConfigScreenHandler.ConfigScreenFactory`，不依赖任何第三方模组；
+**未装 Configured 也能用** —— 走 Forge 原生 `ConfigScreenHandler.ConfigScreenFactory`；
 装了 Configured 时额外登记一份，方便从它的入口进入。
 
 ---
 
-## 六·补充、遗落之主 —— 整合包终局 Boss（`dv4` 新增，`dv5` 大改）
+## 六·补充、终末之影（`lost_realm:warden`）—— dv 期 Boss 档案
 
-> **定位声明**：它是**整合包的最终 Boss**，不是「四勋章系统的考试」。
+> ### ⚠️ 本章是 dv 期档案（`dv4` ~ `dv30`），**不是当前 Boss**
+>
+> 它记录的是**人形 Boss「终末之影」**（`lost_realm:warden`）的建模、阶段与演出迭代。
+> 那个实体**仍注册着、仍能用 `/summon` 叫出来**，但**当前流程不再召唤它** ——
+> 失落祭坛的仪式召唤的是**厄瑞玻斯**（`lost_realm:erebos`，50 节巨虫）。
+>
+> 因此本章的「触手 / 骨翼 / 三形态 / 缩放描边」等描述**与现在的战斗无关**，
+> 只作检索与回溯用。**当前终局战请看 §六·补充三。**
+
+> **定位声明（dv 期）**：它当时被设计为整合包的最终 Boss，不是「四勋章系统的考试」。
+> 现在这个位置由**厄瑞玻斯**接手（见 §六·补充三），本章仅存档。
 > 它读取整合包里**各个体系**的力量（Goety 法术、Apothic 属性、勋章技能、纯原版），
 > 但四勋章系统**永远不引用它** —— 依赖方向严格单向，删掉 Boss 内容四勋章仍能独立工作。
 
@@ -2546,189 +2577,202 @@ dv19/dv20 的触手是「每节骨骼的 pivot = 珠子自己的中心」，
 
 ---
 
+## 六·补充三、厄瑞玻斯 —— 当前终局 Boss（`beta1x` 起）
+
+> 真名「遗落之主 · 晦星」。一条 **50 节、约 206 格长**的巨虫，在本模组里是
+> 「泰拉瑞亚尺度换算到 MC 尺度」的产物 —— 长度压到 6 个区块、速度压到
+> 每 tick 几个方块，否则服务端会把它当传送处理。换算过程见 `ErebosTuning` 类注释。
+
+### 实体清单
+
+| 实体 | 作用 |
+|---|---|
+| `lost_realm:erebos` | 本体（头部碰撞箱 4.8×4.8，`updateInterval(1)` 每 tick 同步位置） |
+| `lost_realm:erebos_part` | 身体各节的碰撞部件（头部以外的判定都靠它，转发伤害给本体） |
+| `lost_realm:erebos_bolt` / `erebos_shard` | 弹幕：噬光弹与碎星 |
+| `lost_realm:erebos_effect` | 招式用的纯视觉实体 |
+
+### 体型与阶段
+
+| 项 | 值 |
+|---|---|
+| 节数 | 50（节距 4.2 格 → 全长约 **206 格**） |
+| 体径 | 4.8 格（渲染时沿身体方向压 0.875，避免相邻节共面闪烁） |
+| 阶段 | 4 个：血量 **80% / 60% / 15%** 分界 |
+| 招式 | 一阶段：碎星播撒 · 噬光冲锋 · 星弧巡猎；二阶段加星门贯穿 · 引力残星；四阶段无巡游 |
+
+### 移动与战斗
+
+- **巡游** 1.25 格/tick，**冲锋** 4.5 格/tick（每轮 3 次，预警 18/16/14/14 tick）。
+- **动态减伤**：短时间内连续挨打会叠减伤（阈值 200 点 / 窗口 20 tick / 上限 75%），
+  逼玩家打「躲—打—躲」的节奏，而不是站桩对轰。
+- **接触伤害**：头 14、身体 8，同目标 10 tick 冷却。
+- **拴绳** 256 格；出场是「盘旋钻出地面」（EMERGE），400 tick 未完成则兜底结束。
+- **星门**：二三阶段会开传送门把自己从 A 门穿到 B 门（`move/MoveStarGate`）。
+  穿门是**瞬移**，客户端必须硬切，否则会把身体拉成一条线（见下方「已知坑」）。
+
+### 客户端同步（beta35 起定型）
+
+```
+服务端（唯一物理） --PacketErebosSpine(50 节坐标 + teleport 标志)--> 客户端
+客户端：只做 spinePrev/spineNow 插值 + 渲染，不跑任何自算物理
+```
+
+- 每 tick 下发一次，`broadcastSpine` 距离门限 320 格（覆盖半径 250 的竞技场）。
+- **不设「位移超过阈值就判瞬移」**：30 格漏判（星门间距 20~40）、8 格误判（冲锋抽搐）。
+  改为服务端 `markTeleport()` 显式置位，客户端只认标志硬切。
+- 客户端 `clientStep()` 只剩「抄脊线 + 播粒子 + 播环境音」三件事。
+
+### 视觉与声音
+
+| 模块 | 内容 |
+|---|---|
+| `client/sky/ErebosSkyEffects` | 暗星天幕：分层星空 + 星球 + 星云（`renderSky` 里直接画，**不要再套相机旋转** —— 拿到的 pose 已含） |
+| `client/ErebosBattleMusic` | 两首战斗 BGM 交替；`Attenuation.NONE`（默认 LINEAR + 位置 0,0,0 会让音量为 0） |
+| `client/boss/ErebosRenderer` | 逐节盒渲染 + 逐节视锥剔除；本体 `noCulling = true` 绕过原版单 AABB |
+| 战利品 | 五件遗物（`starfall_greatsword` / `hushlight_railgun` / `collapsar_eye` / `terminal_dragonpact` / `bulwark_of_the_last_light`）+ `event_horizon` |
+
+### 怎么召出来
+
+- **失落祭坛**（`LostAltarBlockEntity`）：投入材料 → 仪式读条 → 召唤。
+- **暗星信标**（`DarkstarBeaconItem`）：直接召唤，调试用。
+- 也可 `/summon lost_realm:erebos`（实体没加 `noSummon()`，就是为测试方便）。
+
+### 数值现状
+
+> ⚠️ `ErebosTuning.MAX_HEALTH` 自 **beta32** 起被临时改成 **500**（原设计 12000），
+> 纯粹是为了实测方便。**正式发布前必须改回去**，源码里有 ★ 标记。
+
+### 已知坑（都踩过）
+
+| 症状 | 真因 | 约束 |
+|---|---|---|
+| 特定机位整条消失 | 单 AABB 视锥剔除 | 本体 `noCulling = true`，别改回去 |
+| 身体某个位置一直闪 | 体径 4.8 > 节距 4.2，相邻两节共面 | 渲染沿身体方向压 0.875 |
+| 移动时闪烁 / 抽搐 | 客户端自算 + 抄脊线两套时间轴打架 | 客户端**只抄不算** |
+| 星门后整条消失 | 阈值判瞬移漏判 | 用 `teleport` 标志硬切 |
+| 打身体不暴击 | `ErebosPart` 不是 `LivingEntity`，原版暴击判定跳过 | 部件 `hurt()` 里补 `ForgeHooks.getCriticalHit` |
+
+### 与世界难度的关系
+
+难度系统按 `Enemy` 判定（beta37），所以**厄瑞玻斯也会随难度缩放**：
+深渊档下血量 ×1.6、攻击 ×1.5、护甲 ×1.4。阶段判定用的是**血量比例**而非绝对值，
+因此缩放不会打乱阶段转换。
+
+---
+
 ## 七、目录结构
 
+> 只列「改代码时真的会去找」的层。完整清单：`find src/main/java -name '*.java'`（257 个文件）。
+
 ```
-.codebuddy/项目规则.md            开发约定(版本号 / 命名 / 技术 / 交付)
+.codebuddy/项目规则.md                开发约定(版本号 / 命名 / 技术 / 交付)
 
 src/main/java/com/lost_realm/
-├── Medals.java                 主类
-├── config/MedalsConfig.java    配置(整数百分比 + pct())
-├── api/ApothAttributes.java    attributeslib 属性访问
-├── util/
-│   ├── ModifierIds.java        固定 UUID 常量表
-│   ├── AttributeGuard.java     防叠加保护
-│   ├── ExpTable.java           勋章熟练度曲线(Lv.1~30)
-│   └── VanillaXpCurve.java     体验改进:原版经验等级曲线
-├── mixin/
-│   ├── PlayerXpMixin.java      体验改进:注入原版经验需求公式
-│   ├── LivingEntityMixin.java  体验改进:背包图腾(B3)+ 死亡保留 Buff(B5)
-│   ├── SleepStatusMixin.java   体验改进:一人睡全场(C8)
-│   ├── PlayerMixin.java        体验改进:满腹进食(D10)+ 死亡掉落集中(D12)
-│   ├── WitherSkeletonMixin.java 体验改进:凋零头 15%(D11)
-│   ├── MerchantOfferMixin.java 体验改进:交易 64 次(F15)
-│   ├── MerchantMenuAccessor.java 访问器:取回 MerchantMenu 私有 trader
-│   ├── EnchantmentMenuMixin.java 体验改进:附魔台保留青金石(F18)
-│   ├── EnchantmentMenuAccessor.java 访问器:暴露附魔种子
-│   ├── ArrowInfiniteEnchantmentMixin.java 体验改进:无限+修补不冲突(F19)
-│   ├── ItemMaxStackSizeMixin.java 体验改进:药水/图腾/珍珠堆叠(第 23~25 项)
-│   ├── PlayerProjectileMixin.java 体验改进:无限弓无箭射击(第 26 项)
-│   ├── ArrowPickupMixin.java   体验改进:无限弓的箭不可拾取(第 26 项)
-│   └── client/
-│       ├── EnchantmentScreenMixin.java 体验改进:附魔全部预览(F20)
-│       ├── HotbarOffsetMixin.java     体验改进:底部 HUD 上移 1px(第 21 项)
-│       ├── EffectHudMixin.java        体验改进:接管原版 renderEffects(第 22 项)
-│       └── AbstractContainerScreenAccessor.java 访问器:leftPos/topPos
-├── client/dialogue/            零阶段对话 UI(dv5)
-│   └── DialogueScreen.java           打字机对话框 + 离开/决斗分支
-├── client/effect/              更好的状态效果 HUD(第 22 项)
-│   ├── EffectHudRenderer.java         自定义渲染器(缩放/方位/方向/倒计时/红框)
-│   ├── EffectHudOverrides.java        运行期覆盖层(预览 → 保存/回滚)
-│   └── EffectHudEditorScreen.java    游戏内可视化编辑界面(右 Alt)
-├── client/config/              可视化配置界面(第 27 项,dv3)
-│   ├── ConfigOption.java              单个配置项(读写后端 + 编辑缓冲 + 脏检查)
-│   ├── ConfigCategory.java            19 个分类注册表
-│   ├── ConfigCatalog.java             全部 128 项配置登记表(界面唯一数据源)
-│   └── ConfigScreen.java              双栏主界面(分类 / 选项行 / 页脚 / 滚动)
-├── qol/                        体验改进(QoL)处理器
-│   ├── QolConstants.java       不可调节常量(15% / 64 / 跳时时长等)
-│   ├── QolEvents.java          事件入口(鞘翅/睡眠/耕地/tick 驱动)
-│   ├── PotionInfiniteHandler.java 药水无限续杯(A1)
-│   └── BuffShareHandler.java   无限 buff 共享(A2)
-├── compat/backpack/            精妙背包软兼容(反射)
-│   └── BackpackCompat.java     遍历背包内药水/图腾
-├── data/
-│   ├── PlayerMedals.java       玩家数据（仅冷却/技能状态）
-│   ├── MedalNbt.java           勋章熟练度 NBT 读写
-│   ├── MedalSource.java        熟练度取数门面
-│   └── MedalsCapability.java   Capability 注册
-├── item/
-│   ├── ItemMedal.java          Curios 勋章物品
-│   ├── MedalRegistry.java      物品注册
-│   ├── MedalRuntime.java       按等级施加属性
-│   └── TankAttributes.java     自定义伤害减免属性
-├── skill/                      24 个节点技能(archer/warrior/tank/mage)
-│   └── archer/ExtraArrowMode.java  额外箭矢来源枚举(VOLLEY/MULTISHOT_BONUS/RAIN)
-├── compat/goety/               法师勋章的 Goety 集成层
-│   ├── GoetyBridge.java        纯接口(面向原版类型)
-│   ├── GoetyCompat.java        加载检测 + Holder 类加载隔离
-│   └── GoetyBridgeImpl.java    真实实现(直接引用 Goety API)
-├── event/
-│   ├── CombatHandler.java      伤害/击杀/受伤/治疗/箭矢发射/命中/闪避/法师结算
-│   ├── PlayerTickHandler.java  tick 驱动
-│   └── LevelSync.java          等级变化同步
-├── network/                    同步与主动技能请求
-├── client/                     HUD / 按键 / 配置屏幕接入
-└── boss/                       遗落之主 · 整合包终局 Boss(dv5)
-    ├── BossRegistry.java       维度键 + 竞技场坐标 + 可配置数值访问器
-    ├── BossBlocks.java         4 个方块注册(传送门/虚空石/骨架/祭坛)
-    ├── BossItems.java          13 个物品注册
-    ├── BossEntities.java       2 个实体注册 + 属性挂 MOD 总线
-    ├── BossPortalHandler.java  跨维度传送核心(自定义 ITeleporter)
-    ├── LostCityBuilder.java    遗落之都程序化建造(半径100, 地下哨兵块幂等)
-    ├── ArenaBuilder.java       兼容转发层(委托 LostCityBuilder)
-    ├── LordState.java          九态状态机(DORMANT→幽灵→波次→三形态, 含体型/描边/粒子)
-    ├── LordGlowTeams.java      发光描边换色(记分板队伍, 免渲染器)
-    ├── LordDialogueHandler.java 零阶段对话(服务端权威, 台词只播一次)
-    ├── WaveManager.java        五波清场调度(标签计数 + 整体清理)
-    ├── WardenAltar.java        四相祭坛枚举(dv5 起仅作城市装饰)
-    ├── WardenPhase.java        三阶段枚举(颜色/移速/伤害倍率)
-    ├── WardenFightSession.java 战斗会话(参战者/血条/波次持有者)
-    ├── WardenFightManager.java 按维度持有会话 + 传送门准入闸口
-    ├── WardenProgressionHandler.java  任务链代码授予(resonance)
-    ├── WardenSpawnHandler.java 仆从生成 + 上限 + 死亡播报
-    ├── BossProgressionHooks.java 勋章系统只读桥接(练度/技能状态)
-    ├── BossGoetyHooks.java     Goety 灵魂读取(复用既有 GoetyCompat)
-    ├── RealmCapConfig.java     勋章上限运行期状态
-    ├── block/
-    │   ├── RealmPortalBlock.java  传送门(无碰撞/无遮挡/自动熄灭)
-    │   ├── WardenAltarBlock.java  四相祭坛(装饰性;右键查看)
-    │   ├── VoidStoneBlock.java    虚空石
-    │   └── ArenaFrameBlock.java   竞技场骨架
-    ├── entity/
-    │   ├── WardenBoss.java        遗落之主本体(状态机/幽灵试炼/锁血/分身)
-    │   └── WardenSentinel.java    守望者仆从
-    ├── ai/
-    │   ├── WardenSkillGoal.java       技能 Goal 抽象基类(冷却+前摇两段式)
-    │   ├── WardenArrowStormGoal.java  箭雨反噬
-    │   ├── WardenSoulDrainGoal.java   灵魂汲取(可打断)
-    │   ├── WardenPhaseShiftGoal.java  相位跳跃(残影引爆)
-    │   └── WardenJudgementGoal.java   终末审判(反向读条)
-    └── item/
-        ├── RealmKeyItem.java      门钥匙(不消耗, 点燃 2×3 框架)
-        ├── FragmentItem.java      遗落碎片(含来源变体)
-        ├── RealmSourceItem.java   遗落本源(突破勋章上限)
-        ├── EchoItem.java          残响(恒带光效)
-        └── RealmCrownItem.java    遗落境冠冕(Curios, 6 条固定 UUID)
-
-src/main/resources/
-├── assets/lost_realm/
-│   ├── lang/{zh_cn,en_us}.json  双语语言键(各 494 条，逐键对齐)
-│   ├── geo/                     GeckoLib 几何(dv13 引入 / dv14 重做)
-│   │   ├── warden_form1.geo.json  人形 + 根芽 + 肩甲      (12 骨骼)
-│   │   ├── warden_form2.geo.json  6 触手 + 5 骨刺         (38 骨骼)
-│   │   └── warden_form3.geo.json  8 触手 + 7 骨刺 + 骨翼  (56 骨骼)
-│   ├── animations/              GeckoLib 动画(dv13 引入 / dv14 重做)
-│   │   ├── warden_form1.animation.json  8 条
-│   │   ├── warden_form2.animation.json  8 条
-│   │   └── warden_form3.animation.json  9 条(含 phase_awaken)
-│   ├── models/item/             16 个物品模型
-│   └── textures/{item,block,entity}/  程序化生成的像素贴图
-│       └── entity/{warden,warden_sentinel}.png  64×64(含触手/骨刺采样区)
-└── data/lost_realm/
-    ├── advancements/            6 环任务链
-    ├── recipes/                 6 组合成配方
-    ├── loot_tables/entities/    warden / warden_sentinel 掉落表
-    ├── dimension_type/          维度类型(永夜 / 无床 / 末地视觉)
-    ├── dimension/               维度定义(noise + fixed biome source)
-    └── worldgen/
-        ├── biome/               遗落虚空生物群系
-        └── noise_settings/      default_block 全 air → 纯虚空
-
-tools/                          美术资产生成脚本(不进 jar)
-├── gen_geo.py                   三套 GeckoLib 几何
-├── gen_anim.py                  三套 GeckoLib 动画
-└── gen_texture.py               两张 64×64 实体贴图
+├── Medals.java                       主类:全部 DeferredRegister + 事件总线挂接
+├── attribute/                        beta30 起的自注册属性
+│   ├── RealmAttributes.java            12 条战斗属性定义与挂载
+│   └── RealmAttributeEffects.java      暴击 / 破甲 / 吸血 / 闪避的结算
+├── config/                           Forge 配置
+│   ├── MedalsConfig.java               390 个字段(SPEC / CLIENT_SPEC 两份)
+│   └── MedalsConfigLoader.java         供配置界面读取的分类映射
+├── difficulty/                       ★ beta37 世界难度
+│   ├── DifficultyLevel.java            五档枚举(数值集中,不可拆)
+│   ├── DifficultyState.java            存档 SavedData(主世界 level.dat)
+│   └── DifficultyManager.java          落点与事件(生物 / 玩家 / 治疗 / 中立 / 栏位)
+├── command/
+│   ├── MedalCommands.java              /lostrealm medal xp|level|info|unlock
+│   ├── DifficultyCommand.java          /lr difficulty [1-5]
+│   ├── ArenaCommand.java               /lr arena rebuild|tp|ritual|info
+│   └── ErebosServerDebugCommand.java   /lrsdebug erebos
+├── data/                             玩家数据与熟练度
+│   ├── PlayerMedals.java               仅冷却 / 技能运行时状态(capability)
+│   ├── MedalNbt.java                   熟练度存在勋章物品自己的 NBT 里
+│   ├── MedalSource.java                取数门面(难度倍率在这里乘)
+│   └── MedalProgression.java           枷锁(20 / 40)与破枷
+├── item/                             勋章 / 箭 / 刃 / 盾 / 晶石 / 契约 / 终极剑
+├── skill/                            30 个节点技能(5 枚 × 6)
+├── event/                            战斗、tick、技能事件(CombatHandler 等 13 个)
+├── network/                          11 个包(含 PacketErebosSpine / PacketDifficulty*)
+├── util/                             UUID 表 / 防叠加 / 经验表 / 属性上限
+├── mixin/                            23 个注入(体验改进 + 破甲)
+├── qol/                              体验改进处理器
+├── compat/                           Goety / 精妙背包 / JEI 软兼容
+├── effect/                           自定义状态效果(流血等)
+├── sound/                            Boss 战 BGM 注册
+├── common/                           Curios 兼容与实体标签
+├── client/
+│   ├── ClientBootstrap / MedalKeybinds / ClientDifficulty / ClientMedalCache
+│   ├── config/                       配置界面(18 分类 / 387 项 / 难度页)
+│   ├── effect/                       状态效果 HUD + 可视化编辑界面
+│   ├── dialogue/                     零阶段对话 UI
+│   ├── sky/                          ★ 暗星天幕(ErebosSkyEffects)
+│   └── boss/                         ★ 厄瑞玻斯渲染器
+└── boss/
+    ├── 遗落之都 / 传送门 / 任务链(LostCityBuilder / WaveManager / WardenFight*)
+    ├── erebos/                       ★ 厄瑞玻斯:本体 / 部件 / 弹幕 / 招式 / 脊线
+    │   └── move/                      巡游 / 冲锋 / 星门
+    ├── relic/                        ★ 五件遗物 + 事件视界
+    └── block/ entity/ item/ ai/ anim/
 ```
+
+资源与数据包：
+
+```
+src/main/resources/
+├── META-INF/mods.toml
+├── assets/lost_realm/
+│   ├── lang/{zh_cn,en_us}.json        1418 ↔ 1418
+│   ├── geo/ animations/               warden_form1~3(旧 Boss 模型,历史遗留)
+│   ├── sounds/music/                  erebos_battle_1/2.ogg
+│   ├── textures/{block,entity,gui,item,mob_effect,slot}/
+│   └── models/ blockstates/
+├── assets/minecraft/                  覆盖原版贴图(无限弓等)
+└── data/
+    ├── lost_realm/{advancements,dimension,dimension_type,loot_tables,recipes,damage_type}
+    ├── lost_realm/curios/slots/        6 个饰品槽(medal / arrow / weapon / shield / crystal / contract)
+    └── lost_realm/tags/entity_types/   中立生物名单
+```
+
+> `data/curios/curios/slots/` 下那份是更早期版本的写法，当前以
+> `data/lost_realm/curios/slots/` 为准（Curios 会把 `data/<命名空间>/curios/slots/`
+> 的命名空间当作「谁提供的槽位」）；但 `data/curios/tags/items/` 的物品标签仍然必需。
+
+`tools/` 是美术资产生成脚本（Python + Pillow），只在本机跑，不进 jar。
 
 ---
 
 ## 八、构建
 
 ```bash
-# 需要 JDK 17
-export JAVA_HOME=/path/to/jdk-17
-./gradlew build
+export JAVA_HOME=/path/to/jdk-17      # 必须 17(21/25 会在 ForgeGradle 处失败)
+./gradlew build --offline             # 首次构建要联网拉 Forge / MC 依赖(约 500MB)
 ```
 
-产物位于 `build/libs/Lost Realm-dv14.jar`，命名规则为 **显示名 + 构建标签**
-（如 `Lost Realm-dv14.jar` → 下一版 `Lost Realm-dv15.jar`）。
+产物：`build/libs/Lost Realm-<mod_version>-<mod_build>.jar`（当前：`Lost Realm-1.0.0-beta40.jar`）
+（文件名 = `mod_version` + `mod_build`；`build.gradle` 用 `archiveFileName` 显式拼，
+不写会得到 `...-1.0.0-beta40-1.0.0-beta40.jar` 这种双版本名。）
 
-> ⚠️ **版本号规则（务必遵守）**：**每次改动内容都必须把
-> `gradle.properties` 的 `mod_version` 末尾数字 +1**，
-> 唯一例外是"只改注释、不改行为"。
->
-> **为什么必须做**：jar 文件名直接取自 `mod_version`。若不递增，
-> 就会出现多个**同名同版本号、内容却不同**的 jar，无法区分哪个是哪个版本。
-> 递增后同时在 `gradle.properties` 的「版本历史」注释块补一行说明本版改了什么。
->
-> 该规则已固化在项目根目录的 **`.codebuddy/项目规则.md`**，
-> 与其它命名 / 技术约定一起长期维护。
+**`libs/` 里必须放两个前置**（不入库，需自行下载）：
 
-> **命名说明**:jar 文件名用的是**显示名**(`Lost Realm`,含空格);
-> 而**注册名**(`mod_id`)始终是 `lost_realm`,用于数据包路径、配置文件名与
-> 所有 `lost_realm:xxx` 的注册 ID —— 两者互不影响,改文件名不会破坏存档兼容。
-> 模组列表里显示的名称(`displayName`)同样取自 `gradle.properties` 的 `mod_name`。
+| 文件 | 用途 |
+|---|---|
+| `goety-*.jar` | 诡厄巫法 —— 法师 / 召唤师勋章的底座 |
+| `geckolib-forge-1.20.1-4.4.x.jar` | 骨骼动画（4.7+ 是 NeoForge 线，装错直接崩） |
 
-> **前置 Maven 不可达时的备用方案**:仓库已配置 `flatDir { dirs 'libs' }`。
-> 把 `ApothicAttributes-1.20.1-1.3.7.jar`、`curios-forge-5.14.1+1.20.1.jar`
-> 放入项目 `libs/` 目录,然后注释掉 `build.gradle` 中对应的远程依赖,改用:
-> ```groovy
-> compileOnly fg.deobf("blank:ApothicAttributes-1.20.1-1.3.7")
-> runtimeOnly fg.deobf("blank:ApothicAttributes-1.20.1-1.3.7")
-> compileOnly fg.deobf("blank:curios-forge-5.14.1+1.20.1")
-> runtimeOnly fg.deobf("blank:curios-forge-5.14.1+1.20.1")
-> ```
+**投放**：直接放进玩家实例的 `mods/`。同一个 `modId` 只能有一份，
+换版本先移除旧的 —— 两份共存会 `DuplicateModsFoundException` 起不来。
+
+```
+D:/zhuomian/PCL 正式版 2.10.8/.minecraft/versions/1.20.1-Forge_47.4.28/mods/
+```
+
+> **版本号规则**：每次改动把 `mod_build` 末尾数字 +1，并在 `gradle.properties`
+> 顶部的版本历史块补一段（改了什么、为什么）。只改注释可例外。
+> 该规则与命名 / 技术约定一起维护在 `.codebuddy/项目规则.md`。
+
+> **命名**：jar 文件名用显示名（`Lost Realm`，含空格），注册名永远是 `lost_realm`。
+> 改文件名不影响存档兼容 —— 数据包路径与所有注册 ID 都走注册名。
 
 ---
 
