@@ -28,6 +28,8 @@ import net.minecraftforge.fml.common.Mod;
 
 import com.lost_realm.Medals;
 import com.lost_realm.item.ItemMedal;
+import com.lost_realm.network.MedalsNetwork;
+import com.lost_realm.network.PacketDifficultySync;
 import com.lost_realm.skill.MedalType;
 import com.lost_realm.util.AttributeGuard;
 import com.lost_realm.util.ModifierIds;
@@ -110,6 +112,8 @@ public final class DifficultyManager {
         reapplyAllMobs(server);
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             refreshPlayer(player);
+            // 客户端只拿它显示配置界面的难度页;丢了也不影响战斗数值
+            MedalsNetwork.sendToPlayer(player, new PacketDifficultySync(next.id()));
         }
 
         Component msg = Component.literal("[遗落境] 世界难度已切换为 ")
@@ -391,6 +395,7 @@ public final class DifficultyManager {
             return;
         }
         refreshPlayer(player);
+        MedalsNetwork.sendToPlayer(player, new PacketDifficultySync(current.id()));
         if (current != DifficultyLevel.NORMAL) {
             player.displayClientMessage(
                     Component.literal("[遗落境] 当前世界难度:")

@@ -1233,5 +1233,11 @@
   "config.lost_realm.opt.exp_growth_41_50.unit": "%",
   "config.lost_realm.opt.exp_growth_51_60": "51~60 级成长率",
   "config.lost_realm.opt.exp_growth_51_60.desc": "Lv.51 到 Lv.60 每级所需经验的追加量。",
-  "config.lost_realm.opt.exp_growth_51_60.unit": "%"
+  "config.lost_realm.opt.exp_growth_51_60.unit": "%",
+  "config.lost_realm.cat.difficulty": "世界难度",
+  "screen.lost_realm.config.difficulty_apply": "应用",
+  "screen.lost_realm.config.difficulty_current": "当前",
+  "screen.lost_realm.config.difficulty_hint": "难度保存在世界存档里，切换后立即生效（需 OP）",
+  "screen.lost_realm.config.done": "完成",
+  "key.lost_realm.config_screen_alt": "打开配置界面（备用键）"
 }

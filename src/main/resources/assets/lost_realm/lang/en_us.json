@@ -1233,5 +1233,11 @@
   "config.lost_realm.opt.exp_growth_41_50.unit": "%",
   "config.lost_realm.opt.exp_growth_51_60": "Growth 51–60",
   "config.lost_realm.opt.exp_growth_51_60.desc": "Per-level EXP increment from Lv.51 to Lv.60.",
-  "config.lost_realm.opt.exp_growth_51_60.unit": "%"
+  "config.lost_realm.opt.exp_growth_51_60.unit": "%",
+  "config.lost_realm.cat.difficulty": "World Difficulty",
+  "screen.lost_realm.config.difficulty_apply": "Apply",
+  "screen.lost_realm.config.difficulty_current": "Current",
+  "screen.lost_realm.config.difficulty_hint": "Difficulty is stored in the world save and applies immediately (requires OP)",
+  "screen.lost_realm.config.done": "Done",
+  "key.lost_realm.config_screen_alt": "Open Config Screen (alt)"
 }

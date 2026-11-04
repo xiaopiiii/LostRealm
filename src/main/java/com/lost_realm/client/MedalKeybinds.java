@@ -50,11 +50,28 @@ public class MedalKeybinds {
             GLFW.GLFW_KEY_RIGHT_CONTROL,
             "key.categories.lost_realm");
 
+    /**
+     * 打开「可视化配置界面」的<b>第二个</b>快捷键(默认 <b>G</b>)。
+     *
+     * <h2>为什么还要一个</h2>
+     * 右 Ctrl 在不少整合包里会被输入法、ModernUI 或其它模组抢掉,
+     * 而它本身又是个"修饰键",按下去没有任何反馈,玩家很容易以为
+     * 「这模组根本没有配置界面」。普通字母键没有这些问题。
+     *
+     * <p>两个键注册成两个独立的 {@link KeyMapping} 而不是"一个键位两个默认值":
+     * 这样玩家在「选项 → 控制」里可以分别改、分别解绑,互不影响。
+     */
+    public static final KeyMapping CONFIG_SCREEN_ALT = new KeyMapping(
+            "key.lost_realm.config_screen_alt",
+            GLFW.GLFW_KEY_G,
+            "key.categories.lost_realm");
+
     @SubscribeEvent
     public static void register(RegisterKeyMappingsEvent event) {
         event.register(ACTIVATE);
         event.register(EFFECT_HUD_EDITOR);
         event.register(CONFIG_SCREEN);
+        event.register(CONFIG_SCREEN_ALT);
     }
 
     @SubscribeEvent
@@ -69,8 +86,9 @@ public class MedalKeybinds {
                 com.lost_realm.client.effect.EffectHudEditorScreen.open();
             }
         }
-        // 可视化配置界面
-        if (MedalKeybinds.CONFIG_SCREEN.consumeClick()) {
+        // 可视化配置界面(右 Ctrl 或 G,两个键位等价)
+        if (MedalKeybinds.CONFIG_SCREEN.consumeClick()
+                || MedalKeybinds.CONFIG_SCREEN_ALT.consumeClick()) {
             net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
             if (mc.screen == null) {
                 com.lost_realm.client.config.ConfigScreen.open(null);

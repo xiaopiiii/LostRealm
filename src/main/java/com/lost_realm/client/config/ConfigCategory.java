@@ -29,6 +29,18 @@ public final class ConfigCategory {
     public static final ConfigCategory OVERVIEW =
             reg("overview", "config.lost_realm.cat.overview");
 
+    /**
+     * 世界难度(beta38)。
+     *
+     * <p>⚠️ 这一页<b>不对应任何配置项</b> —— 难度是存档数据,不是 {@code .toml}。
+     * 它放在侧边栏第一位的理由:玩家最想改的往往是「这世界多难」,
+     * 而它藏在指令里( {@code /lr difficulty} )没人找得到。
+     * {@link ConfigScreen} 对这一页做了专门渲染(见 {@code isDifficultyPage}),
+     * 数据来自服务端同步,保存动作走网络包而不是 {@code spec.save()}。
+     */
+    public static final ConfigCategory DIFFICULTY =
+            reg("difficulty", "config.lost_realm.cat.difficulty");
+
     // ---- 体验改进(QoL)----
     // 说明:原先把 QoL 拆成 10 个碎片化分类(药水/图腾/鞘翅/睡眠/种植/
     // 自动战斗/村民/附魔/堆叠/死亡),侧边栏过长且难找。现合并为 1 类,

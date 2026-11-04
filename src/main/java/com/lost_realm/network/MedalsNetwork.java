@@ -72,6 +72,18 @@ public final class MedalsNetwork {
                 PacketErebosSpine::encode,
                 PacketErebosSpine::new,
                 PacketErebosSpine::handle);
+
+        // ---- 世界难度(beta38):配置界面里的难度页 ----
+        // S2C 只用于显示;C2S 的 level=0 表示「仅查询」。
+        CHANNEL.registerMessage(id++, PacketDifficultySync.class,
+                PacketDifficultySync::encode,
+                PacketDifficultySync::new,
+                PacketDifficultySync::handle);
+
+        CHANNEL.registerMessage(id++, PacketDifficultySet.class,
+                PacketDifficultySet::encode,
+                PacketDifficultySet::new,
+                PacketDifficultySet::handle);
     }
 
     public static void sendToPlayer(ServerPlayer player, Object packet) {

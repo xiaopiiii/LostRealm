@@ -16,7 +16,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraftforge.common.ForgeConfigSpec;
 
+import com.lost_realm.client.ClientDifficulty;
 import com.lost_realm.config.MedalsConfig;
+import com.lost_realm.difficulty.DifficultyLevel;
+import com.lost_realm.difficulty.DifficultyManager;
+import com.lost_realm.network.MedalsNetwork;
+import com.lost_realm.network.PacketDifficultySet;
 
 /**
  * Lost Realm 的<b>可视化配置界面</b> —— 左侧分类、右侧选项。
@@ -68,6 +73,14 @@ public class ConfigScreen extends Screen {
     /** 数值输入框的宽度。 */
     private static final int VALUE_BOX_W = 68;
 
+    /**
+     * 难度页的行高。
+     *
+     * <p>比普通行高一半 —— 那一页每档要写两行(怪物侧 / 玩家侧),
+     * 22px 塞不下,硬塞就会和右侧「应用」按钮撞在一起。
+     */
+    private static final int DIFF_ROW_H = 34;
+
     /** 数值框与右侧单位文字之间的间隙。 */
     private static final int UNIT_GAP   = 4;
 
@@ -111,7 +124,25 @@ public class ConfigScreen extends Screen {
 
     @Override
     protected void init() {
+        // 难度是服务端数据:一进界面就问一次当前值(level=0 表示「仅查询」)。
+        // 不做这一步的话,刚进服务器时客户端只知道默认的「普通」,
+        // 界面上高亮的档位会和真实世界对不上。
+        if (minecraft != null && minecraft.getConnection() != null) {
+            MedalsNetwork.sendToServer(new PacketDifficultySet(0));
+        }
         switchCategory(categoryId);
+    }
+
+    /** 当前是否停在「世界难度」页(该页不读配置项,单独渲染)。 */
+    private boolean isDifficultyPage() {
+        return ConfigCategory.DIFFICULTY.id().equals(categoryId);
+    }
+
+    /** 收到服务端的难度同步后刷新高亮(见 {@code PacketDifficultySync})。 */
+    public void onDifficultySynced() {
+        if (isDifficultyPage()) {
+            rebuildRows();
+        }
     }
 
     // ================================================================
@@ -134,6 +165,13 @@ public class ConfigScreen extends Screen {
     private void rebuildRows() {
         clearWidgets();
         rows.clear();
+
+        // 难度页:没有配置项,控件是五个「应用」按钮,单独构建
+        if (isDifficultyPage()) {
+            buildDifficultyRows();
+            buildFooter();
+            return;
+        }
 
         int y = contentTop() - scroll;
         for (ConfigOption opt : current) {
@@ -228,6 +266,112 @@ public class ConfigScreen extends Screen {
     }
 
     // ================================================================
+    // 世界难度页(beta38)
+    // ================================================================
+
+    /**
+     * 五档难度各配一个「应用」按钮。
+     *
+     * <p>当前档位的按钮置灰并显示「当前」—— 这样玩家既能一眼看出现在是什么难度,
+     * 也不会去点一个「切到自己」的无意义操作。
+     */
+    private void buildDifficultyRows() {
+        int y = contentTop();
+        int bw = 56;
+        for (DifficultyLevel lv : DifficultyLevel.values()) {
+            final DifficultyLevel target = lv;
+            boolean isCurrent = lv == ClientDifficulty.level();
+            Button b = Button.builder(
+                            Component.translatable(isCurrent
+                                    ? "screen.lost_realm.config.difficulty_current"
+                                    : "screen.lost_realm.config.difficulty_apply"),
+                            btn -> requestDifficulty(target))
+                    .bounds(contentX() + contentW() - bw - PAD,
+                            y + (DIFF_ROW_H - 20) / 2, bw, 20)
+                    .build();
+            b.active = !isCurrent;
+            addRenderableWidget(b);
+            y += DIFF_ROW_H;
+        }
+    }
+
+    /**
+     * 请求服务端切档。
+     *
+     * <p>先本地乐观更新(按钮立刻变「当前」),服务端若拒绝会回一个同步包,
+     * 把高亮改回真实值并给一条聊天提示 —— 所以这里不需要等待网络往返。
+     */
+    private void requestDifficulty(DifficultyLevel target) {
+        MedalsNetwork.sendToServer(new PacketDifficultySet(target.id()));
+        ClientDifficulty.set(target.id());
+        rebuildRows();
+    }
+
+    private void renderDifficulty(GuiGraphics gfx, int mouseX, int mouseY) {
+        int cx = contentX();
+        int cw = contentW();
+        int y = contentTop();
+        DifficultyLevel currentLv = ClientDifficulty.level();
+
+        for (DifficultyLevel lv : DifficultyLevel.values()) {
+            boolean selected = lv == currentLv;
+            boolean hover = mouseX >= cx && mouseX < cx + cw
+                    && mouseY >= y && mouseY < y + DIFF_ROW_H;
+            int bg = selected ? 0x40FFC040 : (hover ? ROW_HOVER : (lv.id() % 2 == 0 ? ROW_ALT : 0));
+            if (bg != 0) {
+                gfx.fill(cx, y, cx + cw, y + DIFF_ROW_H, bg);
+            }
+            if (selected) {
+                // 左侧 2px 琥珀色竖条:扫一眼就知道"现在在哪一档"
+                gfx.fill(cx, y, cx + 2, y + DIFF_ROW_H, 0xFFFFC040);
+            }
+            int nameColor = selected ? 0xFFFFC040 : TEXT;
+            gfx.drawString(font, lv.id() + ". " + lv.displayName(), cx + PAD, y + 5, nameColor, false);
+            // 文字过长时截断加省略号:窄窗口下不能让它糊到右侧「应用」按钮上
+            gfx.drawString(font, clip(mobLine(lv), cw - 92 - 62),
+                    cx + PAD + 86, y + 5, TEXT, false);
+            gfx.drawString(font, clip(playerLine(lv), cw - PAD - 62),
+                    cx + PAD, y + 18, TEXT_DIM, false);
+            y += DIFF_ROW_H;
+        }
+    }
+
+    /** 超出 {@code maxW} 就截断并补省略号(避免窄窗口下文字压到按钮上)。 */
+    private String clip(String text, int maxW) {
+        if (maxW <= 0 || font.width(text) <= maxW) {
+            return text;
+        }
+        String ellipsis = "…";
+        return font.plainSubstrByWidth(text, Math.max(0, maxW - font.width(ellipsis))) + ellipsis;
+    }
+
+    /** 「怪物 血 +20% / 甲 +20% / 攻 +20%」。 */
+    private static String mobLine(DifficultyLevel lv) {
+        return "怪物 血 " + DifficultyManager.pct(lv.mobHealth())
+                + " / 甲 " + DifficultyManager.pct(lv.mobArmor())
+                + " / 攻 " + DifficultyManager.pct(lv.mobAttack());
+    }
+
+    /** 「玩家 攻 -15% / 甲 -15% / 回血 -25% / 熟练度 +15% ...」。 */
+    private static String playerLine(DifficultyLevel lv) {
+        if (!lv.touchesPlayer()) {
+            return "玩家无惩罚";
+        }
+        StringBuilder sb = new StringBuilder("玩家 攻 ")
+                .append(DifficultyManager.pct(lv.playerAttack()))
+                .append(" / 甲 ").append(DifficultyManager.pct(lv.playerArmor()))
+                .append(" / 回血 ").append(DifficultyManager.pct(lv.heal()))
+                .append(" / 熟练度 ").append(DifficultyManager.pct(lv.proficiency()));
+        if (lv.neutralAggressive()) {
+            sb.append(" / 中立生物主动攻击");
+        }
+        if (lv.extraJobSlots() > 0) {
+            sb.append(" / 职业饰品栏 +").append(lv.extraJobSlots());
+        }
+        return sb.toString();
+    }
+
+    // ================================================================
     // 数值框与单位
     // ================================================================
 
@@ -283,6 +427,16 @@ public class ConfigScreen extends Screen {
     private void buildFooter() {
         int y = height - FOOTER_H + 5;
         int x = contentX();
+
+        // 难度页没有「编辑缓冲」概念:改一下就直接生效并存档,
+        // 摆一排保存/取消/重置只会让人以为还能撤销。
+        if (isDifficultyPage()) {
+            addRenderableWidget(Button.builder(
+                            Component.translatable("screen.lost_realm.config.done"),
+                            b -> onClose())
+                    .bounds(x, y, 80, 20).build());
+            return;
+        }
 
         addRenderableWidget(Button.builder(
                         Component.translatable("screen.lost_realm.config.save"),
@@ -392,7 +546,11 @@ public class ConfigScreen extends Screen {
         // 因此 rebuildRows 那边另做了「只给完整可见的行建控件」的过滤。
         gfx.enableScissor(contentX() - PAD, contentTop(),
                 width, contentBottom());
-        renderContent(gfx, mouseX, mouseY);
+        if (isDifficultyPage()) {
+            renderDifficulty(gfx, mouseX, mouseY);
+        } else {
+            renderContent(gfx, mouseX, mouseY);
+        }
         gfx.disableScissor();
 
         // ---- 控件与页脚 ----
@@ -421,9 +579,12 @@ public class ConfigScreen extends Screen {
                 int count = ConfigCatalog.ofCategory(c.id()).size();
                 gfx.drawString(font, c.displayName(), PAD, y + 7,
                         selected ? 0xFFFFFF : TEXT, false);
-                String n = String.valueOf(count);
-                gfx.drawString(font, n, SIDEBAR_W - PAD - font.width(n), y + 7,
-                        TEXT_DIM, false);
+                // 难度页不对应配置项,数量恒为 0 —— 显示「0」会让人以为这一页是空的
+                if (!c.id().equals(ConfigCategory.DIFFICULTY.id())) {
+                    String n = String.valueOf(count);
+                    gfx.drawString(font, n, SIDEBAR_W - PAD - font.width(n), y + 7,
+                            TEXT_DIM, false);
+                }
             }
             y += ROW_H;
         }
@@ -493,6 +654,12 @@ public class ConfigScreen extends Screen {
     }
 
     private void renderFooterText(GuiGraphics gfx) {
+        if (isDifficultyPage()) {
+            Component hint = Component.translatable("screen.lost_realm.config.difficulty_hint");
+            gfx.drawString(font, hint, width - PAD - font.width(hint),
+                    height - FOOTER_H + 11, TEXT_DIM, false);
+            return;
+        }
         List<ConfigOption> all = ConfigCatalog.options();
         long dirty = all.stream().filter(ConfigOption::isDirty).count();
         Component status = dirty > 0
@@ -545,6 +712,10 @@ public class ConfigScreen extends Screen {
         if (mx < SIDEBAR_W) {
             catScroll = scrollList(catScroll, ConfigCategory.sidebarOrder().size(),
                     height - 28 - FOOTER_H, delta);
+            return true;
+        }
+        // 难度页内容固定五行,不滚动(滚了反而会把「应用」按钮重建一遍)
+        if (isDifficultyPage()) {
             return true;
         }
         // ★ 右侧内容区之前多取了一次反（-delta），与左侧分类栏方向相反，
