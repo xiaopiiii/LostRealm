@@ -73,7 +73,9 @@ public final class MedalCommands {
                                 .then(Commands.argument("stage",
                                                 IntegerArgumentType.integer(0, 2))
                                         .executes(ctx -> unlock(ctx,
-                                                IntegerArgumentType.getInteger(ctx, "stage")))))));
+                                                IntegerArgumentType.getInteger(ctx, "stage"))))))
+                // 世界难度:/lostrealm difficulty [1-5]
+                .then(DifficultyCommand.node()));
     }
 
     /** {@code /lostrealm medal info} —— 打印等级上限、枷锁与技能节点。 */
@@ -136,8 +138,9 @@ public final class MedalCommands {
         MedalNbt nbt = MedalNbt.of(medal);
 
         int before = nbt.getLevel(type);
-        // addExp 内部在升级时会顺手刷新属性（见 MedalSource#addExp）
-        MedalSource.addExp(player, type, amount);
+        // addExpRaw:调试指令给多少就是多少,不吃世界难度倍率(见 MedalSource#addExpRaw)。
+        // 内部在升级时会顺手刷新属性(见 MedalSource#addExp)
+        MedalSource.addExpRaw(player, type, amount);
         int after = nbt.getLevel(type);
 
         Component name = medal.getHoverName();

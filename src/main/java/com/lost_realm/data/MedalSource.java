@@ -90,9 +90,29 @@ public final class MedalSource {
      * 战斗里每秒都在打怪，不节流的话聊天栏会被这一句刷屏。
      */
     public static int addExp(ServerPlayer player, MedalType type, double amount) {
+        return addExp(player, type, amount, true);
+    }
+
+    /**
+     * 增加熟练度经验，但<b>不吃世界难度倍率</b>。
+     *
+     * <p>只给调试指令用：{@code /lostrealm medal xp 1000} 的语义是「给 1000 点」，
+     * 若被难度乘成 1070 点，管理员会以为指令坏了。
+     * 玩法内的每一条经验来源都走 {@link #addExp(ServerPlayer, MedalType, double)}。
+     */
+    public static int addExpRaw(ServerPlayer player, MedalType type, double amount) {
+        return addExp(player, type, amount, false);
+    }
+
+    private static int addExp(ServerPlayer player, MedalType type, double amount, boolean applyDifficulty) {
         ItemStack stack = stackOf(player, type);
         if (stack.isEmpty()) {
             return 0;
+        }
+
+        // 世界难度:噩梦 +7% / 深渊 +15%(见 DifficultyLevel)
+        if (applyDifficulty) {
+            amount *= com.lost_realm.difficulty.DifficultyManager.proficiencyMultiplier();
         }
 
         PlayerMedals pm = PlayerMedals.of(player);

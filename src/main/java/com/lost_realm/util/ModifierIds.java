@@ -203,6 +203,23 @@ public final class ModifierIds {
     /** 修改原版鞘翅:额外盔甲韧性。 */
     public static final UUID QOL_ELYTRA_TOUGHNESS = id("qol_elytra_toughness");
 
+    // ==================== 世界难度(beta37) ====================
+    // 难度是「整组数值」,三组修饰符分别挂在生物/玩家/槽位属性上。
+    // 换难度时不是叠加新修饰符,而是<b>改同一个 UUID 的数值</b>,
+    // 因此绝对不会出现「简单打一半切深渊、怪物血变成 0.8×1.6=1.28 倍」这种残留。
+    /** 敌对生物:最大生命倍率 */
+    public static final UUID DIFFICULTY_MOB_HEALTH = id("difficulty_mob_health");
+    /** 敌对生物:护甲倍率 */
+    public static final UUID DIFFICULTY_MOB_ARMOR = id("difficulty_mob_armor");
+    /** 敌对生物:攻击伤害倍率 */
+    public static final UUID DIFFICULTY_MOB_ATTACK = id("difficulty_mob_attack");
+    /** 玩家:攻击伤害倍率 */
+    public static final UUID DIFFICULTY_PLAYER_ATTACK = id("difficulty_player_attack");
+    /** 玩家:护甲倍率 */
+    public static final UUID DIFFICULTY_PLAYER_ARMOR = id("difficulty_player_armor");
+    /** 玩家:职业饰品栏额外格数(深渊难度 +1) */
+    public static final UUID DIFFICULTY_JOB_SLOT = id("difficulty_job_slot");
+
     /**
      * 基于命名空间与路径生成确定性 UUID。
      *

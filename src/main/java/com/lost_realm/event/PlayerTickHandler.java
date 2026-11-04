@@ -36,6 +36,13 @@ public class PlayerTickHandler {
         PlayerMedals data = PlayerMedals.of(player);
         data.tickCooldowns();
 
+        // 世界难度:玩家侧的攻击/护甲惩罚与「深渊」的额外职业饰品栏。
+        // 每 2 秒刷一次足够 —— 死亡重生与换维度会重建属性实例,
+        // 而这两件事之后最迟 2 秒内就会补上。值没变时内部直接返回,无额外开销。
+        if (player.tickCount % 40 == 0) {
+            com.lost_realm.difficulty.DifficultyManager.refreshPlayer(player);
+        }
+
         // 找出玩家已佩戴的勋章 —— 等级取自勋章物品自身(物品 NBT)
         for (MedalType type : MedalType.values()) {
             net.minecraft.world.item.ItemStack stack = wornStack(player, type);

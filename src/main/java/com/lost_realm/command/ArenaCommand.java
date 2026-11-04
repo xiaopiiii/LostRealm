@@ -45,7 +45,9 @@ public final class ArenaCommand {
                                 .executes(ArenaCommand::ritual))
                         .then(Commands.literal("info")
                                 .requires(src -> src.hasPermission(2))
-                                .executes(ArenaCommand::info))));
+                                .executes(ArenaCommand::info)))
+                // 世界难度:/lr difficulty [1-5]
+                .then(DifficultyCommand.node()));
     }
 
     private static int rebuild(CommandContext<CommandSourceStack> ctx) {

@@ -2477,6 +2477,55 @@ dv19/dv20 的触手是「每节骨骼的 pivot = 珠子自己的中心」，
 
 ---
 
+## 六·补充二、世界难度系统（`beta37`）
+
+五档难度，**由指令控制、写在存档里**，不是 `.toml` 配置项。
+
+```
+/lr difficulty              查看当前难度 + 五档一览（任何玩家）
+/lr difficulty <1-5>        切换（OP）
+/lr difficulty set <1-5>    同上，写全一点（OP）
+/lostrealm difficulty ...   同一套命令挂在 /lostrealm 下
+```
+
+| # | 名称 | 敌对生物 | 玩家侧 |
+|---|------|----------|--------|
+| 1 | 简单 | 血/甲/攻 −20% | — |
+| 2 | 普通 | 原版 | — |
+| 3 | 困难 | 血/甲/攻 +20% | — |
+| 4 | 噩梦 | 血/攻 +40%、甲 +30% | 攻/甲 −10%、回血 −15%、熟练度 +7% |
+| 5 | 深渊 | 血 +60%、攻 +50%、甲 +40% | 攻/甲 −15%、回血 −25%、熟练度 +15%、中立生物主动攻击、职业饰品栏 +1 |
+
+### 三条落点
+
+1. **敌对生物**：只认 `Monster`。实体进入世界（`EntityJoinLevelEvent`）时给
+   `MAX_HEALTH` / `ARMOR` / `ATTACK_DAMAGE` 挂固定 UUID 的 `MULTIPLY_TOTAL` 修饰符。
+   换难度改的是**同一个 UUID 的数值**，不是再叠一层 —— 所以「简单打一半切深渊」
+   不会变成 0.8 × 1.6 的残留。血量按比例保留（掉到 40% 的怪换难度后仍是 40%）。
+2. **玩家**：攻击/护甲同样是固定 UUID 的倍率修饰符，由 `PlayerTickHandler`
+   每 40 tick 幂等刷新一次（值没变直接 return）。死亡重生/换维度会重建属性实例，
+   40 tick 内一定补回。
+3. **一次性行为**：回血衰减走 `LivingHealEvent`（只对玩家）、中立生物敌对走
+   `LivingTickEvent`（每 20 tick 检查，半径 16 格，只激怒**当前没有目标**的那些，
+   并排除玩家自己的宠物/仆从）、熟练度倍率统一乘在 `MedalSource#addExp` 里
+   （调试指令走新增的 `addExpRaw`，给多少是多少）。
+
+### 坑位
+
+- **+1 职业饰品栏不能直接改属性**：Curios 的槽位格数是 `CurioStacksHandler`
+  自己维护的修饰符表算出来的（`baseSize + ΣADDITION`），不是读玩家属性实例。
+  必须走 `ICuriosItemHandler#addTransientSlotModifier` + `stacks.update()`
+  才会真正 resize；而且同一个 UUID 重复 `add` 会在表里留两条 —— 那就成 +2 了，
+  所以加之前必须先查 `stacks.getModifiers()`。
+- **血量比例要在施加修饰符前取**：`getMaxHealth()` 一旦被修饰符改掉，
+  就再也算不出「原来的满血是多少」。
+- **`oldHealth <= 0` 时不要动血量**：有些 Boss 在构造期血量还是 0，
+  按 0/oldMax 的比例去算会把它当场按死。
+- **难度是存档数据**（主世界 `level.dat` 里的 `lost_realm_difficulty`）：
+  进程内只做缓存，`ServerStoppingEvent` 时清回「普通」，避免换存档串味。
+
+---
+
 ## 七、目录结构
 
 ```
