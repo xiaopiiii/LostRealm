@@ -29,7 +29,7 @@ import org.joml.Vector3f;
 import com.lost_realm.boss.BossEntities;
 
 /**
- * <b>星弹</b> —— 厄瑞玻斯的通用弹幕。
+ * <b>星弹</b> —— 乌蠹诺斯的通用弹幕。
  *
  * <h2>为什么弹幕数量要砍</h2>
  * 这是整份设计里<b>最需要重新取舍</b>的一块。泰拉瑞亚里弹幕是轻量对象

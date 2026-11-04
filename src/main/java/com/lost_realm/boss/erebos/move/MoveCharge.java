@@ -12,7 +12,7 @@ import com.lost_realm.boss.erebos.ErebosPhase;
 import com.lost_realm.boss.erebos.ErebosTuning;
 
 /**
- * <b>噬光冲锋</b> —— 厄瑞玻斯的招牌动作，四个阶段都在用。
+ * <b>噬光冲锋</b> —— 乌蠹诺斯的招牌动作，四个阶段都在用。
  *
  * <h2>三个阶段</h2>
  * <pre>

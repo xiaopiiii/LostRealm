@@ -523,7 +523,7 @@ public final class MedalsConfig {
     public static IntValue TIME_CAPSULE_MAX_USES;
     public static IntValue TIME_CAPSULE_SHORTEN_SECONDS;
 
-    // ---- 厄瑞玻斯(beta41):新版终局 Boss 的可调数值 ----
+    // ---- 乌蠹诺斯(beta41):新版终局 Boss 的可调数值 ----
     public static DoubleValue EREBOS_HEALTH;
     public static IntValue EREBOS_PHASE_1;
     public static IntValue EREBOS_PHASE_2;
@@ -1211,7 +1211,7 @@ public final class MedalsConfig {
         public IntValue TIME_CAPSULE_MAX_USES;
         public IntValue TIME_CAPSULE_SHORTEN_SECONDS;
 
-        // ---- 厄瑞玻斯 ----
+        // ---- 乌蠹诺斯 ----
         public DoubleValue EREBOS_HEALTH;
         public IntValue EREBOS_PHASE_1;
         public IntValue EREBOS_PHASE_2;
@@ -2037,11 +2037,11 @@ public final class MedalsConfig {
                 .define("_exp_curve_migrated_v1", false);
         b.pop();
 
-        // ---------------------------------- 厄瑞玻斯 ----------------------------------
+        // ---------------------------------- 乌蠹诺斯 ----------------------------------
         // 新版终局 Boss(50 节巨虫)的可调数值。
         // 读取点是 ErebosTuning.applyConfig() —— 它在配置加载后把这些值灌进静态字段,
         // 所以改完要重启(或 /reload)才生效,打到一半的 Boss 不会突然换血。
-        b.comment("厄瑞玻斯 —— 当前终局 Boss。这里的数值会覆盖 ErebosTuning 里的硬编码默认值。")
+        b.comment("乌蠹诺斯 —— 当前终局 Boss。这里的数值会覆盖 ErebosTuning 里的硬编码默认值。")
                 .push("erebos");
 
         b.comment("最大生命值。★ 当前默认 500 是 beta32 起的实测值,正式发布请把默认改回 12000。")

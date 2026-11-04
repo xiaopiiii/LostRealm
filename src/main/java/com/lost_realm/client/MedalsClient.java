@@ -26,7 +26,7 @@ public class MedalsClient {
         // 客户端自检命令 /lrdebug erebos —— RegisterClientCommandsEvent 在 FORGE 总线
         net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(
                 com.lost_realm.client.ErebosDebugCommand::register);
-        // Boss 战 BGM：每 tick 检查附近有没有厄瑞玻斯，有就淡入、没有就淡出。
+        // Boss 战 BGM：每 tick 检查附近有没有乌蠹诺斯，有就淡入、没有就淡出。
         // 纯客户端逻辑，服务端不需要知道音乐这件事。
         net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(
                 ErebosMusicController::onClientTick);

@@ -78,7 +78,7 @@ public final class EntityRendererRegistry {
         EntityRenderers.register(net.minecraft.world.entity.EntityType.ARROW,
                 StarArrowRenderer::new);
 
-        // ---- 晦星之主·厄瑞玻斯（dv58 新增）----
+        // ---- 遗落之主·乌蠹诺斯（dv58 新增）----
         // 本体：自绘渲染器，沿轨迹逐节摆放 40 个模型（不走 GeckoLib，原因见 ErebosRenderer）
         EntityRenderers.register(BossEntities.EREBOS.get(),
                 ErebosRenderer::new);

@@ -90,7 +90,7 @@ public class Medals {
                     LOGGER.info("[Lost Realm] 经验成长曲线已迁移到 7/6/5/4/3/2"
                             + "（旧配置仍是 10/8/7/6/5/3）。");
                 }
-                // 厄瑞玻斯：把配置灌进 ErebosTuning 的可写静态字段（beta41）
+                // 乌蠹诺斯：把配置灌进 ErebosTuning 的可写静态字段（beta41）
                 com.lost_realm.boss.erebos.ErebosTuning.applyConfig();
             }
         });
@@ -120,7 +120,7 @@ public class Medals {
         com.lost_realm.boss.BossBlocks.init(modBus);
         com.lost_realm.boss.BossItems.init(modBus);
         com.lost_realm.boss.BossEntities.init(modBus);
-        // 厄瑞玻斯的五件遗物（每个职业一件）+ 事件视界
+        // 乌蠹诺斯的五件遗物（每个职业一件）+ 事件视界
         com.lost_realm.boss.relic.ErebosRelics.init(modBus);
         // 自定义声音（Boss 战 BGM）—— 全模组目前唯一一个自定义音效
         com.lost_realm.sound.ModSounds.init(modBus);

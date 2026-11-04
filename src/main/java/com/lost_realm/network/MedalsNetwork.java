@@ -65,7 +65,7 @@ public final class MedalsNetwork {
                 PacketDialogueChoice::new,
                 PacketDialogueChoice::handle);
 
-        // ---- 厄瑞玻斯脊线同步(beta18) ----
+        // ---- 乌蠹诺斯脊线同步(beta18) ----
         // 客户端位置同步在这套环境里不可靠(实测轨迹永远只有 1 个点),
         // 改为服务端直接下发 40 节坐标。见 PacketErebosSpine 的类注释。
         CHANNEL.registerMessage(id++, PacketErebosSpine.class,

@@ -21,7 +21,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * <b>坍星·湮灭之眼</b>（法师）—— 厄瑞玻斯遗物。
+ * <b>坍星·湮灭之眼</b>（法师）—— 乌蠹诺斯遗物。
  *
  * <h2>原设计 → MC</h2>
  * 原设计"最多六个追踪核心，每个核心牵引普通敌人，每 30 帧放一次

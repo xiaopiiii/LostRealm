@@ -764,7 +764,7 @@ public final class ConfigCatalog {
                 MedalsConfig.TIME_CAPSULE_SHORTEN_SECONDS, 1, 600, 2, S);
 
         // ============================================================
-        // 厄瑞玻斯(beta41)—— 新版终局 Boss
+        // 乌蠹诺斯(beta41)—— 新版终局 Boss
         // ------------------------------------------------------------
         // 这十项由 ErebosTuning.applyConfig() 在配置加载后灌进静态字段;
         // 界面里改完保存后要重启(或 /reload)才作用到 Boss 身上。

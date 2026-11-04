@@ -16,7 +16,7 @@ import net.minecraft.world.phys.AABB;
  *
  * <h2>它回答客户端命令回答不了的问题</h2>
  * 客户端那条 {@code /lrdebug} 只能告诉你"实体在不在客户端"，但看不出
- * <b>状态机走到哪一步了</b>。而厄瑞玻斯最要命的一类故障恰恰在这里：
+ * <b>状态机走到哪一步了</b>。而乌蠹诺斯最要命的一类故障恰恰在这里：
  * 它卡在 {@code EMERGE}（登场）出不来，于是
  * <ul>
  *   <li>{@code hurt()} 直接返回 false → <b>打不出伤害</b></li>
@@ -50,7 +50,7 @@ public final class ErebosServerDebugCommand {
         List<ErebosBoss> found = level.getEntitiesOfClass(ErebosBoss.class,
                 new AABB(origin, origin).inflate(512.0D));
 
-        reply(src, ChatFormatting.DARK_PURPLE, "===== 厄瑞玻斯 · 服务端状态 =====");
+        reply(src, ChatFormatting.DARK_PURPLE, "===== 乌蠹诺斯 · 服务端状态 =====");
         if (found.isEmpty()) {
             reply(src, ChatFormatting.RED, "这个维度里没有本体。");
             reply(src, ChatFormatting.GRAY, "→ 若客户端也没有，说明它从未生成或被移除了。");

@@ -6,7 +6,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * 厄瑞玻斯的音效 —— 全部复用原版资源，不额外打包音频。
+ * 乌蠹诺斯的音效 —— 全部复用原版资源，不额外打包音频。
  *
  * <h2>为什么要节流</h2>
  * 这条件东西一次齐射最多 72 发，如果每发都 {@code playSound}，

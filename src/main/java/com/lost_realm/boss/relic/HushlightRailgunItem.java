@@ -19,7 +19,7 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 
 /**
- * <b>寂光·终末轨炮</b>（射手）—— 厄瑞玻斯遗物。
+ * <b>寂光·终末轨炮</b>（射手）—— 乌蠹诺斯遗物。
  *
  * <h2>原设计 → MC</h2>
  * 原设计"双轨穿透弹、65% 概率不消耗弹药、不使用蓄力机制"。

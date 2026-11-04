@@ -89,11 +89,11 @@ public final class MedalRegistry {
                 // ---------- 遗落之主:门钥匙 ----------
                 output.accept(com.lost_realm.boss.BossItems.REALM_KEY.get());
 
-                // ---------- 晦星之主·厄瑞玻斯:召唤物 ----------
+                // ---------- 遗落之主·乌蠹诺斯:召唤物 ----------
                 // 与「终末之影」并列的第二个终局 Boss,独立召唤。
                 output.accept(com.lost_realm.boss.BossItems.DARKSTAR_BEACON.get());
 
-                // ---------- 厄瑞玻斯遗物:五职业 + 纪念品 ----------
+                // ---------- 乌蠹诺斯遗物:五职业 + 纪念品 ----------
                 // 注:原设计写的是"四职业武器"(泰拉瑞亚只有四个职业),
                 //     MC 这边有五个 —— 末光壁垒是补上的坦克那一件。
                 for (net.minecraft.world.item.Item relic

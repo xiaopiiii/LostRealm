@@ -39,7 +39,7 @@ import com.lost_realm.boss.erebos.move.ErebosMove;
 import com.lost_realm.boss.erebos.move.ErebosMove.MoveKind;
 
 /**
- * <b>晦星之主·厄瑞玻斯（Erebos）</b> —— 宇宙蠕虫形终局 Boss。
+ * <b>遗落之主·乌蠹诺斯（Erebos）</b> —— 宇宙蠕虫形终局 Boss。
  *
  * <h2>它是什么</h2>
  * 一条 <b>40 节 / 96 格（6 个区块）</b>长的宇宙巨虫，四阶段、共享血量、

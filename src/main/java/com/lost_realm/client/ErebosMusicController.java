@@ -7,11 +7,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraftforge.event.TickEvent;
 
 /**
- * 厄瑞玻斯战斗曲的开关与淡入淡出。
+ * 乌蠹诺斯战斗曲的开关与淡入淡出。
  *
  * <h2>判定方式：客户端每 tick 找一次 Boss</h2>
  * 没有走服务端发包、也没有做事件回调 —— BGM 完全由客户端自己判断
- * "视野范围内有没有活着的厄瑞玻斯"。
+ * "视野范围内有没有活着的乌蠹诺斯"。
  *
  * <p>这么选的理由是<b>它不可能不同步</b>：音乐是本地的，
  * 触发条件也是本地的（实体是否被客户端加载）。用服务端事件反而会出现
@@ -98,7 +98,7 @@ public final class ErebosMusicController {
     }
 
     /**
-     * 视野/加载范围内是否有厄瑞玻斯。
+     * 视野/加载范围内是否有乌蠹诺斯。
      *
      * <p>用 {@code !isRemoved()} 而不是 {@code isAlive()}：
      * Boss 被打死后的 60 tick 崩解演出期间实体仍然存在，

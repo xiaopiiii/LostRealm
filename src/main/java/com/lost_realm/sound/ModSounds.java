@@ -29,7 +29,7 @@ public final class ModSounds {
             DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, Medals.MODID);
 
     /**
-     * 厄瑞玻斯战斗曲 —— 第一段，阶段Ⅰ / Ⅱ 使用。
+     * 乌蠹诺斯战斗曲 —— 第一段，阶段Ⅰ / Ⅱ 使用。
      *
      * <p>整首 179.7 秒，按能量低谷切在 84.0 秒：
      * 前半段偏铺陈，后半段进鼓、压迫感更强，

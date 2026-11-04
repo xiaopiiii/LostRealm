@@ -61,7 +61,7 @@ public class LostAltarBlockEntity extends BlockEntity {
         return this.ritualTicks;
     }
 
-    /** 附近是否已经有一条厄瑞玻斯（判定半径与召唤物一致，512 格）。 */
+    /** 附近是否已经有一条乌蠹诺斯（判定半径与召唤物一致，512 格）。 */
     public boolean bossAlreadyPresent(ServerLevel level) {
         AABB area = new AABB(this.worldPosition).inflate(512.0D);
         for (ErebosBoss boss : level.getEntitiesOfClass(ErebosBoss.class, area)) {
@@ -245,7 +245,7 @@ public class LostAltarBlockEntity extends BlockEntity {
         boss.moveTo(spot.x, spot.y, spot.z, yaw, 0.0F);
         level.addFreshEntity(boss);
 
-        Medals.LOGGER.info("[LR/altar] 仪式完成，厄瑞玻斯已召唤于 {}", spot);
+        Medals.LOGGER.info("[LR/altar] 仪式完成，乌蠹诺斯已召唤于 {}", spot);
         this.summoner = null;
     }
 

@@ -23,7 +23,7 @@ import com.lost_realm.boss.erebos.ErebosBoss;
 import com.lost_realm.boss.erebos.ErebosTuning;
 
 /**
- * <b>黯星信标</b> —— 召唤晦星之主·厄瑞玻斯的道具。
+ * <b>黯星信标</b> —— 召唤遗落之主·乌蠹诺斯的道具。
  *
  * <h2>原设计 → MC 的转译</h2>
  * 泰拉瑞亚版是「月后夜晚在地表或太空使用」—— 那两个限制是泰拉瑞亚的世界观
@@ -44,7 +44,7 @@ public class DarkstarBeaconItem extends Item {
 
     /** 重复召唤的判定半径（格）。 */
     /**
-     * 判定"是否已有厄瑞玻斯"的半径（格）。
+     * 判定"是否已有乌蠹诺斯"的半径（格）。
      *
      * <h2>为什么是 512 而不是原来的 160</h2>
      * 这条虫是活的：巡游时会游出很远，实测轨迹总长能到 885 格。
@@ -75,7 +75,7 @@ public class DarkstarBeaconItem extends Item {
             return InteractionResultHolder.sidedSuccess(stack, true);
         }
 
-        // ---- 是否已经有活着的厄瑞玻斯 ----
+        // ---- 是否已经有活着的乌蠹诺斯 ----
         AABB area = player.getBoundingBox().inflate(EXISTING_CHECK_RADIUS);
         List<ErebosBoss> existing = server.getEntitiesOfClass(ErebosBoss.class, area);
 

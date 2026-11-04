@@ -11,7 +11,7 @@ import com.lost_realm.boss.erebos.ErebosPhase;
 import com.lost_realm.boss.erebos.ErebosTuning;
 
 /**
- * 一个<b>招式</b> —— 厄瑞玻斯战斗的最小可组合单元。
+ * 一个<b>招式</b> —— 乌蠹诺斯战斗的最小可组合单元。
  *
  * <h2>为什么要拆出来</h2>
  * 这份设计的终局形态是<b>三十多个招式</b>。如果全塞在 {@code ErebosBrain}

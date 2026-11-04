@@ -15,7 +15,7 @@ import net.minecraftforge.client.event.RegisterClientCommandsEvent;
  * 客户端自检命令 —— {@code /lrdebug erebos}。
  *
  * <h2>为什么需要它</h2>
- * 厄瑞玻斯有一条"身体 40 节由头部路径反推"的渲染链，出问题时屏幕上的表现
+ * 乌蠹诺斯有一条"身体 40 节由头部路径反推"的渲染链，出问题时屏幕上的表现
  * 全都一样（"只有一个头"／"整个不见"），但根因可能完全不同：
  * <ul>
  *   <li>客户端实体根本没创建</li>
@@ -61,7 +61,7 @@ public final class ErebosDebugCommand {
         List<ErebosBoss> found = mc.level.getEntitiesOfClass(
                 ErebosBoss.class, mc.player.getBoundingBox().inflate(SEARCH_RADIUS));
 
-        send("§5===== 厄瑞玻斯 · 客户端自检 =====");
+        send("§5===== 乌蠹诺斯 · 客户端自检 =====");
         send(String.format("§7维度 §f%s §7@ §f(%.1f, %.1f, %.1f)",
                 mc.level.dimension().location(),
                 mc.player.getX(), mc.player.getY(), mc.player.getZ()));

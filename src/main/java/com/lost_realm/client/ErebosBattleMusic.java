@@ -7,7 +7,7 @@ import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.sounds.SoundSource;
 
 /**
- * 厄瑞玻斯战斗曲的播放实例。
+ * 乌蠹诺斯战斗曲的播放实例。
  *
  * <h2>为什么继承 {@link AbstractSoundInstance} 而不是直接 playSound</h2>
  * 一次性音效用 {@code level.playLocalSound} 就够了，但 BGM 需要三件事：

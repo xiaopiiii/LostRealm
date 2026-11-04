@@ -10,7 +10,7 @@ import net.minecraftforge.registries.RegistryObject;
 import com.lost_realm.Medals;
 
 /**
- * <b>厄瑞玻斯的五件遗物</b> —— 每个职业一件。
+ * <b>乌蠹诺斯的五件遗物</b> —— 每个职业一件。
  *
  * <h2>★ 为什么是五件，不是四件</h2>
  * 原设计写的是"掉落的四职业武器"，因为泰拉瑞亚只有四个职业。

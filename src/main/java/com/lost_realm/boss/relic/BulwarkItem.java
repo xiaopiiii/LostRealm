@@ -13,7 +13,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 
 /**
- * <b>末光壁垒</b>（坦克）—— 厄瑞玻斯遗物，<b>本模组补的第五件</b>。
+ * <b>末光壁垒</b>（坦克）—— 乌蠹诺斯遗物，<b>本模组补的第五件</b>。
  *
  * <h2>为什么必须有这一件</h2>
  * 原设计掉落的是泰拉瑞亚的四职业武器。但 MC 这边的 Lost Realm 有

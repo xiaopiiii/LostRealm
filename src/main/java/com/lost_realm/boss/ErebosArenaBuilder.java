@@ -18,7 +18,7 @@ import com.lost_realm.Medals;
 import com.lost_realm.boss.block.LostAltarBlock;
 
 /**
- * <b>终末竞技场</b> —— 遗落境维度里唯一的建筑，也是厄瑞玻斯的召唤场。
+ * <b>终末竞技场</b> —— 遗落境维度里唯一的建筑，也是乌蠹诺斯的召唤场。
  *
  * <h2>布局（beta25 重做）</h2>
  * <pre>

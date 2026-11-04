@@ -98,7 +98,7 @@ public final class ConfigCategory {
     public static final ConfigCategory SLOTS =
             reg("slots", "config.lost_realm.cat.slots");
 
-    // ---- 厄瑞玻斯(beta41):当前终局 Boss ----
+    // ---- 乌蠹诺斯(beta41):当前终局 Boss ----
     public static final ConfigCategory EREBOS =
             reg("erebos", "config.lost_realm.cat.erebos");
 

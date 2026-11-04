@@ -41,7 +41,7 @@ public final class AttributeLimits {
      * 抬高后的上限。
      *
      * <p>取这个数是想让它<b>不构成实际约束</b>：目前最高的设计值是
-     * 厄瑞玻斯的 24000 血，留出近 40 倍余量，够以后加更肉的东西。
+     * 乌蠹诺斯的 24000 血，留出近 40 倍余量，够以后加更肉的东西。
      */
     private static final double RAISED_MAX_HEALTH_CAP = 1_000_000.0D;
 
