@@ -34,7 +34,6 @@ public final class MedalsConfig {
     public static IntValue EXP_GROWTH_31_40;
     public static IntValue EXP_GROWTH_41_50;
     public static IntValue EXP_GROWTH_51_60;
-    public static IntValue OVERFLOW_BONUS_MARK;
     public static IntValue MAX_MODIFIERS_PER_UUID;
     public static IntValue ARCHER_EXP_DAMAGE;
     public static IntValue ARCHER_EXP_KILL_HP;
@@ -110,7 +109,6 @@ public final class MedalsConfig {
     public static IntValue TANK_EXP_DAMAGE;
     public static IntValue TANK_EXP_KILL_HP;
     public static IntValue TANK_EXP_HEAL;
-    public static IntValue TANK_EXP_THORNS;
     public static IntValue TANK_L1_ARMOR;
     public static IntValue TANK_L1_MAX_HEALTH;
     public static IntValue TANK_L1_OVERHEAL;
@@ -233,7 +231,6 @@ public final class MedalsConfig {
     public static IntValue S20_DURATION_SECONDS;
     public static IntValue S20_SERVANT_DAMAGE;
     public static IntValue S20_SERVANT_LIMIT;
-    public static IntValue S20_LIFE_EXTEND_SECONDS;
     public static IntValue S20_COOLDOWN_SECONDS;
 
     // Lv.50【魂火】
@@ -290,7 +287,6 @@ public final class MedalsConfig {
     // 注:原 SHOW_HUD / HUD_X / HUD_Y 已移除。
     // 熟练度不再走屏幕左上角的浮层,而是直接写在勋章物品的 tooltip 里
     // (见 ItemMedal#appendHoverText),操作上更直观、也不占屏幕。
-    public static BooleanValue HIDE_FIRST_PERSON_SHIELD;
 
     // ---- 更好的状态效果 HUD ----
     public static BooleanValue EFFECT_HUD_ENABLED;
@@ -384,10 +380,6 @@ public final class MedalsConfig {
     public static IntValue BOSS_PHASE_2_PERCENT;
     /** 阶段Ⅲ血量阈值(%)。 */
     public static IntValue BOSS_PHASE_3_PERCENT;
-    /** 每次命中为祭坛累积的进度(%)。 */
-    public static IntValue BOSS_ALTAR_CHARGE_PERCENT;
-    /** 护盾保留伤害比例(%)。 */
-    public static IntValue BOSS_SHIELD_KEEP_PERCENT;
     /** 终末审判基础读条秒数。 */
     public static IntValue BOSS_JUDGEMENT_SECONDS;
     /** 仆从数量上限。 */
@@ -596,7 +588,6 @@ public final class MedalsConfig {
         EXP_GROWTH_31_40 = c.EXP_GROWTH_31_40;
         EXP_GROWTH_41_50 = c.EXP_GROWTH_41_50;
         EXP_GROWTH_51_60 = c.EXP_GROWTH_51_60;
-        OVERFLOW_BONUS_MARK = c.OVERFLOW_BONUS_MARK;
         MAX_MODIFIERS_PER_UUID = c.MAX_MODIFIERS_PER_UUID;
         ARCHER_EXP_DAMAGE = c.ARCHER_EXP_DAMAGE;
         ARCHER_EXP_KILL_HP = c.ARCHER_EXP_KILL_HP;
@@ -672,7 +663,6 @@ public final class MedalsConfig {
         TANK_EXP_DAMAGE = c.TANK_EXP_DAMAGE;
         TANK_EXP_KILL_HP = c.TANK_EXP_KILL_HP;
         TANK_EXP_HEAL = c.TANK_EXP_HEAL;
-        TANK_EXP_THORNS = c.TANK_EXP_THORNS;
         TANK_L1_ARMOR = c.TANK_L1_ARMOR;
         TANK_L1_MAX_HEALTH = c.TANK_L1_MAX_HEALTH;
         TANK_L1_OVERHEAL = c.TANK_L1_OVERHEAL;
@@ -770,7 +760,6 @@ public final class MedalsConfig {
         S20_DURATION_SECONDS = c.S20_DURATION_SECONDS;
         S20_SERVANT_DAMAGE = c.S20_SERVANT_DAMAGE;
         S20_SERVANT_LIMIT = c.S20_SERVANT_LIMIT;
-        S20_LIFE_EXTEND_SECONDS = c.S20_LIFE_EXTEND_SECONDS;
         S20_COOLDOWN_SECONDS = c.S20_COOLDOWN_SECONDS;
         S25_EXTRA_DAMAGE = c.S25_EXTRA_DAMAGE;
         S30_SERVANT_LIMIT = c.S30_SERVANT_LIMIT;
@@ -812,7 +801,6 @@ public final class MedalsConfig {
         SWORD_ANIM_TICKS = c.SWORD_ANIM_TICKS;
         SWORD_BREAK_BLOCKS = c.SWORD_BREAK_BLOCKS;
         SWORD_HIT_PLAYERS = c.SWORD_HIT_PLAYERS;
-        HIDE_FIRST_PERSON_SHIELD = cl.HIDE_FIRST_PERSON_SHIELD;
         EFFECT_HUD_ENABLED = cl.EFFECT_HUD_ENABLED;
         EFFECT_HUD_SCALE = cl.EFFECT_HUD_SCALE;
         EFFECT_HUD_CORNER = cl.EFFECT_HUD_CORNER;
@@ -867,8 +855,6 @@ public final class MedalsConfig {
         BOSS_MAX_HEALTH = c.BOSS_MAX_HEALTH;
         BOSS_PHASE_2_PERCENT = c.BOSS_PHASE_2_PERCENT;
         BOSS_PHASE_3_PERCENT = c.BOSS_PHASE_3_PERCENT;
-        BOSS_ALTAR_CHARGE_PERCENT = c.BOSS_ALTAR_CHARGE_PERCENT;
-        BOSS_SHIELD_KEEP_PERCENT = c.BOSS_SHIELD_KEEP_PERCENT;
         BOSS_JUDGEMENT_SECONDS = c.BOSS_JUDGEMENT_SECONDS;
         BOSS_SENTINEL_LIMIT = c.BOSS_SENTINEL_LIMIT;
         BOSS_MEDAL_REQUIREMENT = c.BOSS_MEDAL_REQUIREMENT;
@@ -1008,7 +994,6 @@ public final class MedalsConfig {
         public IntValue EXP_GROWTH_31_40;
         public IntValue EXP_GROWTH_41_50;
         public IntValue EXP_GROWTH_51_60;
-        public IntValue OVERFLOW_BONUS_MARK;
         public IntValue MAX_MODIFIERS_PER_UUID;
         public IntValue ARCHER_EXP_DAMAGE;
         public IntValue ARCHER_EXP_KILL_HP;
@@ -1084,7 +1069,6 @@ public final class MedalsConfig {
         public IntValue TANK_EXP_DAMAGE;
         public IntValue TANK_EXP_KILL_HP;
         public IntValue TANK_EXP_HEAL;
-        public IntValue TANK_EXP_THORNS;
         public IntValue TANK_L1_ARMOR;
         public IntValue TANK_L1_MAX_HEALTH;
         public IntValue TANK_L1_OVERHEAL;
@@ -1302,7 +1286,6 @@ public final class MedalsConfig {
         public IntValue S20_DURATION_SECONDS;
         public IntValue S20_SERVANT_DAMAGE;
         public IntValue S20_SERVANT_LIMIT;
-        public IntValue S20_LIFE_EXTEND_SECONDS;
         public IntValue S20_COOLDOWN_SECONDS;
         public DoubleValue S25_EXTRA_DAMAGE;
         public IntValue S30_SERVANT_LIMIT;
@@ -1395,8 +1378,6 @@ public final class MedalsConfig {
         public DoubleValue BOSS_MAX_HEALTH;
         public IntValue BOSS_PHASE_2_PERCENT;
         public IntValue BOSS_PHASE_3_PERCENT;
-        public IntValue BOSS_ALTAR_CHARGE_PERCENT;
-        public IntValue BOSS_SHIELD_KEEP_PERCENT;
         public IntValue BOSS_JUDGEMENT_SECONDS;
         public IntValue BOSS_SENTINEL_LIMIT;
         public IntValue BOSS_MEDAL_REQUIREMENT;
@@ -1429,8 +1410,6 @@ public final class MedalsConfig {
                 .defineInRange("exp_growth_41_50", 3, 0, 1000);
         EXP_GROWTH_51_60 = b.comment("51~60 级:每级所需经验比上一级多出的百分比(整数)。2 = +2%")
                 .defineInRange("exp_growth_51_60", 2, 0, 1000);
-        OVERFLOW_BONUS_MARK = b.comment("熟练度溢出修正:仅按实际造成的有效伤害计入(1=开启,0=关闭)")
-                .defineInRange("overflow_fix", 1, 0, 1);
         MAX_MODIFIERS_PER_UUID = b.comment("防叠加保护:同名修饰符(UUID)允许的最大并存数量,超出将被拒绝")
                 .defineInRange("max_modifiers_per_uuid", 8, 1, 64);
         b.pop();
@@ -1541,8 +1520,6 @@ public final class MedalsConfig {
         TANK_EXP_DAMAGE = pctDef(b, "exp_damage", 50, "承受伤害转化为熟练度的百分比");
         TANK_EXP_KILL_HP = pctDef(b, "exp_kill_hp", 10, "击杀时按目标最大生命值转化的百分比");
         TANK_EXP_HEAL = pctDef(b, "exp_heal", 35, "恢复生命转化为熟练度的百分比");
-        TANK_EXP_THORNS = b.comment("反伤提供的固定熟练度").defineInRange("exp_thorns", 5, 0, 100000);
-
         TANK_L1_ARMOR = pctDef(b, "lv1_armor", 5, "Lv.1 护甲加成");
         TANK_L1_MAX_HEALTH = pctDef(b, "lv1_max_health", 5, "Lv.1 最大生命值加成");
         TANK_L1_OVERHEAL = pctDef(b, "lv1_overheal", 10, "Lv.1 过量治疗加成");
@@ -1658,7 +1635,6 @@ public final class MedalsConfig {
         S20_DURATION_SECONDS = b.comment("【军团号令】持续(秒)").defineInRange("su20_duration", 20, 1, 3600);
         S20_SERVANT_DAMAGE = pctDef(b, "su20_servant_damage", 30, "【军团号令】仆从伤害加成");
         S20_SERVANT_LIMIT = b.comment("【军团号令】仆从召唤上限增加").defineInRange("su20_servant_limit", 3, 0, 1000);
-        S20_LIFE_EXTEND_SECONDS = b.comment("【军团号令】仆从寿命延长(秒)").defineInRange("su20_life_extend", 30, 0, 36000);
         S20_COOLDOWN_SECONDS = b.comment("【军团号令】冷却(秒)").defineInRange("su20_cooldown", 60, 0, 36000);
         S25_EXTRA_DAMAGE = b.comment("【魂火】仆从攻击附带的额外法术伤害(可小数)").defineInRange("su25_extra_damage", 6.0D, 0.0D, 100000.0D);
         S30_SERVANT_LIMIT = b.comment("【亡者大军】仆从召唤上限增加").defineInRange("su30_servant_limit", 5, 0, 1000);
@@ -1870,14 +1846,6 @@ public final class MedalsConfig {
                 .defineInRange("phase_2_percent", 60, 1, 99);
         BOSS_PHASE_3_PERCENT = b.comment("进入阶段Ⅲ(终末)的血量阈值(%)")
                 .defineInRange("phase_3_percent", 25, 1, 99);
-
-        BOSS_ALTAR_CHARGE_PERCENT = b.comment("每次有效命中为祭坛累积的进度(%)",
-                "默认 10 → 每种条件各命中 10 次即可点亮该祭坛。")
-                .defineInRange("altar_charge_percent", 10, 1, 100);
-
-        BOSS_SHIELD_KEEP_PERCENT = b.comment("四祭坛未全亮时的护盾 —— 实际伤害保留比例(%)",
-                "默认 20 → 只吃 20% 伤害;设为 0 则完全免疫(不推荐,玩家会毫无反馈)。")
-                .defineInRange("shield_keep_percent", 20, 0, 100);
 
         BOSS_JUDGEMENT_SECONDS = b.comment("终末审判的基础读条时长(秒,下限 6 秒)",
                 "玩家四勋章等级总和越高,读条越短(最多缩短 6 秒)。")
@@ -2131,7 +2099,6 @@ public final class MedalsConfig {
     /** 客户端配置(CLIENT)。 */
     public static class Client {
         // 熟练度 HUD 相关配置已移除(见类顶注释)。
-        public BooleanValue HIDE_FIRST_PERSON_SHIELD;
 
         // ---- 更好的状态效果 HUD ----
         public BooleanValue EFFECT_HUD_ENABLED;
@@ -2144,8 +2111,6 @@ public final class MedalsConfig {
         public Client(ForgeConfigSpec.Builder b) {
 
         b.comment("客户端显示选项").push("client");
-        HIDE_FIRST_PERSON_SHIELD = b.comment("第一人称隐藏星盾视觉").define("hide_first_person_shield", true);
-
         // ============================================================
         // 更好的状态效果 HUD
         // ============================================================

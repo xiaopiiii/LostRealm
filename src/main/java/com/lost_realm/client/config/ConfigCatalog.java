@@ -263,9 +263,6 @@ public final class ConfigCatalog {
         //    因此不再需要 show_hud / hud_x / hud_y 三个配置项。
         // ============================================================
 
-        toggle("hide_first_person_shield", ConfigCategory.EFFECT_HUD,
-                MedalsConfig.HIDE_FIRST_PERSON_SHIELD, true, C);
-
         // ============================================================
         // 原作数值 · 通用 / 经验
         // ============================================================
@@ -286,8 +283,6 @@ public final class ConfigCatalog {
                 MedalsConfig.EXP_GROWTH_41_50, 0, 1000, 3, S);
         step("exp_growth_51_60", ConfigCategory.EXP,
                 MedalsConfig.EXP_GROWTH_51_60, 0, 1000, 2, S);
-        step("overflow_fix", ConfigCategory.EXP,
-                MedalsConfig.OVERFLOW_BONUS_MARK, 0, 1, 1, S);
         step("max_modifiers_per_uuid", ConfigCategory.EXP,
                 MedalsConfig.MAX_MODIFIERS_PER_UUID, 1, 64, 8, S);
 
@@ -363,8 +358,6 @@ public final class ConfigCatalog {
         // 原作数值 · 坦克
         // ============================================================
 
-        step("exp_thorns", ConfigCategory.TANK,
-                MedalsConfig.TANK_EXP_THORNS, 0, 100000, 5, S);
         stepD("t5_slow_weapon_attack_speed", ConfigCategory.TANK,
                 MedalsConfig.T5_SLOW_WEAPON_ATTACK_SPEED, 0.0, 20.0, 1.0, S);
         step("t10_absorb_amount", ConfigCategory.TANK,
@@ -483,8 +476,6 @@ public final class ConfigCatalog {
                 MedalsConfig.S20_SERVANT_DAMAGE, 0, 1000, 30, S);
         step("su20_servant_limit", ConfigCategory.SUMMONER,
                 MedalsConfig.S20_SERVANT_LIMIT, 0, 1000, 3, S);
-        step("su20_life_extend", ConfigCategory.SUMMONER,
-                MedalsConfig.S20_LIFE_EXTEND_SECONDS, 0, 36000, 30, S);
         step("su20_cooldown", ConfigCategory.SUMMONER,
                 MedalsConfig.S20_COOLDOWN_SECONDS, 0, 36000, 60, S);
         stepD("su25_extra_damage", ConfigCategory.SUMMONER,
@@ -596,11 +587,6 @@ public final class ConfigCatalog {
                 MedalsConfig.BOSS_PHASE_2_PERCENT, 1, 99, 60, S);
         step("boss_phase_3_percent", ConfigCategory.BOSS,
                 MedalsConfig.BOSS_PHASE_3_PERCENT, 1, 99, 25, S);
-
-        step("boss_altar_charge_percent", ConfigCategory.BOSS,
-                MedalsConfig.BOSS_ALTAR_CHARGE_PERCENT, 1, 100, 10, S);
-        step("boss_shield_keep_percent", ConfigCategory.BOSS,
-                MedalsConfig.BOSS_SHIELD_KEEP_PERCENT, 0, 100, 20, S);
 
         step("boss_judgement_seconds", ConfigCategory.BOSS,
                 MedalsConfig.BOSS_JUDGEMENT_SECONDS, 6, 60, 12, S);
@@ -808,6 +794,121 @@ public final class ConfigCatalog {
                 MedalsConfig.TIME_CAPSULE_MAX_USES, 1, 100, 5, S);
         step("time_capsule_shorten_seconds", ConfigCategory.ARROWS,
                 MedalsConfig.TIME_CAPSULE_SHORTEN_SECONDS, 1, 600, 2, S);
+
+        // ============================================================
+        // 补齐:此前只在配置文件里存在、界面上看不到的选项(beta39)
+        // ------------------------------------------------------------
+        // 共 97 项,全部是代码里确实在读的数值(没有死配置)。
+        // 分类沿用字段前缀:ARCHER_/S* → 射手,W*/WARRIOR_ → 战士,
+        // T*/TANK_ → 坦克,M*/MAGE_ → 法师,VX_ → 熟练度与经验。
+        // ============================================================
+
+        // ---- 原作数值 · 射手(补齐:熟练度转化 / 等级成长 / 技能细参) ----
+        step("archer_exp_damage", ConfigCategory.ARCHER, MedalsConfig.ARCHER_EXP_DAMAGE, 0, 1000, 20, S);
+        step("archer_exp_kill_hp", ConfigCategory.ARCHER, MedalsConfig.ARCHER_EXP_KILL_HP, 0, 1000, 15, S);
+        step("archer_lv1_arrow_damage", ConfigCategory.ARCHER, MedalsConfig.ARCHER_L1_ARROW_DMG, 0, 1000, 8, S);
+        step("archer_lv1_dodge", ConfigCategory.ARCHER, MedalsConfig.ARCHER_L1_DODGE, 0, 1000, 5, S);
+        step("archer_lv1_draw_speed", ConfigCategory.ARCHER, MedalsConfig.ARCHER_L1_DRAW_SPEED, 0, 1000, 5, S);
+        step("archer_lv1_move_speed", ConfigCategory.ARCHER, MedalsConfig.ARCHER_L1_MOVE_SPEED, 0, 1000, 5, S);
+        stepD("archer_per_level_arrow_damage", ConfigCategory.ARCHER, MedalsConfig.ARCHER_PER_ARROW_DMG, 0, 1000, 1.5, S);
+        stepD("archer_per_level_dodge", ConfigCategory.ARCHER, MedalsConfig.ARCHER_PER_DODGE, 0, 1000, 0.5, S);
+        stepD("archer_per_level_draw_speed", ConfigCategory.ARCHER, MedalsConfig.ARCHER_PER_DRAW_SPEED, 0, 1000, 0.8, S);
+        stepD("archer_per_level_move_speed", ConfigCategory.ARCHER, MedalsConfig.ARCHER_PER_MOVE_SPEED, 0, 1000, 0.8, S);
+        step("s15_chance_drop", ConfigCategory.ARCHER, MedalsConfig.S15_CHANCE_DROP_PER_BLOCK, 0, 1000, 5, S);
+        step("s15_min_chance", ConfigCategory.ARCHER, MedalsConfig.S15_MIN_CHANCE, 0, 1000, 15, S);
+        step("s15_near_chance", ConfigCategory.ARCHER, MedalsConfig.S15_NEAR_CHANCE, 0, 1000, 45, S);
+        step("s20_extra_arrow_damage", ConfigCategory.ARCHER, MedalsConfig.S20_EXTRA_ARROW_DAMAGE, 0, 1000, 25, S);
+        step("s20_multishot_bonus", ConfigCategory.ARCHER, MedalsConfig.S20_MULTISHOT_BONUS, 0, 1000, 25, S);
+        step("s25_rain_chance", ConfigCategory.ARCHER, MedalsConfig.S25_RAIN_CHANCE, 0, 1000, 20, S);
+        step("s30_arrow_damage", ConfigCategory.ARCHER, MedalsConfig.S30_ARROW_DAMAGE, 0, 1000, 10, S);
+        step("s30_draw_speed", ConfigCategory.ARCHER, MedalsConfig.S30_DRAW_SPEED, 0, 1000, 80, S);
+        step("s30_move_speed", ConfigCategory.ARCHER, MedalsConfig.S30_MOVE_SPEED, 0, 1000, 20, S);
+        step("s30_move_speed_mounted", ConfigCategory.ARCHER, MedalsConfig.S30_MOVE_SPEED_MOUNTED, 0, 1000, 30, S);
+        step("s5_immune_chance", ConfigCategory.ARCHER, MedalsConfig.S5_DODGE_IMMUNE_CHANCE, 0, 1000, 60, S);
+
+        // ---- 原作数值 · 战士(补齐) ----
+        step("w10_hp_threshold", ConfigCategory.WARRIOR, MedalsConfig.W10_HP_THRESHOLD, 0, 1000, 60, S);
+        step("w10_lifesteal_per_step", ConfigCategory.WARRIOR, MedalsConfig.W10_LIFESTEAL_PER_STEP, 0, 1000, 3, S);
+        step("w15_attack_damage", ConfigCategory.WARRIOR, MedalsConfig.W15_ATTACK_DAMAGE, 0, 1000, 10, S);
+        step("w15_hp_cost", ConfigCategory.WARRIOR, MedalsConfig.W15_HP_COST_PER_SECOND, 0, 1000, 4, S);
+        step("w15_move_speed", ConfigCategory.WARRIOR, MedalsConfig.W15_MOVE_SPEED, 0, 1000, 15, S);
+        step("w20_freeze_chance", ConfigCategory.WARRIOR, MedalsConfig.W20_FREEZE_CHANCE, 0, 1000, 10, S);
+        step("w25_attack_speed", ConfigCategory.WARRIOR, MedalsConfig.W25_ATTACK_SPEED, 0, 1000, 50, S);
+        step("w25_lifesteal", ConfigCategory.WARRIOR, MedalsConfig.W25_LIFESTEAL, 0, 1000, 20, S);
+        step("w25_move_speed", ConfigCategory.WARRIOR, MedalsConfig.W25_MOVE_SPEED, 0, 1000, 10, S);
+        step("w30_lost_hp_damage", ConfigCategory.WARRIOR, MedalsConfig.W30_LOST_HP_DAMAGE, 0, 1000, 20, S);
+        step("w30_lost_hp_damage_low", ConfigCategory.WARRIOR, MedalsConfig.W30_LOST_HP_DAMAGE_LOW, 0, 1000, 40, S);
+        step("w30_low_hp_crit_chance", ConfigCategory.WARRIOR, MedalsConfig.W30_LOW_HP_CRIT_CHANCE, 0, 1000, 10, S);
+        step("w30_low_hp_threshold", ConfigCategory.WARRIOR, MedalsConfig.W30_LOW_HP_THRESHOLD, 0, 1000, 50, S);
+        step("w5_bleed_chance", ConfigCategory.WARRIOR, MedalsConfig.W5_BLEED_CHANCE, 0, 1000, 20, S);
+        step("w5_crit_chance", ConfigCategory.WARRIOR, MedalsConfig.W5_BLEED_CRIT_CHANCE, 0, 1000, 10, S);
+        step("warrior_exp_damage", ConfigCategory.WARRIOR, MedalsConfig.WARRIOR_EXP_DAMAGE, 0, 1000, 10, S);
+        step("warrior_exp_kill_hp", ConfigCategory.WARRIOR, MedalsConfig.WARRIOR_EXP_KILL_HP, 0, 1000, 10, S);
+        step("warrior_lv1_attack_speed", ConfigCategory.WARRIOR, MedalsConfig.WARRIOR_L1_ATTACK_SPEED, 0, 1000, 5, S);
+        step("warrior_lv1_crit_chance", ConfigCategory.WARRIOR, MedalsConfig.WARRIOR_L1_CRIT_CHANCE, 0, 1000, 5, S);
+        step("warrior_lv1_crit_damage", ConfigCategory.WARRIOR, MedalsConfig.WARRIOR_L1_CRIT_DAMAGE, 0, 1000, 5, S);
+        step("warrior_lv1_damage", ConfigCategory.WARRIOR, MedalsConfig.WARRIOR_L1_DAMAGE, 0, 1000, 5, S);
+        stepD("warrior_per_level_attack_speed", ConfigCategory.WARRIOR, MedalsConfig.WARRIOR_PER_ATTACK_SPEED, 0, 1000, 0.5, S);
+        stepD("warrior_per_level_crit_chance", ConfigCategory.WARRIOR, MedalsConfig.WARRIOR_PER_CRIT_CHANCE, 0, 1000, 0.5, S);
+        stepD("warrior_per_level_crit_damage", ConfigCategory.WARRIOR, MedalsConfig.WARRIOR_PER_CRIT_DAMAGE, 0, 1000, 1.0, S);
+        stepD("warrior_per_level_damage", ConfigCategory.WARRIOR, MedalsConfig.WARRIOR_PER_DAMAGE, 0, 1000, 0.75, S);
+
+        // ---- 原作数值 · 坦克(补齐) ----
+        step("t10_absorb_chance", ConfigCategory.TANK, MedalsConfig.T10_ABSORB_CHANCE, 0, 1000, 35, S);
+        step("t20_armor_bonus", ConfigCategory.TANK, MedalsConfig.T20_ARMOR_BONUS, 0, 1000, 20, S);
+        step("t20_damage_reduction", ConfigCategory.TANK, MedalsConfig.T20_DAMAGE_REDUCTION, 0, 1000, 20, S);
+        step("t25_block_cap", ConfigCategory.TANK, MedalsConfig.T25_BLOCK_CAP, 0, 1000, 20, S);
+        step("t25_block_chance", ConfigCategory.TANK, MedalsConfig.T25_BLOCK_CHANCE, 0, 1000, 30, S);
+        step("t30_heal_per_second", ConfigCategory.TANK, MedalsConfig.T30_HEAL_PER_SECOND, 0, 1000, 10, S);
+        step("t30_hp_threshold", ConfigCategory.TANK, MedalsConfig.T30_HP_THRESHOLD, 0, 1000, 10, S);
+        step("t5_crit_chance", ConfigCategory.TANK, MedalsConfig.T5_CRIT_CHANCE, 0, 1000, 20, S);
+        step("t5_crit_damage", ConfigCategory.TANK, MedalsConfig.T5_CRIT_DAMAGE, 0, 1000, 20, S);
+        step("t5_damage", ConfigCategory.TANK, MedalsConfig.T5_DAMAGE, 0, 1000, 20, S);
+        step("tank_exp_damage", ConfigCategory.TANK, MedalsConfig.TANK_EXP_DAMAGE, 0, 1000, 50, S);
+        step("tank_exp_heal", ConfigCategory.TANK, MedalsConfig.TANK_EXP_HEAL, 0, 1000, 35, S);
+        step("tank_exp_kill_hp", ConfigCategory.TANK, MedalsConfig.TANK_EXP_KILL_HP, 0, 1000, 10, S);
+        step("tank_lv1_armor", ConfigCategory.TANK, MedalsConfig.TANK_L1_ARMOR, 0, 1000, 5, S);
+        step("tank_lv1_damage_reduction", ConfigCategory.TANK, MedalsConfig.TANK_L1_DAMAGE_REDUCTION, 0, 1000, 5, S);
+        step("tank_lv1_max_health", ConfigCategory.TANK, MedalsConfig.TANK_L1_MAX_HEALTH, 0, 1000, 5, S);
+        step("tank_lv1_overheal", ConfigCategory.TANK, MedalsConfig.TANK_L1_OVERHEAL, 0, 1000, 10, S);
+        stepD("tank_per_level_armor", ConfigCategory.TANK, MedalsConfig.TANK_PER_ARMOR, 0, 1000, 0.75, S);
+        stepD("tank_per_level_damage_reduction", ConfigCategory.TANK, MedalsConfig.TANK_PER_DAMAGE_REDUCTION, 0, 1000, 0.5, S);
+        stepD("tank_per_level_max_health", ConfigCategory.TANK, MedalsConfig.TANK_PER_MAX_HEALTH, 0, 1000, 1.0, S);
+        stepD("tank_per_level_overheal", ConfigCategory.TANK, MedalsConfig.TANK_PER_OVERHEAL, 0, 1000, 1.0, S);
+
+        // ---- 原作数值 · 法师(补齐) ----
+        step("m10_base_crit_chance", ConfigCategory.MAGE, MedalsConfig.M10_BASE_CRIT_CHANCE, 0, 1000, 10, S);
+        step("m10_base_crit_damage", ConfigCategory.MAGE, MedalsConfig.M10_BASE_CRIT_DAMAGE, 0, 1000, 135, S);
+        step("m15_debuff_refund_chance", ConfigCategory.MAGE, MedalsConfig.M15_DEBUFF_REFUND_CHANCE, 0, 1000, 60, S);
+        step("m15_debuff_refund_ratio", ConfigCategory.MAGE, MedalsConfig.M15_DEBUFF_REFUND_RATIO, 0, 1000, 75, S);
+        step("m15_refund_chance", ConfigCategory.MAGE, MedalsConfig.M15_REFUND_CHANCE, 0, 1000, 30, S);
+        step("m15_refund_ratio", ConfigCategory.MAGE, MedalsConfig.M15_REFUND_RATIO, 0, 1000, 50, S);
+        step("m15_spell_duration", ConfigCategory.MAGE, MedalsConfig.M15_SPELL_DURATION, 0, 1000, 10, S);
+        step("m20_casting_speed", ConfigCategory.MAGE, MedalsConfig.M20_CASTING_SPEED, 0, 1000, 80, S);
+        step("m20_cooldown_discount", ConfigCategory.MAGE, MedalsConfig.M20_COOLDOWN_DISCOUNT, 0, 1000, 25, S);
+        step("m20_move_speed", ConfigCategory.MAGE, MedalsConfig.M20_MOVE_SPEED, 0, 1000, 20, S);
+        step("m20_soul_discount", ConfigCategory.MAGE, MedalsConfig.M20_SOUL_DISCOUNT, 0, 1000, 50, S);
+        step("m20_spell_potency", ConfigCategory.MAGE, MedalsConfig.M20_SPELL_POTENCY, 0, 1000, 30, S);
+        step("m20_spell_radius", ConfigCategory.MAGE, MedalsConfig.M20_SPELL_RADIUS, 0, 1000, 20, S);
+        step("m25_casting_speed_per_stack", ConfigCategory.MAGE, MedalsConfig.M25_CASTING_SPEED_PER_STACK, 0, 1000, 5, S);
+        step("m25_crit_chance_per_stack", ConfigCategory.MAGE, MedalsConfig.M25_CRIT_CHANCE_PER_STACK, 0, 1000, 2, S);
+        step("m25_potency_per_stack", ConfigCategory.MAGE, MedalsConfig.M25_POTENCY_PER_STACK, 0, 1000, 10, S);
+        step("m30_barrage_potency", ConfigCategory.MAGE, MedalsConfig.M30_BARRAGE_POTENCY, 0, 1000, 35, S);
+        step("m30_pity_increment", ConfigCategory.MAGE, MedalsConfig.M30_PITY_INCREMENT, 0, 1000, 15, S);
+        step("m30_refresh_chance", ConfigCategory.MAGE, MedalsConfig.M30_REFRESH_CHANCE, 0, 1000, 20, S);
+        step("m30_spell_radius", ConfigCategory.MAGE, MedalsConfig.M30_SPELL_RADIUS, 0, 1000, 25, S);
+        step("mage_exp_kill_hp", ConfigCategory.MAGE, MedalsConfig.MAGE_EXP_KILL_HP, 0, 1000, 20, S);
+        step("mage_exp_soul", ConfigCategory.MAGE, MedalsConfig.MAGE_EXP_SOUL, 0, 1000, 20, S);
+        step("mage_exp_spell_damage", ConfigCategory.MAGE, MedalsConfig.MAGE_EXP_SPELL_DAMAGE, 0, 1000, 20, S);
+        step("mage_lv1_casting_speed", ConfigCategory.MAGE, MedalsConfig.MAGE_L1_CASTING_SPEED, 0, 1000, 5, S);
+        step("mage_lv1_soul_discount", ConfigCategory.MAGE, MedalsConfig.MAGE_L1_SOUL_DISCOUNT, 0, 1000, 2, S);
+        step("mage_lv1_spell_radius", ConfigCategory.MAGE, MedalsConfig.MAGE_L1_SPELL_RADIUS, 0, 1000, 5, S);
+
+        // ---- 原作数值 · 经验曲线(补齐) ----
+        step("vx_growth_1_40", ConfigCategory.EXP, MedalsConfig.VX_GROWTH_1_40, 0, 1000, 10, S);
+        step("vx_growth_40_70", ConfigCategory.EXP, MedalsConfig.VX_GROWTH_40_70, 0, 1000, 8, S);
+        step("vx_growth_70_100", ConfigCategory.EXP, MedalsConfig.VX_GROWTH_70_100, 0, 1000, 4, S);
+        step("vx_growth_after_100", ConfigCategory.EXP, MedalsConfig.VX_GROWTH_AFTER_100, 0, 1000, 2, S);
     }
 
     // ================================================================
