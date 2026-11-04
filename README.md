@@ -2498,7 +2498,7 @@ dv19/dv20 的触手是「每节骨骼的 pivot = 珠子自己的中心」，
 
 ### 三条落点
 
-1. **敌对生物**：只认 `Monster`。实体进入世界（`EntityJoinLevelEvent`）时给
+1. **敌对生物**：只认 `Enemy` 标记（`Monster` 只是它的子集，史莱姆/恶魂/幻翼也带这个标记）。实体进入世界（`EntityJoinLevelEvent`）时给
    `MAX_HEALTH` / `ARMOR` / `ATTACK_DAMAGE` 挂固定 UUID 的 `MULTIPLY_TOTAL` 修饰符。
    换难度改的是**同一个 UUID 的数值**，不是再叠一层 —— 所以「简单打一半切深渊」
    不会变成 0.8 × 1.6 的残留。血量按比例保留（掉到 40% 的怪换难度后仍是 40%）。

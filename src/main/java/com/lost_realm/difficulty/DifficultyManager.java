@@ -14,7 +14,7 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
@@ -39,7 +39,8 @@ import top.theillusivec4.curios.api.CuriosApi;
  *
  * <h2>三条落点,互不干扰</h2>
  * <ol>
- *   <li><b>敌对生物</b>({@link Monster}):只在<b>实体进入世界</b>时给它的
+ *   <li><b>敌对生物</b>({@link Enemy},即所有"敌对"标记的怪 —— 不止 {@code Monster},
+ *       史莱姆/恶魂/幻翼/末影龙同样算):只在<b>实体进入世界</b>时给它的
  *       最大生命/护甲/攻击挂一组固定 UUID 的倍率修饰符。之后无论难度怎么变,
  *       属性实例本身不会漂移 —— 换难度时<b>重算一次</b>即可
  *       ({@link #reapplyAllMobs}),不需要每 tick 扫描。</li>
@@ -147,7 +148,7 @@ public final class DifficultyManager {
         if (mob == null || mob.level().isClientSide) {
             return;
         }
-        if (!(mob instanceof Monster)) {
+        if (!(mob instanceof Enemy)) {
             return;
         }
 

@@ -73,7 +73,7 @@ public enum DifficultyLevel {
     /** 聊天栏提示色。 */
     private final ChatFormatting color;
 
-    /** 敌对生物(Monster)最大生命倍率。 */
+    /** 敌对生物({@code Enemy} 标记,含史莱姆/恶魂等非 Monster)最大生命倍率。 */
     private final double mobHealth;
     /** 敌对生物护甲倍率。 */
     private final double mobArmor;
