@@ -5,7 +5,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
-import net.minecraftforge.common.ForgeConfigSpec;
 
 import com.lost_realm.Medals;
 
@@ -120,7 +119,7 @@ public final class BossRegistry {
     public static final int SENTINEL_DEPTH = 3;
 
     // ================================================================
-    // 数值 —— 全部可从配置读取
+    // 数值 —— 旧版终末之影用(当前流程不再召唤它,已不再走配置)
     // ----------------------------------------------------------------
     // 为什么用「方法」而不是「常量」:
     // 这些数值要出现在可视化配置界面里,必须运行期可读。
@@ -147,49 +146,27 @@ public final class BossRegistry {
 
     /** Boss 最大生命值(配置优先,未加载时回退默认)。 */
     public static double bossMaxHealth() {
-        try {
-            Double v = com.lost_realm.config.MedalsConfig.BOSS_MAX_HEALTH == null
-                    ? null : com.lost_realm.config.MedalsConfig.BOSS_MAX_HEALTH.get();
-            return v == null ? DEFAULT_BOSS_MAX_HEALTH : v;
-        } catch (Throwable t) {
-            return DEFAULT_BOSS_MAX_HEALTH;
-        }
+        return DEFAULT_BOSS_MAX_HEALTH;
     }
 
     /** 阶段Ⅱ血量阈值(0~1)。 */
     public static float phase2Threshold() {
-        Integer pct = readInt("phase_2", null);
-        int v = pct == null ? Math.round(DEFAULT_PHASE_2_THRESHOLD * 100.0F) : pct;
-        return Math.max(0.01F, Math.min(0.99F, v / 100.0F));
+        return DEFAULT_PHASE_2_THRESHOLD;
     }
 
     /** 阶段Ⅲ血量阈值(0~1)。 */
     public static float phase3Threshold() {
-        Integer pct = readInt("phase_3", null);
-        int v = pct == null ? Math.round(DEFAULT_PHASE_3_THRESHOLD * 100.0F) : pct;
-        return Math.max(0.01F, Math.min(0.99F, v / 100.0F));
+        return DEFAULT_PHASE_3_THRESHOLD;
     }
 
     /** 终末审判读条基准秒数。 */
     public static int judgementBaseSeconds() {
-        try {
-            Integer v = com.lost_realm.config.MedalsConfig.BOSS_JUDGEMENT_SECONDS == null
-                    ? null : com.lost_realm.config.MedalsConfig.BOSS_JUDGEMENT_SECONDS.get();
-            return v == null ? DEFAULT_JUDGEMENT_BASE_SECONDS : v;
-        } catch (Throwable t) {
-            return DEFAULT_JUDGEMENT_BASE_SECONDS;
-        }
+        return DEFAULT_JUDGEMENT_BASE_SECONDS;
     }
 
     /** Boss 系统是否启用。 */
     public static boolean enabled() {
-        try {
-            Boolean v = com.lost_realm.config.MedalsConfig.BOSS_ENABLED == null
-                    ? null : com.lost_realm.config.MedalsConfig.BOSS_ENABLED.get();
-            return v == null || v;
-        } catch (Throwable t) {
-            return true;
-        }
+        return true;
     }
 
     // ================================================================
@@ -219,20 +196,17 @@ public final class BossRegistry {
 
     /** 波数(配置优先)。 */
     public static int waveCount() {
-        return clamp(readIntConfig(com.lost_realm.config.MedalsConfig.BOSS_WAVE_COUNT,
-                DEFAULT_WAVE_COUNT), 1, 10);
+        return clamp(DEFAULT_WAVE_COUNT, 1, 10);
     }
 
     /** 每波怪数(配置优先)。 */
     public static int waveMobCount() {
-        return clamp(readIntConfig(com.lost_realm.config.MedalsConfig.BOSS_WAVE_MOB_COUNT,
-                DEFAULT_WAVE_MOB_COUNT), 1, 20);
+        return clamp(DEFAULT_WAVE_MOB_COUNT, 1, 20);
     }
 
     /** 波间隔秒数(配置优先)。 */
     public static int waveIntervalSeconds() {
-        return clamp(readIntConfig(com.lost_realm.config.MedalsConfig.BOSS_WAVE_INTERVAL_SECONDS,
-                DEFAULT_WAVE_INTERVAL_SECONDS), 1, 60);
+        return clamp(DEFAULT_WAVE_INTERVAL_SECONDS, 1, 60);
     }
 
     /**
@@ -246,8 +220,7 @@ public final class BossRegistry {
      */
     public static net.minecraft.world.entity.EntityType<? extends net.minecraft.world.entity.monster.Monster>
             waveMobType() {
-        int idx = clamp(readIntConfig(com.lost_realm.config.MedalsConfig.BOSS_WAVE_MOB_TYPE,
-                DEFAULT_WAVE_MOB_TYPE), 0, 4);
+        int idx = clamp(DEFAULT_WAVE_MOB_TYPE, 0, 4);
         return switch (idx) {
             case 1 -> net.minecraft.world.entity.EntityType.SKELETON;
             case 2 -> net.minecraft.world.entity.EntityType.SPIDER;
@@ -270,8 +243,7 @@ public final class BossRegistry {
 
     /** 决斗一击扣除玩家最大生命值的比例(0~1)。 */
     public static float duelHitPercent() {
-        int pct = clamp(readIntConfig(com.lost_realm.config.MedalsConfig.BOSS_DUEL_HIT_PERCENT,
-                DEFAULT_DUEL_HIT_PERCENT), 1, 100);
+        int pct = clamp(DEFAULT_DUEL_HIT_PERCENT, 1, 100);
         return pct / 100.0F;
     }
 
@@ -283,44 +255,12 @@ public final class BossRegistry {
      * 硬核包可以拉到 2 分钟慢慢演出,速通包可以压到 5 秒。
      */
     public static int transitionHealSeconds() {
-        return clamp(readIntConfig(com.lost_realm.config.MedalsConfig.BOSS_TRANSITION_HEAL_SECONDS,
-                DEFAULT_TRANSITION_HEAL_SECONDS), 5, 120);
-    }
-
-    /** 内部辅助:安全读取一个 IntValue(带 null 兜底)。 */
-    private static int readIntConfig(ForgeConfigSpec.IntValue value, int fallback) {
-        try {
-            if (value == null) {
-                return fallback;
-            }
-            Integer v = value.get();
-            return v == null ? fallback : v;
-        } catch (Throwable t) {
-            return fallback;
-        }
+        return clamp(DEFAULT_TRANSITION_HEAL_SECONDS, 5, 120);
     }
 
     /** 内部辅助:夹取到闭区间。 */
     private static int clamp(int v, int lo, int hi) {
         return Math.max(lo, Math.min(hi, v));
-    }
-
-    /** 内部辅助:统一的安全读取。 */
-    private static Integer readInt(String which, Integer fallback) {
-        try {
-            switch (which) {
-                case "phase_2":
-                    return com.lost_realm.config.MedalsConfig.BOSS_PHASE_2_PERCENT == null
-                            ? fallback : com.lost_realm.config.MedalsConfig.BOSS_PHASE_2_PERCENT.get();
-                case "phase_3":
-                    return com.lost_realm.config.MedalsConfig.BOSS_PHASE_3_PERCENT == null
-                            ? fallback : com.lost_realm.config.MedalsConfig.BOSS_PHASE_3_PERCENT.get();
-                default:
-                    return fallback;
-            }
-        } catch (Throwable t) {
-            return fallback;
-        }
     }
 
     private BossRegistry() {}

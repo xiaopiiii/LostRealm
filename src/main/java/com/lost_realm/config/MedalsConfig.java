@@ -372,34 +372,8 @@ public final class MedalsConfig {
     // ================================================================
     // 终末之影(Boss)—— 静态引用
     // ================================================================
-    /** Boss 总开关。 */
-    public static BooleanValue BOSS_ENABLED;
-    /** Boss 最大生命值。 */
-    public static DoubleValue BOSS_MAX_HEALTH;
-    /** 阶段Ⅱ血量阈值(%)。 */
-    public static IntValue BOSS_PHASE_2_PERCENT;
-    /** 阶段Ⅲ血量阈值(%)。 */
-    public static IntValue BOSS_PHASE_3_PERCENT;
-    /** 终末审判基础读条秒数。 */
-    public static IntValue BOSS_JUDGEMENT_SECONDS;
-    /** 仆从数量上限。 */
-    public static IntValue BOSS_SENTINEL_LIMIT;
-    /** 任务链要求的勋章等级。 */
-    public static IntValue BOSS_MEDAL_REQUIREMENT;
 
     // ---- dv5:遗落之主新流程 ----
-    /** 波数(1~10)。 */
-    public static IntValue BOSS_WAVE_COUNT;
-    /** 每波怪物数量(1~20)。 */
-    public static IntValue BOSS_WAVE_MOB_COUNT;
-    /** 波间隔秒数(1~60)。 */
-    public static IntValue BOSS_WAVE_INTERVAL_SECONDS;
-    /** 波次怪物种类(0 僵尸 / 1 骷髅 / 2 蜘蛛 / 3 掠夺者 / 4 凋灵骷髅)。 */
-    public static IntValue BOSS_WAVE_MOB_TYPE;
-    /** 决斗一击扣除玩家最大生命值的百分比(1~100)。 */
-    public static IntValue BOSS_DUEL_HIT_PERCENT;
-    /** 每次锁血后回满的耗时秒数(1~30)。 */
-    public static IntValue BOSS_TRANSITION_HEAL_SECONDS;
 
     // ================================================================
     // 体验改进 · 堆叠类(G 组)—— 数值常量
@@ -548,6 +522,18 @@ public final class MedalsConfig {
     public static IntValue JOB_SLOT_SIZE;
     public static IntValue TIME_CAPSULE_MAX_USES;
     public static IntValue TIME_CAPSULE_SHORTEN_SECONDS;
+
+    // ---- 厄瑞玻斯(beta41):新版终局 Boss 的可调数值 ----
+    public static DoubleValue EREBOS_HEALTH;
+    public static IntValue EREBOS_PHASE_1;
+    public static IntValue EREBOS_PHASE_2;
+    public static IntValue EREBOS_PHASE_3;
+    public static DoubleValue EREBOS_CRUISE_SPEED;
+    public static DoubleValue EREBOS_CHARGE_SPEED;
+    public static DoubleValue EREBOS_CONTACT_HEAD;
+    public static DoubleValue EREBOS_CONTACT_BODY;
+    public static IntValue EREBOS_REDUCTION_CAP;
+    public static IntValue EREBOS_LEASH;
 
     /**
      * 内部标记:勋章「每级成长」的 0 值迁移是否已执行过。
@@ -851,19 +837,6 @@ public final class MedalsConfig {
         QOL_INFINITE_BOW_NO_ARROW = c.QOL_INFINITE_BOW_NO_ARROW;
 
         // ---- 终末之影 ----
-        BOSS_ENABLED = c.BOSS_ENABLED;
-        BOSS_MAX_HEALTH = c.BOSS_MAX_HEALTH;
-        BOSS_PHASE_2_PERCENT = c.BOSS_PHASE_2_PERCENT;
-        BOSS_PHASE_3_PERCENT = c.BOSS_PHASE_3_PERCENT;
-        BOSS_JUDGEMENT_SECONDS = c.BOSS_JUDGEMENT_SECONDS;
-        BOSS_SENTINEL_LIMIT = c.BOSS_SENTINEL_LIMIT;
-        BOSS_MEDAL_REQUIREMENT = c.BOSS_MEDAL_REQUIREMENT;
-        BOSS_WAVE_COUNT = c.BOSS_WAVE_COUNT;
-        BOSS_WAVE_MOB_COUNT = c.BOSS_WAVE_MOB_COUNT;
-        BOSS_WAVE_INTERVAL_SECONDS = c.BOSS_WAVE_INTERVAL_SECONDS;
-        BOSS_WAVE_MOB_TYPE = c.BOSS_WAVE_MOB_TYPE;
-        BOSS_DUEL_HIT_PERCENT = c.BOSS_DUEL_HIT_PERCENT;
-        BOSS_TRANSITION_HEAL_SECONDS = c.BOSS_TRANSITION_HEAL_SECONDS;
         ARROW_POTION_CHANCE = c.ARROW_POTION_CHANCE;
         ARROW_POTION_SECONDS = c.ARROW_POTION_SECONDS;
         ARROW_EXPLOSION_POWER = c.ARROW_EXPLOSION_POWER;
@@ -971,6 +944,16 @@ public final class MedalsConfig {
         JOB_SLOT_SIZE = c.JOB_SLOT_SIZE;
         TIME_CAPSULE_MAX_USES = c.TIME_CAPSULE_MAX_USES;
         TIME_CAPSULE_SHORTEN_SECONDS = c.TIME_CAPSULE_SHORTEN_SECONDS;
+        EREBOS_HEALTH = c.EREBOS_HEALTH;
+        EREBOS_PHASE_1 = c.EREBOS_PHASE_1;
+        EREBOS_PHASE_2 = c.EREBOS_PHASE_2;
+        EREBOS_PHASE_3 = c.EREBOS_PHASE_3;
+        EREBOS_CRUISE_SPEED = c.EREBOS_CRUISE_SPEED;
+        EREBOS_CHARGE_SPEED = c.EREBOS_CHARGE_SPEED;
+        EREBOS_CONTACT_HEAD = c.EREBOS_CONTACT_HEAD;
+        EREBOS_CONTACT_BODY = c.EREBOS_CONTACT_BODY;
+        EREBOS_REDUCTION_CAP = c.EREBOS_REDUCTION_CAP;
+        EREBOS_LEASH = c.EREBOS_LEASH;
         GROWTH_MIGRATED = c.GROWTH_MIGRATED;
         LEVEL_CAP_MIGRATED = c.LEVEL_CAP_MIGRATED;
         EXP_CURVE_MIGRATED = c.EXP_CURVE_MIGRATED;
@@ -1228,6 +1211,18 @@ public final class MedalsConfig {
         public IntValue TIME_CAPSULE_MAX_USES;
         public IntValue TIME_CAPSULE_SHORTEN_SECONDS;
 
+        // ---- 厄瑞玻斯 ----
+        public DoubleValue EREBOS_HEALTH;
+        public IntValue EREBOS_PHASE_1;
+        public IntValue EREBOS_PHASE_2;
+        public IntValue EREBOS_PHASE_3;
+        public DoubleValue EREBOS_CRUISE_SPEED;
+        public DoubleValue EREBOS_CHARGE_SPEED;
+        public DoubleValue EREBOS_CONTACT_HEAD;
+        public DoubleValue EREBOS_CONTACT_BODY;
+        public IntValue EREBOS_REDUCTION_CAP;
+        public IntValue EREBOS_LEASH;
+
         /** 内部迁移标记，见 {@link MedalsConfig#GROWTH_MIGRATED}。 */
         public BooleanValue GROWTH_MIGRATED;
 
@@ -1374,21 +1369,8 @@ public final class MedalsConfig {
         public BooleanValue QOL_INFINITE_BOW_NO_ARROW;
 
         // ---- 终末之影(Boss)----
-        public BooleanValue BOSS_ENABLED;
-        public DoubleValue BOSS_MAX_HEALTH;
-        public IntValue BOSS_PHASE_2_PERCENT;
-        public IntValue BOSS_PHASE_3_PERCENT;
-        public IntValue BOSS_JUDGEMENT_SECONDS;
-        public IntValue BOSS_SENTINEL_LIMIT;
-        public IntValue BOSS_MEDAL_REQUIREMENT;
 
         // ---- dv5:遗落之主新流程 ----
-        public IntValue BOSS_WAVE_COUNT;
-        public IntValue BOSS_WAVE_MOB_COUNT;
-        public IntValue BOSS_WAVE_INTERVAL_SECONDS;
-        public IntValue BOSS_WAVE_MOB_TYPE;
-        public IntValue BOSS_DUEL_HIT_PERCENT;
-        public IntValue BOSS_TRANSITION_HEAL_SECONDS;
 
         public Common(ForgeConfigSpec.Builder b) {
 
@@ -1837,51 +1819,17 @@ public final class MedalsConfig {
                 "注意:修改本节的数值只影响新开的战斗,进行中的战斗不会实时生效。")
                 .push("boss");
 
-        BOSS_ENABLED = b.comment("总开关:关闭后召唤符失效,已有战斗仍可正常结束。")
-                .define("enabled", true);
-
-        BOSS_MAX_HEALTH = b.comment("Boss 最大生命值").defineInRange("max_health", 800.0D, 100.0D, 10000.0D);
-
-        BOSS_PHASE_2_PERCENT = b.comment("进入阶段Ⅱ(崩解)的血量阈值(%)")
-                .defineInRange("phase_2_percent", 60, 1, 99);
-        BOSS_PHASE_3_PERCENT = b.comment("进入阶段Ⅲ(终末)的血量阈值(%)")
-                .defineInRange("phase_3_percent", 25, 1, 99);
-
-        BOSS_JUDGEMENT_SECONDS = b.comment("终末审判的基础读条时长(秒,下限 6 秒)",
-                "玩家四勋章等级总和越高,读条越短(最多缩短 6 秒)。")
-                .defineInRange("judgement_seconds", 12, 6, 60);
-
-        BOSS_SENTINEL_LIMIT = b.comment("竞技场内同时存在的守望者仆从上限")
-                .defineInRange("sentinel_limit", 6, 0, 32);
-
-        BOSS_MEDAL_REQUIREMENT = b.comment("任务链要求四枚勋章各达到的等级(用于授予『四相共鸣』成就)")
-                .defineInRange("medal_requirement", 20, 1, 100);
-
         // ---- dv5:遗落之主新流程 ----
         b.comment("决斗演出 —— 玩家在零阶段选择「决斗」后,遗落之主会以幽灵姿态冲来一击,",
                 "扣除玩家最大生命值的一个固定百分比,随后消失并刷出波次怪物。").push("duel");
-        BOSS_DUEL_HIT_PERCENT = b.comment("决斗一击扣除玩家最大生命值的百分比(%)",
-                "默认 50 → 无论装备多好,这一击都会带走一半血。")
-                .defineInRange("hit_percent", 50, 1, 100);
         b.pop();
 
         b.comment("波次 —— 决斗之后刷出的小怪浪潮,全部清空后遗落之主才会真正登场。",
                 "默认使用原版怪物,可通过「怪物种类」项切换。").push("wave");
-        BOSS_WAVE_COUNT = b.comment("波数(1~10)")
-                .defineInRange("count", 5, 1, 10);
-        BOSS_WAVE_MOB_COUNT = b.comment("每波怪物数量(1~20)")
-                .defineInRange("mob_count", 5, 1, 20);
-        BOSS_WAVE_INTERVAL_SECONDS = b.comment("两波之间的间隔(秒)")
-                .defineInRange("interval_seconds", 8, 1, 60);
         b.pop();
-
-        BOSS_WAVE_MOB_TYPE = b.comment("波次怪物种类。0 = 僵尸,1 = 骷髅,2 = 蜘蛛,3 = 掠夺者,4 = 凋灵骷髅。")
-                .defineInRange("wave_mob_type", 0, 0, 4);
 
         b.comment("形态转换 —— 血量将降到 1 时锁定为 1,随后逐渐回满并换一个形态。",
                 "回血的同时 Boss 体型会从小到大平滑长大,并伴随灵魂柱/冲击波/心跳声演出。").push("form");
-        BOSS_TRANSITION_HEAL_SECONDS = b.comment("每次锁血后回满所需的秒数(默认 30,给玩家准备时间)")
-                .defineInRange("transition_heal_seconds", 30, 5, 120);
         b.pop();
 
         // ---------- 箭类饰品(dv42) ----------
@@ -2087,6 +2035,41 @@ public final class MedalsConfig {
         EXP_CURVE_MIGRATED = b.comment(
                         "内部标记:经验成长曲线 10/8/7/6/5/3→7/6/5/4/3/2 的迁移是否已执行过。请勿手动修改。")
                 .define("_exp_curve_migrated_v1", false);
+        b.pop();
+
+        // ---------------------------------- 厄瑞玻斯 ----------------------------------
+        // 新版终局 Boss(50 节巨虫)的可调数值。
+        // 读取点是 ErebosTuning.applyConfig() —— 它在配置加载后把这些值灌进静态字段,
+        // 所以改完要重启(或 /reload)才生效,打到一半的 Boss 不会突然换血。
+        b.comment("厄瑞玻斯 —— 当前终局 Boss。这里的数值会覆盖 ErebosTuning 里的硬编码默认值。")
+                .push("erebos");
+
+        b.comment("最大生命值。★ 当前默认 500 是 beta32 起的实测值,正式发布请把默认改回 12000。")
+                .push("health");
+        EREBOS_HEALTH = b.comment("最大生命值").defineInRange("value", 500.0D, 1.0D, 100000.0D);
+        b.pop();
+
+        b.comment("阶段血量阈值(百分比,按剩余血量从高到低)。").push("phases");
+        EREBOS_PHASE_1 = b.comment("阶段Ⅰ结束 / 阶段Ⅱ开始(%)").defineInRange("phase_1_end", 80, 1, 99);
+        EREBOS_PHASE_2 = b.comment("阶段Ⅱ结束 / 阶段Ⅲ开始(%)").defineInRange("phase_2_end", 60, 1, 99);
+        EREBOS_PHASE_3 = b.comment("阶段Ⅲ结束 / 阶段Ⅳ开始(%)").defineInRange("phase_3_end", 15, 1, 99);
+        b.pop();
+
+        b.comment("移动速度(格/tick;玩家跑速约 0.28)。").push("speed");
+        EREBOS_CRUISE_SPEED = b.comment("远距巡游速度").defineInRange("cruise", 1.25D, 0.05D, 10.0D);
+        EREBOS_CHARGE_SPEED = b.comment("冲锋最高速度。超过约 3.0 服务端会当传送处理,谨慎上调。")
+                .defineInRange("charge", 4.5D, 0.5D, 20.0D);
+        b.pop();
+
+        b.comment("接触伤害(护甲减免前)。原设计按「挨三下死」反推:头 14 / 身体 8。").push("contact");
+        EREBOS_CONTACT_HEAD = b.comment("头部接触伤害").defineInRange("head", 14.0D, 0.0D, 200.0D);
+        EREBOS_CONTACT_BODY = b.comment("身体/尾部接触伤害").defineInRange("body", 8.0D, 0.0D, 200.0D);
+        b.pop();
+
+        EREBOS_REDUCTION_CAP = b.comment("动态减伤上限(%):短时间连续挨打会叠减伤,最高到这个比例")
+                .defineInRange("reduction_cap", 75, 0, 95);
+        EREBOS_LEASH = b.comment("拴绳距离(格):玩家跑出这个范围 Boss 会脱战回到竞技场")
+                .defineInRange("leash", 256, 32, 1024);
         b.pop();
 
         b.pop();

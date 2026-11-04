@@ -84,6 +84,15 @@ public class ConfigScreen extends Screen {
     /** 数值框与右侧单位文字之间的间隙。 */
     private static final int UNIT_GAP   = 4;
 
+    /**
+     * 单位列宽(像素)——<b>整页统一</b>,在 {@link #switchCategory} 时按本页最宽的单位算出来。
+     *
+     * <p>以前是「每行按自己的单位宽度算框的位置」,于是「%」「格/tick」「点」三行
+     * 的输入框左边界各不相同,整列看起来是锯齿状。现在先把本页最宽的单位量出来,
+     * 所有行都从同一条竖线开始画框,单位统一排在同一条竖线上。
+     */
+    private int unitCol;
+
     private final Screen parent;
 
     /** 当前选中的分类 id。 */
@@ -153,7 +162,22 @@ public class ConfigScreen extends Screen {
         this.categoryId = id;
         this.scroll = 0;
         this.current = ConfigCatalog.ofCategory(id);
+        computeUnitColumn();
         rebuildRows();
+    }
+
+    /** 量出本页最宽的单位,作为整页统一的单位列宽。 */
+    private void computeUnitColumn() {
+        int max = 0;
+        for (ConfigOption o : current) {
+            max = Math.max(max, unitWidth(o));
+        }
+        this.unitCol = max;
+    }
+
+    /** 所有行控件的右边界(单位列左侧):开关 / 枚举 / 数值框共用同一条竖线。 */
+    private int controlRight(int cx, int cw) {
+        return cx + cw - PAD - unitCol;
     }
 
     /**
@@ -205,7 +229,7 @@ public class ConfigScreen extends Screen {
                                     btn.setMessage(toggleLabel(opt));
                                     markDirtyVisual(opt, btn);
                                 })
-                        .bounds(cx + cw - bw - PAD, y + 1, bw, ROW_H - 2)
+                        .bounds(controlRight(cx, cw) - bw, y + 1, bw, ROW_H - 2)
                         .build();
                 row.widgets.add(b);
                 addRenderableWidget(b);
@@ -255,7 +279,7 @@ public class ConfigScreen extends Screen {
                                 // 同组按钮高亮要一起刷新
                                 rebuildRows();
                             })
-                            .bounds(cx + cw - (vals.length - i) * (bw + 2) - PAD,
+                            .bounds(controlRight(cx, cw) - (vals.length - i) * (bw + 2),
                                     y + 1, bw, ROW_H - 2).build();
                     row.widgets.add(b);
                     addRenderableWidget(b);
@@ -382,7 +406,7 @@ public class ConfigScreen extends Screen {
      * 没有单位时退化为「贴着右内边距」。
      */
     private int valueBoxX(int cx, int cw, ConfigOption opt) {
-        return cx + cw - PAD - unitWidth(opt) - VALUE_BOX_W;
+        return controlRight(cx, cw) - VALUE_BOX_W;
     }
 
     /**
@@ -627,7 +651,7 @@ public class ConfigScreen extends Screen {
                     }
                     if (selIdx >= 0) {
                         int bw = 42;
-                        int bx = cx + cw - (vals.length - selIdx) * (bw + 2) - PAD;
+                        int bx = controlRight(cx, cw) - (vals.length - selIdx) * (bw + 2);
                         gfx.renderOutline(bx - 1, y + 1, bw, ROW_H - 2, 0xFFFFC040);
                     }
                 }

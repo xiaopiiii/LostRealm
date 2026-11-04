@@ -52,10 +52,6 @@ public final class ConfigCategory {
     public static final ConfigCategory EFFECT_HUD =
             reg("effect_hud", "config.lost_realm.cat.effect_hud");
 
-    // ---- 遗落之主(终局 Boss)----
-    public static final ConfigCategory BOSS =
-            reg("boss", "config.lost_realm.cat.boss");
-
     // ---- 原作系统数值:熟练度与经验 ----
     public static final ConfigCategory EXP =
             reg("exp", "config.lost_realm.cat.exp");
@@ -101,6 +97,10 @@ public final class ConfigCategory {
     // ---- 职业专属饰品槽(dv48)----
     public static final ConfigCategory SLOTS =
             reg("slots", "config.lost_realm.cat.slots");
+
+    // ---- 厄瑞玻斯(beta41):当前终局 Boss ----
+    public static final ConfigCategory EREBOS =
+            reg("erebos", "config.lost_realm.cat.erebos");
 
     /**
      * ⚠️ 必须放在所有 {@code reg(...)} 静态初始化之后。

@@ -24,7 +24,7 @@
 | 熟练度 | Lv.1~60；六段成长率 7/6/5/4/3/2%；枷锁在 Lv.20 与 Lv.40 |
 | 阶位 | 1~20 / 21~40 / 41~60（射手：游射 · 游侠 · 箭神） |
 | 战斗属性 | 12 条自注册（beta30 起不依赖 Apothic Attributes）+ 坦克减伤 |
-| 配置界面 | 18 个分类 / **387 项**，含独立的「世界难度」页 |
+| 配置界面 | 18 个分类 / **384 项**，含独立的「世界难度」页与「厄瑞玻斯」分类 |
 | 世界难度 | **5 档**，`/lr difficulty` 或配置界面切换，写进存档 |
 | 终局 Boss | **厄瑞玻斯**（`lost_realm:erebos`）：50 节 / ≈206 格 / 4 阶段 / 星门 / 暗星天幕 / 双 BGM |
 | 语言键 | 中英各 **1418** 条，逐键对齐 |
@@ -686,7 +686,7 @@ return false;
 
 ### 第 27 项 · 可视化配置界面（`dv3` 起，beta38/39 大改）
 
-把两份 Forge 配置（`SPEC` / `CLIENT_SPEC`）里的 **387 项**全收进一个双栏窗口，
+把两份 Forge 配置（`SPEC` / `CLIENT_SPEC`）里的 **384 项**全收进一个双栏窗口，
 不必再手改 `.toml`。侧边栏 18 个分类，其中 **「世界难度」不是配置项**，
 而是独立的一页（见 [§六·补充二](#六补充二世界难度系统beta37)）。
 
@@ -740,13 +740,13 @@ return false;
 
 世界难度 · 体验改进 · 状态效果 HUD · 熟练度与经验 · 射手数值 · 战士数值 ·
 坦克数值 · 法师数值 · 召唤师 · 箭类饰品 · 战士饰品 · 法师晶石 · 召唤契约 ·
-终极武器 · 盾类饰品 · 职业槽位 · 遗落之主 ·（外加综合视图「全部配置」）
+终极武器 · 盾类饰品 · 职业槽位 · 厄瑞玻斯 ·（外加综合视图「全部配置」）
 
 | 文件 | 职责 |
 |---|---|
 | `client/config/ConfigOption.java` | 单项抽象：读写后端 + 编辑缓冲 + 脏检查 + 重置 |
 | `client/config/ConfigCategory.java` | 18 个分类注册表（侧边栏条目） |
-| `client/config/ConfigCatalog.java` | **387 项登记表** —— 界面唯一数据源 |
+| `client/config/ConfigCatalog.java` | **384 项登记表** —— 界面唯一数据源 |
 | `client/config/ConfigScreen.java` | 双栏界面；难度页在这里单独渲染 |
 
 > **登记表为什么手写**：反射拿不到 `defineInRange` 的 min/max、中文标签、分类归属。
@@ -2703,7 +2703,7 @@ src/main/java/com/lost_realm/
 ├── common/                           Curios 兼容与实体标签
 ├── client/
 │   ├── ClientBootstrap / MedalKeybinds / ClientDifficulty / ClientMedalCache
-│   ├── config/                       配置界面(18 分类 / 387 项 / 难度页)
+│   ├── config/                       配置界面(18 分类 / 384 项 / 难度页 / 厄瑞玻斯页)
 │   ├── effect/                       状态效果 HUD + 可视化编辑界面
 │   ├── dialogue/                     零阶段对话 UI
 │   ├── sky/                          ★ 暗星天幕(ErebosSkyEffects)

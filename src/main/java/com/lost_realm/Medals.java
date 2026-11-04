@@ -90,10 +90,16 @@ public class Medals {
                     LOGGER.info("[Lost Realm] 经验成长曲线已迁移到 7/6/5/4/3/2"
                             + "（旧配置仍是 10/8/7/6/5/3）。");
                 }
+                // 厄瑞玻斯：把配置灌进 ErebosTuning 的可写静态字段（beta41）
+                com.lost_realm.boss.erebos.ErebosTuning.applyConfig();
             }
         });
-        modBus.addListener((net.minecraftforge.fml.event.config.ModConfigEvent.Reloading e) ->
-                com.lost_realm.config.MedalsConfigLoader.register(e.getConfig()));
+        modBus.addListener((net.minecraftforge.fml.event.config.ModConfigEvent.Reloading e) -> {
+            com.lost_realm.config.MedalsConfigLoader.register(e.getConfig());
+            if (e.getConfig().getType() == net.minecraftforge.fml.config.ModConfig.Type.COMMON) {
+                com.lost_realm.boss.erebos.ErebosTuning.applyConfig();
+            }
+        });
 
         modBus.addListener(this::commonSetup);
 
@@ -128,6 +134,11 @@ public class Medals {
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
-        event.enqueueWork(MedalsNetwork::register);
+        event.enqueueWork(() -> {
+            MedalsNetwork.register();
+            // 兜底再灌一次:某些加载顺序下 ModConfigEvent 可能晚于属性注册,
+            // 这里保证 Boss 血量等数值一定来自配置(配置没加载时 applyConfig 自己跳过)。
+            com.lost_realm.boss.erebos.ErebosTuning.applyConfig();
+        });
     }
 }

@@ -35,15 +35,9 @@ public final class WardenSpawnHandler {
     /** 竞技场内同时存在的仆从上限(默认值)。 */
     public static final int MAX_SENTINELS = 6;
 
-    /** 仆从数量上限(配置优先)。 */
+    /** 仆从数量上限(旧版固定值,beta41 起不再读配置)。 */
     public static int maxSentinels() {
-        try {
-            Integer v = com.lost_realm.config.MedalsConfig.BOSS_SENTINEL_LIMIT == null
-                    ? null : com.lost_realm.config.MedalsConfig.BOSS_SENTINEL_LIMIT.get();
-            return v == null ? MAX_SENTINELS : Math.max(0, v);
-        } catch (Throwable t) {
-            return MAX_SENTINELS;
-        }
+        return MAX_SENTINELS;
     }
 
     /**

@@ -122,26 +122,26 @@ public final class ErebosTuning {
      * <p>配置里的 {@code boss_max_health} 是旧 WardenBoss 的，Erebos 不读它，
      * 要调血量只能改这里。</p>
      */
-    public static final double MAX_HEALTH = 500.0D;   // ★ beta32 测试期临时调低，正式发布前恢复 12000
+    public static double MAX_HEALTH = 500.0D;   // ★ beta32 测试期临时调低，正式发布前恢复 12000
 
     /** 阶段Ⅰ结束（100% → 80%）。 */
-    public static final float PHASE_1_END = 0.80F;
+    public static float PHASE_1_END = 0.80F;
 
     /** 阶段Ⅱ结束（80% → 60%）。 */
-    public static final float PHASE_2_END = 0.60F;
+    public static float PHASE_2_END = 0.60F;
 
     /** 阶段Ⅲ结束（60% → 15%）。 */
-    public static final float PHASE_3_END = 0.15F;
+    public static float PHASE_3_END = 0.15F;
 
     // ================================================================
     // 三、运动
     // ================================================================
 
     /** 常规巡游速度（格/tick）。约 11 格/秒 —— 玩家跑速的 2 倍，追得上但追不上太久。 */
-    public static final double CRUISE_SPEED = 1.25D;
+    public static double CRUISE_SPEED = 1.25D;
 
     /** 冲锋最高速度（格/tick）。约 52 格/秒，"一闪而过"，但不会快到看不见。 */
-    public static final double CHARGE_SPEED = 4.5D;
+    public static double CHARGE_SPEED = 4.5D;
 
     /** 冲锋加速度（格/tick²）。原设计要求"加减速温和" —— 别一帧就到顶速。 */
     public static final double CHARGE_ACCEL = 0.085D;
@@ -212,10 +212,10 @@ public final class ErebosTuning {
     // ================================================================
 
     /** 头部接触伤害（护甲前）。原设计 560，按"挨三下死"换算得 14。 */
-    public static final float CONTACT_HEAD = 14.0F;
+    public static float CONTACT_HEAD = 14.0F;
 
     /** 身体/尾部接触伤害（护甲前）。原设计 330，约为头部的 0.59 倍 → 8。 */
-    public static final float CONTACT_BODY = 8.0F;
+    public static float CONTACT_BODY = 8.0F;
 
     /** 同一玩家被接触伤害的最小间隔（tick）。避免每 tick 都判定、把玩家瞬秒。 */
     public static final int CONTACT_COOLDOWN = 10;
@@ -239,7 +239,7 @@ public final class ErebosTuning {
     public static final double REDUCTION_THRESHOLD = 200.0D;
 
     /** 动态减伤上限。原设计 0.75，保留 —— 是"压制"不是"无敌"。 */
-    public static final double REDUCTION_CAP = 0.75D;
+    public static double REDUCTION_CAP = 0.75D;
 
     /**
      * 失血统计窗口（tick）。
@@ -383,7 +383,7 @@ public final class ErebosTuning {
      * 另外这条虫身体就有 96 格长，玩家完全可能站在尾巴附近 ——
      * 128 连"身长 + 一点余量"都不够。
      */
-    public static final double LEASH_RANGE = 256.0D;
+    public static double LEASH_RANGE = 256.0D;
 
     // ================================================================
     // 九、星弹（通用弹幕）
@@ -793,6 +793,51 @@ public final class ErebosTuning {
 
     /** 单个招式一次生成弹幕的硬上限，防止某个参数配错直接把服务器打爆。 */
     public static final int MAX_BOLTS_PER_VOLLEY = 72;
+
+    // ================================================================
+    // 配置覆盖(beta41 起)
+    // ----------------------------------------------------------------
+    // 为什么是「可写静态字段 + 启动时灌值」而不是把 238 个调用点改成 getter:
+    // 调用点全部写成 ErebosTuning.XXX,把 final 去掉后它们一行都不用改,
+    // 而配置只需在加载后灌一次。代价是运行中改配置不会立刻生效 ——
+    // 对 Boss 数值来说这反而是想要的(打到一半的 Boss 不该突然换血)。
+    // ================================================================
+
+    /** 从配置覆盖默认值(配置未加载时静默跳过)。 */
+    public static void applyConfig() {
+        try {
+            MAX_HEALTH   = readD(com.lost_realm.config.MedalsConfig.EREBOS_HEALTH, MAX_HEALTH);
+            PHASE_1_END  = (float) (readI(com.lost_realm.config.MedalsConfig.EREBOS_PHASE_1, Math.round(PHASE_1_END * 100)) / 100.0D);
+            PHASE_2_END  = (float) (readI(com.lost_realm.config.MedalsConfig.EREBOS_PHASE_2, Math.round(PHASE_2_END * 100)) / 100.0D);
+            PHASE_3_END  = (float) (readI(com.lost_realm.config.MedalsConfig.EREBOS_PHASE_3, Math.round(PHASE_3_END * 100)) / 100.0D);
+            CRUISE_SPEED = readD(com.lost_realm.config.MedalsConfig.EREBOS_CRUISE_SPEED, CRUISE_SPEED);
+            CHARGE_SPEED = readD(com.lost_realm.config.MedalsConfig.EREBOS_CHARGE_SPEED, CHARGE_SPEED);
+            CONTACT_HEAD = (float) readD(com.lost_realm.config.MedalsConfig.EREBOS_CONTACT_HEAD, CONTACT_HEAD);
+            CONTACT_BODY = (float) readD(com.lost_realm.config.MedalsConfig.EREBOS_CONTACT_BODY, CONTACT_BODY);
+            REDUCTION_CAP = readI(com.lost_realm.config.MedalsConfig.EREBOS_REDUCTION_CAP, (int) Math.round(REDUCTION_CAP * 100)) / 100.0D;
+            LEASH_RANGE  = readI(com.lost_realm.config.MedalsConfig.EREBOS_LEASH, (int) LEASH_RANGE);
+        } catch (Throwable ignored) {
+            // 配置没加载好(启动早期)时保持默认值,绝不因此崩溃
+        }
+    }
+
+    private static double readD(net.minecraftforge.common.ForgeConfigSpec.DoubleValue v, double fallback) {
+        try {
+            Double got = v == null ? null : v.get();
+            return got == null ? fallback : got;
+        } catch (Throwable t) {
+            return fallback;
+        }
+    }
+
+    private static int readI(net.minecraftforge.common.ForgeConfigSpec.IntValue v, int fallback) {
+        try {
+            Integer got = v == null ? null : v.get();
+            return got == null ? fallback : got;
+        } catch (Throwable t) {
+            return fallback;
+        }
+    }
 
     private ErebosTuning() {}
 }

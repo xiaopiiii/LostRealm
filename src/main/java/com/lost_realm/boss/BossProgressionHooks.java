@@ -28,15 +28,9 @@ public final class BossProgressionHooks {
     /** 任务链要求的勋章等级门槛(默认值)。 */
     public static final int REQUIRED_MEDAL_LEVEL = 20;
 
-    /** 任务链要求的勋章等级(配置优先)。 */
+    /** 任务链要求的勋章等级(旧版固定值,beta41 起不再读配置)。 */
     public static int requiredMedalLevel() {
-        try {
-            Integer v = com.lost_realm.config.MedalsConfig.BOSS_MEDAL_REQUIREMENT == null
-                    ? null : com.lost_realm.config.MedalsConfig.BOSS_MEDAL_REQUIREMENT.get();
-            return v == null ? REQUIRED_MEDAL_LEVEL : Math.max(1, v);
-        } catch (Throwable t) {
-            return REQUIRED_MEDAL_LEVEL;
-        }
+        return REQUIRED_MEDAL_LEVEL;
     }
 
     /**

@@ -577,48 +577,16 @@ public final class ConfigCatalog {
         // 否则会被当作整数处理 —— 800.0 的生命值会被截断。
         // ============================================================
 
-        toggle("boss_enabled", ConfigCategory.BOSS,
-                MedalsConfig.BOSS_ENABLED, true, S);
 
-        stepD("boss_max_health", ConfigCategory.BOSS,
-                MedalsConfig.BOSS_MAX_HEALTH, 100.0, 10000.0, 800.0, S);
 
-        step("boss_phase_2_percent", ConfigCategory.BOSS,
-                MedalsConfig.BOSS_PHASE_2_PERCENT, 1, 99, 60, S);
-        step("boss_phase_3_percent", ConfigCategory.BOSS,
-                MedalsConfig.BOSS_PHASE_3_PERCENT, 1, 99, 25, S);
 
-        step("boss_judgement_seconds", ConfigCategory.BOSS,
-                MedalsConfig.BOSS_JUDGEMENT_SECONDS, 6, 60, 12, S);
-        step("boss_sentinel_limit", ConfigCategory.BOSS,
-                MedalsConfig.BOSS_SENTINEL_LIMIT, 0, 32, 6, S);
-        step("boss_medal_requirement", ConfigCategory.BOSS,
-                MedalsConfig.BOSS_MEDAL_REQUIREMENT, 1, 100, 20, S);
 
         // ------------------------------------------------------------
         // dv5 新增:决斗演出 / 波次 / 形态转换
         // ------------------------------------------------------------
 
-        // 决斗演出:幽灵试炼那记木剑强制打掉的最大生命百分比
-        step("boss_duel_hit_percent", ConfigCategory.BOSS,
-                MedalsConfig.BOSS_DUEL_HIT_PERCENT, 1, 100, 50, S);
 
-        // 波次系统
-        step("boss_wave_count", ConfigCategory.BOSS,
-                MedalsConfig.BOSS_WAVE_COUNT, 1, 10, 5, S);
-        step("boss_wave_mob_count", ConfigCategory.BOSS,
-                MedalsConfig.BOSS_WAVE_MOB_COUNT, 1, 20, 5, S);
-        step("boss_wave_interval_seconds", ConfigCategory.BOSS,
-                MedalsConfig.BOSS_WAVE_INTERVAL_SECONDS, 1, 60, 8, S);
 
-        // wave_mob_type 是枚举型,switchOpt 直接返回 ConfigOption 而不自行 add,
-        // 因此必须用 add(...) 包一层 —— 与 EffectHudEditorScreen 段保持一致。
-        add(switchOpt("boss_wave_mob_type", ConfigCategory.BOSS,
-                MedalsConfig.BOSS_WAVE_MOB_TYPE, 0, 4, 0, S));
-
-        // 形态转换回血
-        step("boss_transition_heal_seconds", ConfigCategory.BOSS,
-                MedalsConfig.BOSS_TRANSITION_HEAL_SECONDS, 5, 120, 30, S);
 
         // ============================================================
         // 箭类饰品 / 时间胶囊(dv42)
@@ -794,6 +762,24 @@ public final class ConfigCatalog {
                 MedalsConfig.TIME_CAPSULE_MAX_USES, 1, 100, 5, S);
         step("time_capsule_shorten_seconds", ConfigCategory.ARROWS,
                 MedalsConfig.TIME_CAPSULE_SHORTEN_SECONDS, 1, 600, 2, S);
+
+        // ============================================================
+        // 厄瑞玻斯(beta41)—— 新版终局 Boss
+        // ------------------------------------------------------------
+        // 这十项由 ErebosTuning.applyConfig() 在配置加载后灌进静态字段;
+        // 界面里改完保存后要重启(或 /reload)才作用到 Boss 身上。
+        // ============================================================
+
+        stepD("erebos_health", ConfigCategory.EREBOS, MedalsConfig.EREBOS_HEALTH, 1.0, 100000.0, 500.0, S);
+        stepD("erebos_cruise_speed", ConfigCategory.EREBOS, MedalsConfig.EREBOS_CRUISE_SPEED, 0.05, 10.0, 1.25, S);
+        stepD("erebos_charge_speed", ConfigCategory.EREBOS, MedalsConfig.EREBOS_CHARGE_SPEED, 0.5, 20.0, 4.5, S);
+        step("erebos_phase_1", ConfigCategory.EREBOS, MedalsConfig.EREBOS_PHASE_1, 1, 99, 80, S);
+        step("erebos_phase_2", ConfigCategory.EREBOS, MedalsConfig.EREBOS_PHASE_2, 1, 99, 60, S);
+        step("erebos_phase_3", ConfigCategory.EREBOS, MedalsConfig.EREBOS_PHASE_3, 1, 99, 15, S);
+        stepD("erebos_contact_head", ConfigCategory.EREBOS, MedalsConfig.EREBOS_CONTACT_HEAD, 0.0, 200.0, 14.0, S);
+        stepD("erebos_contact_body", ConfigCategory.EREBOS, MedalsConfig.EREBOS_CONTACT_BODY, 0.0, 200.0, 8.0, S);
+        step("erebos_reduction_cap", ConfigCategory.EREBOS, MedalsConfig.EREBOS_REDUCTION_CAP, 0, 95, 75, S);
+        step("erebos_leash", ConfigCategory.EREBOS, MedalsConfig.EREBOS_LEASH, 32, 1024, 256, S);
 
         // ============================================================
         // 补齐:此前只在配置文件里存在、界面上看不到的选项(beta39)
