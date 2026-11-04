@@ -16,6 +16,6 @@
   "min_y": 0,
   "height": 256,
   "infiniburn": "#minecraft:infiniburn_overworld",
-  "effects": "lost_realm:erebos_sky",
+  "effects": "lost_realm:udunos_sky",
   "ambient_mob_spawn_interval": 6000
 }

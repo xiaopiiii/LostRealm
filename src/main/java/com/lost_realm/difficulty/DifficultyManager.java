@@ -61,7 +61,7 @@ import top.theillusivec4.curios.api.CuriosApi;
  *
  * <h2>排除项</h2>
  * <ul>
- *   <li>{@code ErebosPart}(Boss 的碰撞部件)不是 {@link LivingEntity},天然不受影响;</li>
+ *   <li>{@code UdunosPart}(Boss 的碰撞部件)不是 {@link LivingEntity},天然不受影响;</li>
  *   <li>玩家自己的宠物/仆从({@link OwnableEntity} 且主人是玩家)不会被中立敌对的
  *       规则反咬 —— 否则「深渊」难度下召唤师的仆从会当场倒戈;</li>
  *   <li>创造/旁观模式玩家不会被中立生物追。</li>

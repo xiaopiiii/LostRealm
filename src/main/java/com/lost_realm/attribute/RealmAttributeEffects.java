@@ -148,7 +148,7 @@ public final class RealmAttributeEffects {
      * 给「打非 LivingEntity 目标」补一次跳劈暴击判定。
      *
      * <p>原版跳劈暴击在 {@code Player.attack()} 里硬性要求
-     * {@code target instanceof LivingEntity}，所以打 {@code ErebosPart}（纯 Entity）
+     * {@code target instanceof LivingEntity}，所以打 {@code UdunosPart}（纯 Entity）
      * 这类碰撞部件时，那一刀不吃 ×1.5 暴击倍率。本方法复刻原版的判定条件
      * （空中、非疾跑、非攀爬/水中/失明/骑乘），命中则调
      * {@code ForgeHooks.getCriticalHit} 触发一次 {@code CriticalHitEvent}

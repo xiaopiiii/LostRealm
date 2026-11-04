@@ -125,7 +125,7 @@ public class CollapsarEyeItem extends Item {
     /**
      * 推进所有引力核心。
      *
-     * <p>由 {@code ErebosRelicHandler} 的世界 tick 事件每 tick 调用一次。
+     * <p>由 {@code UdunosRelicHandler} 的世界 tick 事件每 tick 调用一次。
      * 把逻辑放在这里而不是事件里，是为了让"核心怎么运作"这件事
      * 和物品本身放在一起 —— 以后改数值不用满世界找。
      */

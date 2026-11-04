@@ -97,7 +97,7 @@ public final class MedalRegistry {
                 // 注:原设计写的是"四职业武器"(泰拉瑞亚只有四个职业),
                 //     MC 这边有五个 —— 末光壁垒是补上的坦克那一件。
                 for (net.minecraft.world.item.Item relic
-                        : com.lost_realm.boss.relic.ErebosRelics.allDrops()) {
+                        : com.lost_realm.boss.relic.UdunosRelics.allDrops()) {
                     output.accept(relic);
                 }
 

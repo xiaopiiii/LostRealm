@@ -23,19 +23,19 @@ public class MedalsClient {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(MedalsClient::clientSetup);
         // 遗落境维度的动态宇宙天空（星云 / 星体 / 星环 / 星光）
         FMLJavaModLoadingContext.get().getModEventBus().addListener(MedalsClient::registerSky);
-        // 客户端自检命令 /lrdebug erebos —— RegisterClientCommandsEvent 在 FORGE 总线
+        // 客户端自检命令 /lrdebug udunos —— RegisterClientCommandsEvent 在 FORGE 总线
         net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(
-                com.lost_realm.client.ErebosDebugCommand::register);
+                com.lost_realm.client.UdunosDebugCommand::register);
         // Boss 战 BGM：每 tick 检查附近有没有乌蠹诺斯，有就淡入、没有就淡出。
         // 纯客户端逻辑，服务端不需要知道音乐这件事。
         net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(
-                ErebosMusicController::onClientTick);
+                UdunosMusicController::onClientTick);
     }
 
     private static void registerSky(
             net.minecraftforge.client.event.RegisterDimensionSpecialEffectsEvent event) {
-        event.register(com.lost_realm.client.sky.ErebosSkyEffects.ID,
-                new com.lost_realm.client.sky.ErebosSkyEffects());
+        event.register(com.lost_realm.client.sky.UdunosSkyEffects.ID,
+                new com.lost_realm.client.sky.UdunosSkyEffects());
     }
 
     private static void clientSetup(final FMLClientSetupEvent event) {

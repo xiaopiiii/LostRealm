@@ -17,7 +17,7 @@ import net.minecraftforge.registries.RegistryObject;
  * 但 Boss 战音乐必须是自己的资源 —— 原版没有能循环三分钟的曲子。
  *
  * <h2>注册名里的点</h2>
- * {@code music.erebos_battle} 这个带点的写法是<b>照抄原版</b>
+ * {@code music.udunos_battle} 这个带点的写法是<b>照抄原版</b>
  * （{@code music.dragon}、{@code music.end} 都长这样）。
  * 它同时是 {@code sounds.json} 里的键，两者必须一字不差，
  * 否则运行时只会得到一句 "Unable to play unknown soundEvent" 的警告，
@@ -35,12 +35,12 @@ public final class ModSounds {
      * 前半段偏铺陈，后半段进鼓、压迫感更强，
      * 正好对上「阶段三开始才是真正的战斗」这个节奏。
      */
-    public static final RegistryObject<SoundEvent> EREBOS_BATTLE_1 =
-            register("music.erebos_battle_1");
+    public static final RegistryObject<SoundEvent> UDUNOS_BATTLE_1 =
+            register("music.udunos_battle_1");
 
     /** 第二段，阶段Ⅲ / Ⅳ 使用。 */
-    public static final RegistryObject<SoundEvent> EREBOS_BATTLE_2 =
-            register("music.erebos_battle_2");
+    public static final RegistryObject<SoundEvent> UDUNOS_BATTLE_2 =
+            register("music.udunos_battle_2");
 
     private static RegistryObject<SoundEvent> register(String path) {
         return SOUNDS.register(path, () -> SoundEvent.createVariableRangeEvent(

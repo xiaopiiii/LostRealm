@@ -766,20 +766,20 @@ public final class ConfigCatalog {
         // ============================================================
         // 乌蠹诺斯(beta41)—— 新版终局 Boss
         // ------------------------------------------------------------
-        // 这十项由 ErebosTuning.applyConfig() 在配置加载后灌进静态字段;
+        // 这十项由 UdunosTuning.applyConfig() 在配置加载后灌进静态字段;
         // 界面里改完保存后要重启(或 /reload)才作用到 Boss 身上。
         // ============================================================
 
-        stepD("erebos_health", ConfigCategory.EREBOS, MedalsConfig.EREBOS_HEALTH, 1.0, 100000.0, 500.0, S);
-        stepD("erebos_cruise_speed", ConfigCategory.EREBOS, MedalsConfig.EREBOS_CRUISE_SPEED, 0.05, 10.0, 1.25, S);
-        stepD("erebos_charge_speed", ConfigCategory.EREBOS, MedalsConfig.EREBOS_CHARGE_SPEED, 0.5, 20.0, 4.5, S);
-        step("erebos_phase_1", ConfigCategory.EREBOS, MedalsConfig.EREBOS_PHASE_1, 1, 99, 80, S);
-        step("erebos_phase_2", ConfigCategory.EREBOS, MedalsConfig.EREBOS_PHASE_2, 1, 99, 60, S);
-        step("erebos_phase_3", ConfigCategory.EREBOS, MedalsConfig.EREBOS_PHASE_3, 1, 99, 15, S);
-        stepD("erebos_contact_head", ConfigCategory.EREBOS, MedalsConfig.EREBOS_CONTACT_HEAD, 0.0, 200.0, 14.0, S);
-        stepD("erebos_contact_body", ConfigCategory.EREBOS, MedalsConfig.EREBOS_CONTACT_BODY, 0.0, 200.0, 8.0, S);
-        step("erebos_reduction_cap", ConfigCategory.EREBOS, MedalsConfig.EREBOS_REDUCTION_CAP, 0, 95, 75, S);
-        step("erebos_leash", ConfigCategory.EREBOS, MedalsConfig.EREBOS_LEASH, 32, 1024, 256, S);
+        stepD("udunos_health", ConfigCategory.UDUNOS, MedalsConfig.UDUNOS_HEALTH, 1.0, 100000.0, 500.0, S);
+        stepD("udunos_cruise_speed", ConfigCategory.UDUNOS, MedalsConfig.UDUNOS_CRUISE_SPEED, 0.05, 10.0, 1.25, S);
+        stepD("udunos_charge_speed", ConfigCategory.UDUNOS, MedalsConfig.UDUNOS_CHARGE_SPEED, 0.5, 20.0, 4.5, S);
+        step("udunos_phase_1", ConfigCategory.UDUNOS, MedalsConfig.UDUNOS_PHASE_1, 1, 99, 80, S);
+        step("udunos_phase_2", ConfigCategory.UDUNOS, MedalsConfig.UDUNOS_PHASE_2, 1, 99, 60, S);
+        step("udunos_phase_3", ConfigCategory.UDUNOS, MedalsConfig.UDUNOS_PHASE_3, 1, 99, 15, S);
+        stepD("udunos_contact_head", ConfigCategory.UDUNOS, MedalsConfig.UDUNOS_CONTACT_HEAD, 0.0, 200.0, 14.0, S);
+        stepD("udunos_contact_body", ConfigCategory.UDUNOS, MedalsConfig.UDUNOS_CONTACT_BODY, 0.0, 200.0, 8.0, S);
+        step("udunos_reduction_cap", ConfigCategory.UDUNOS, MedalsConfig.UDUNOS_REDUCTION_CAP, 0, 95, 75, S);
+        step("udunos_leash", ConfigCategory.UDUNOS, MedalsConfig.UDUNOS_LEASH, 32, 1024, 256, S);
 
         // ============================================================
         // 补齐:此前只在配置文件里存在、界面上看不到的选项(beta39)

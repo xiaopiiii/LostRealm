@@ -67,11 +67,11 @@ public final class MedalsNetwork {
 
         // ---- 乌蠹诺斯脊线同步(beta18) ----
         // 客户端位置同步在这套环境里不可靠(实测轨迹永远只有 1 个点),
-        // 改为服务端直接下发 40 节坐标。见 PacketErebosSpine 的类注释。
-        CHANNEL.registerMessage(id++, PacketErebosSpine.class,
-                PacketErebosSpine::encode,
-                PacketErebosSpine::new,
-                PacketErebosSpine::handle);
+        // 改为服务端直接下发 40 节坐标。见 PacketUdunosSpine 的类注释。
+        CHANNEL.registerMessage(id++, PacketUdunosSpine.class,
+                PacketUdunosSpine::encode,
+                PacketUdunosSpine::new,
+                PacketUdunosSpine::handle);
 
         // ---- 世界难度(beta38):配置界面里的难度页 ----
         // S2C 只用于显示;C2S 的 level=0 表示「仅查询」。

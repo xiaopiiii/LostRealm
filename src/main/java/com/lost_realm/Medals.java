@@ -90,23 +90,23 @@ public class Medals {
                     LOGGER.info("[Lost Realm] 经验成长曲线已迁移到 7/6/5/4/3/2"
                             + "（旧配置仍是 10/8/7/6/5/3）。");
                 }
-                // 乌蠹诺斯：把配置灌进 ErebosTuning 的可写静态字段（beta41）
-                com.lost_realm.boss.erebos.ErebosTuning.applyConfig();
+                // 乌蠹诺斯：把配置灌进 UdunosTuning 的可写静态字段（beta41）
+                com.lost_realm.boss.udunos.UdunosTuning.applyConfig();
             }
         });
         modBus.addListener((net.minecraftforge.fml.event.config.ModConfigEvent.Reloading e) -> {
             com.lost_realm.config.MedalsConfigLoader.register(e.getConfig());
             if (e.getConfig().getType() == net.minecraftforge.fml.config.ModConfig.Type.COMMON) {
-                com.lost_realm.boss.erebos.ErebosTuning.applyConfig();
+                com.lost_realm.boss.udunos.UdunosTuning.applyConfig();
             }
         });
 
         modBus.addListener(this::commonSetup);
 
-        // 服务端自检命令 /lrsdebug erebos —— 读状态机内部值（EMERGE 卡没卡住）
+        // 服务端自检命令 /lrsdebug udunos —— 读状态机内部值（EMERGE 卡没卡住）
         net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(
                 (net.minecraftforge.event.RegisterCommandsEvent e) ->
-                        com.lost_realm.command.ErebosServerDebugCommand.register(e.getDispatcher()));
+                        com.lost_realm.command.UdunosServerDebugCommand.register(e.getDispatcher()));
 
         // 竞技场运维命令 /lr arena rebuild | tp
         net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(
@@ -121,7 +121,7 @@ public class Medals {
         com.lost_realm.boss.BossItems.init(modBus);
         com.lost_realm.boss.BossEntities.init(modBus);
         // 乌蠹诺斯的五件遗物（每个职业一件）+ 事件视界
-        com.lost_realm.boss.relic.ErebosRelics.init(modBus);
+        com.lost_realm.boss.relic.UdunosRelics.init(modBus);
         // 自定义声音（Boss 战 BGM）—— 全模组目前唯一一个自定义音效
         com.lost_realm.sound.ModSounds.init(modBus);
 
@@ -138,7 +138,7 @@ public class Medals {
             MedalsNetwork.register();
             // 兜底再灌一次:某些加载顺序下 ModConfigEvent 可能晚于属性注册,
             // 这里保证 Boss 血量等数值一定来自配置(配置没加载时 applyConfig 自己跳过)。
-            com.lost_realm.boss.erebos.ErebosTuning.applyConfig();
+            com.lost_realm.boss.udunos.UdunosTuning.applyConfig();
         });
     }
 }

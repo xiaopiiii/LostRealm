@@ -26,7 +26,7 @@
 | 战斗属性 | 12 条自注册（beta30 起不依赖 Apothic Attributes）+ 坦克减伤 |
 | 配置界面 | 18 个分类 / **384 项**，含独立的「世界难度」页与「乌蠹诺斯」分类 |
 | 世界难度 | **5 档**，`/lr difficulty` 或配置界面切换，写进存档 |
-| 终局 Boss | **乌蠹诺斯**（`lost_realm:erebos`）：50 节 / ≈206 格 / 4 阶段 / 星门 / 暗星天幕 / 双 BGM |
+| 终局 Boss | **乌蠹诺斯**（`lost_realm:udunos`）：50 节 / ≈206 格 / 4 阶段 / 星门 / 暗星天幕 / 双 BGM |
 | 语言键 | 中英各 **1418** 条，逐键对齐 |
 | 源码规模 | **257** 个 Java 文件 |
 
@@ -51,9 +51,9 @@
 
 - **beta26** 等级上限 30 → 60，成长曲线改六段（7/6/5/4/3/2）。
 - **beta30** 彻底移除 Apothic Attributes / Placebo，12 条战斗属性自注册。
-- **beta32** 乌蠹诺斯血量临时降到 500 便于实测（`ErebosTuning.MAX_HEALTH`，发布前恢复 12000）。
+- **beta32** 乌蠹诺斯血量临时降到 500 便于实测（`UdunosTuning.MAX_HEALTH`，发布前恢复 12000）。
 - **beta33 ~ beta35** 连修「整条消失 / 出场抽搐 / 体节闪烁 / 星门后消失」，
-  最终把客户端自算物理整段删除，改为**服务端唯一脊线**（`PacketErebosSpine` 带瞬移标志）。
+  最终把客户端自算物理整段删除，改为**服务端唯一脊线**（`PacketUdunosSpine` 带瞬移标志）。
 - **beta37** 新增五档世界难度（存档数据 + 指令）。
 - **beta38** 配置界面加「世界难度」页；新增 G 键作为配置界面第二入口。
 - **beta39** 配置项全量对账：补齐 97 项界面缺失、删除 6 项死配置。
@@ -764,7 +764,7 @@ return false;
 >
 > 它记录的是**人形 Boss「终末之影」**（`lost_realm:warden`）的建模、阶段与演出迭代。
 > 那个实体**仍注册着、仍能用 `/summon` 叫出来**，但**当前流程不再召唤它** ——
-> 失落祭坛的仪式召唤的是**乌蠹诺斯**（`lost_realm:erebos`，50 节巨虫）。
+> 失落祭坛的仪式召唤的是**乌蠹诺斯**（`lost_realm:udunos`，50 节巨虫）。
 >
 > 因此本章的「触手 / 骨翼 / 三形态 / 缩放描边」等描述**与现在的战斗无关**，
 > 只作检索与回溯用。**当前终局战请看 §六·补充三。**
@@ -2579,24 +2579,24 @@ dv19/dv20 的触手是「每节骨骼的 pivot = 珠子自己的中心」，
 
 ## 六·补充三、遗落之主·乌蠹诺斯 —— 当前终局 Boss（`beta1x` 起）
 
-> **命名说明**：显示名自 beta42 起为「**遗落之主·乌蠹诺斯**」（英文 `Udunos, Lord of the Lost`），
-> 旧名「遗落之主·晦星 / 厄瑞玻斯」停用。
-> **内部标识不变**：实体 ID 仍是 `lost_realm:erebos`、类名 `Erebos*`、包 `boss/erebos/`、
-> 配置段 `[erebos]` —— 改它们会让旧存档里的实体、成就判据、战利品表全部失联，
-> 所以只在显示层改名。
+> **命名**：显示名「**遗落之主·乌蠹诺斯**」（英文 `Udunos, Lord of the Lost`）。
+> **内部标识与显示名同源**（beta43 起全量重命名）：实体 ID `lost_realm:udunos`、
+> 类名 `Udunos*`、包 `boss/udunos/`、配置段 `[udunos]`、语言键 `*.udunos.*`、
+> 贴图与音效文件名 `udunos_*`。旧名（`erebos` / 晦星）已从源码中彻底移除，
+> 全库 grep 结果为 0 —— 本项目是个人开发版，不承担旧存档兼容。
 
-> 真名「遗落之主 · 晦星」。一条 **50 节、约 206 格长**的巨虫，在本模组里是
+> 一条 **50 节、约 206 格长**的巨虫，在本模组里是
 > 「泰拉瑞亚尺度换算到 MC 尺度」的产物 —— 长度压到 6 个区块、速度压到
-> 每 tick 几个方块，否则服务端会把它当传送处理。换算过程见 `ErebosTuning` 类注释。
+> 每 tick 几个方块，否则服务端会把它当传送处理。换算过程见 `UdunosTuning` 类注释。
 
 ### 实体清单
 
 | 实体 | 作用 |
 |---|---|
-| `lost_realm:erebos` | 本体（头部碰撞箱 4.8×4.8，`updateInterval(1)` 每 tick 同步位置） |
-| `lost_realm:erebos_part` | 身体各节的碰撞部件（头部以外的判定都靠它，转发伤害给本体） |
-| `lost_realm:erebos_bolt` / `erebos_shard` | 弹幕：噬光弹与碎星 |
-| `lost_realm:erebos_effect` | 招式用的纯视觉实体 |
+| `lost_realm:udunos` | 本体（头部碰撞箱 4.8×4.8，`updateInterval(1)` 每 tick 同步位置） |
+| `lost_realm:udunos_part` | 身体各节的碰撞部件（头部以外的判定都靠它，转发伤害给本体） |
+| `lost_realm:udunos_bolt` / `udunos_shard` | 弹幕：噬光弹与碎星 |
+| `lost_realm:udunos_effect` | 招式用的纯视觉实体 |
 
 ### 体型与阶段
 
@@ -2620,7 +2620,7 @@ dv19/dv20 的触手是「每节骨骼的 pivot = 珠子自己的中心」，
 ### 客户端同步（beta35 起定型）
 
 ```
-服务端（唯一物理） --PacketErebosSpine(50 节坐标 + teleport 标志)--> 客户端
+服务端（唯一物理） --PacketUdunosSpine(50 节坐标 + teleport 标志)--> 客户端
 客户端：只做 spinePrev/spineNow 插值 + 渲染，不跑任何自算物理
 ```
 
@@ -2633,20 +2633,20 @@ dv19/dv20 的触手是「每节骨骼的 pivot = 珠子自己的中心」，
 
 | 模块 | 内容 |
 |---|---|
-| `client/sky/ErebosSkyEffects` | 暗星天幕：分层星空 + 星球 + 星云（`renderSky` 里直接画，**不要再套相机旋转** —— 拿到的 pose 已含） |
-| `client/ErebosBattleMusic` | 两首战斗 BGM 交替；`Attenuation.NONE`（默认 LINEAR + 位置 0,0,0 会让音量为 0） |
-| `client/boss/ErebosRenderer` | 逐节盒渲染 + 逐节视锥剔除；本体 `noCulling = true` 绕过原版单 AABB |
+| `client/sky/UdunosSkyEffects` | 暗星天幕：分层星空 + 星球 + 星云（`renderSky` 里直接画，**不要再套相机旋转** —— 拿到的 pose 已含） |
+| `client/UdunosBattleMusic` | 两首战斗 BGM 交替；`Attenuation.NONE`（默认 LINEAR + 位置 0,0,0 会让音量为 0） |
+| `client/boss/UdunosRenderer` | 逐节盒渲染 + 逐节视锥剔除；本体 `noCulling = true` 绕过原版单 AABB |
 | 战利品 | 五件遗物（`starfall_greatsword` / `hushlight_railgun` / `collapsar_eye` / `terminal_dragonpact` / `bulwark_of_the_last_light`）+ `event_horizon` |
 
 ### 怎么召出来
 
 - **失落祭坛**（`LostAltarBlockEntity`）：投入材料 → 仪式读条 → 召唤。
 - **暗星信标**（`DarkstarBeaconItem`）：直接召唤，调试用。
-- 也可 `/summon lost_realm:erebos`（实体没加 `noSummon()`，就是为测试方便）。
+- 也可 `/summon lost_realm:udunos`（实体没加 `noSummon()`，就是为测试方便）。
 
 ### 数值现状
 
-> ⚠️ `ErebosTuning.MAX_HEALTH` 自 **beta32** 起被临时改成 **500**（原设计 12000），
+> ⚠️ `UdunosTuning.MAX_HEALTH` 自 **beta32** 起被临时改成 **500**（原设计 12000），
 > 纯粹是为了实测方便。**正式发布前必须改回去**，源码里有 ★ 标记。
 
 ### 已知坑（都踩过）
@@ -2657,7 +2657,7 @@ dv19/dv20 的触手是「每节骨骼的 pivot = 珠子自己的中心」，
 | 身体某个位置一直闪 | 体径 4.8 > 节距 4.2，相邻两节共面 | 渲染沿身体方向压 0.875 |
 | 移动时闪烁 / 抽搐 | 客户端自算 + 抄脊线两套时间轴打架 | 客户端**只抄不算** |
 | 星门后整条消失 | 阈值判瞬移漏判 | 用 `teleport` 标志硬切 |
-| 打身体不暴击 | `ErebosPart` 不是 `LivingEntity`，原版暴击判定跳过 | 部件 `hurt()` 里补 `ForgeHooks.getCriticalHit` |
+| 打身体不暴击 | `UdunosPart` 不是 `LivingEntity`，原版暴击判定跳过 | 部件 `hurt()` 里补 `ForgeHooks.getCriticalHit` |
 
 ### 与世界难度的关系
 
@@ -2690,7 +2690,7 @@ src/main/java/com/lost_realm/
 │   ├── MedalCommands.java              /lostrealm medal xp|level|info|unlock
 │   ├── DifficultyCommand.java          /lr difficulty [1-5]
 │   ├── ArenaCommand.java               /lr arena rebuild|tp|ritual|info
-│   └── ErebosServerDebugCommand.java   /lrsdebug erebos
+│   └── UdunosServerDebugCommand.java   /lrsdebug udunos
 ├── data/                             玩家数据与熟练度
 │   ├── PlayerMedals.java               仅冷却 / 技能运行时状态(capability)
 │   ├── MedalNbt.java                   熟练度存在勋章物品自己的 NBT 里
@@ -2699,7 +2699,7 @@ src/main/java/com/lost_realm/
 ├── item/                             勋章 / 箭 / 刃 / 盾 / 晶石 / 契约 / 终极剑
 ├── skill/                            30 个节点技能(5 枚 × 6)
 ├── event/                            战斗、tick、技能事件(CombatHandler 等 13 个)
-├── network/                          11 个包(含 PacketErebosSpine / PacketDifficulty*)
+├── network/                          11 个包(含 PacketUdunosSpine / PacketDifficulty*)
 ├── util/                             UUID 表 / 防叠加 / 经验表 / 属性上限
 ├── mixin/                            23 个注入(体验改进 + 破甲)
 ├── qol/                              体验改进处理器
@@ -2712,11 +2712,11 @@ src/main/java/com/lost_realm/
 │   ├── config/                       配置界面(18 分类 / 384 项 / 难度页 / 乌蠹诺斯页)
 │   ├── effect/                       状态效果 HUD + 可视化编辑界面
 │   ├── dialogue/                     零阶段对话 UI
-│   ├── sky/                          ★ 暗星天幕(ErebosSkyEffects)
+│   ├── sky/                          ★ 暗星天幕(UdunosSkyEffects)
 │   └── boss/                         ★ 乌蠹诺斯渲染器
 └── boss/
     ├── 遗落之都 / 传送门 / 任务链(LostCityBuilder / WaveManager / WardenFight*)
-    ├── erebos/                       ★ 乌蠹诺斯:本体 / 部件 / 弹幕 / 招式 / 脊线
+    ├── udunos/                       ★ 乌蠹诺斯:本体 / 部件 / 弹幕 / 招式 / 脊线
     │   └── move/                      巡游 / 冲锋 / 星门
     ├── relic/                        ★ 五件遗物 + 事件视界
     └── block/ entity/ item/ ai/ anim/
@@ -2730,7 +2730,7 @@ src/main/resources/
 ├── assets/lost_realm/
 │   ├── lang/{zh_cn,en_us}.json        1418 ↔ 1418
 │   ├── geo/ animations/               warden_form1~3(旧 Boss 模型,历史遗留)
-│   ├── sounds/music/                  erebos_battle_1/2.ogg
+│   ├── sounds/music/                  udunos_battle_1/2.ogg
 │   ├── textures/{block,entity,gui,item,mob_effect,slot}/
 │   └── models/ blockstates/
 ├── assets/minecraft/                  覆盖原版贴图(无限弓等)

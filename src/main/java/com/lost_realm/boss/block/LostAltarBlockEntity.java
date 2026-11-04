@@ -16,8 +16,8 @@ import com.lost_realm.Medals;
 import com.lost_realm.boss.BossBlocks;
 import com.lost_realm.boss.BossEntities;
 import com.lost_realm.boss.BossRegistry;
-import com.lost_realm.boss.ErebosArenaBuilder;
-import com.lost_realm.boss.erebos.ErebosBoss;
+import com.lost_realm.boss.UdunosArenaBuilder;
+import com.lost_realm.boss.udunos.UdunosBoss;
 
 /**
  * 中央祭坛的方块实体 —— <b>20 秒召唤仪式</b>的状态机。
@@ -64,7 +64,7 @@ public class LostAltarBlockEntity extends BlockEntity {
     /** 附近是否已经有一条乌蠹诺斯（判定半径与召唤物一致，512 格）。 */
     public boolean bossAlreadyPresent(ServerLevel level) {
         AABB area = new AABB(this.worldPosition).inflate(512.0D);
-        for (ErebosBoss boss : level.getEntitiesOfClass(ErebosBoss.class, area)) {
+        for (UdunosBoss boss : level.getEntitiesOfClass(UdunosBoss.class, area)) {
             if (boss.isAlive() && !boss.isRemoved()) {
                 return true;
             }
@@ -136,7 +136,7 @@ public class LostAltarBlockEntity extends BlockEntity {
         if ((elapsed & 1) == 0) {
             int perPillar = climax ? 4 : (dense ? 2 : 1);
             for (int i = 0; i < BossRegistry.PILLAR_COUNT; i++) {
-                BlockPos top = ErebosArenaBuilder.pillarAltarPos(i);
+                BlockPos top = UdunosArenaBuilder.pillarAltarPos(i);
                 if (top == null) {
                     continue;
                 }
@@ -231,7 +231,7 @@ public class LostAltarBlockEntity extends BlockEntity {
                 spot.x, spot.y, spot.z, 400, 6.0D, 6.0D, 6.0D, 0.6D);
 
         // ---- 召唤 ----
-        ErebosBoss boss = BossEntities.EREBOS.get().create(level);
+        UdunosBoss boss = BossEntities.UDUNOS.get().create(level);
         if (boss == null) {
             Medals.LOGGER.warn("[LR/altar] 仪式结束但实体创建失败");
             return;

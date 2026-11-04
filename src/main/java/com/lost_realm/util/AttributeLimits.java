@@ -29,7 +29,7 @@ import com.lost_realm.Medals;
  *
  * <h2>失败了怎么办</h2>
  * 静默失败，绝不影响游戏启动 —— 但会把 {@link #isMaxHealthRaised()} 置为
- * false，让 {@code ErebosBoss#getMaxHealth()} 走兜底分支。
+ * false，让 {@code UdunosBoss#getMaxHealth()} 走兜底分支。
  * 少一个属性上限，不该连累玩家进不了游戏。
  */
 public final class AttributeLimits {
@@ -80,7 +80,7 @@ public final class AttributeLimits {
                         VANILLA_MAX_HEALTH_CAP, RAISED_MAX_HEALTH_CAP);
             } else {
                 Medals.LOGGER.warn("[Lost Realm] 未能抬高最大生命上限；"
-                        + "超过 1024 的 Boss 血量将由 ErebosBoss 的兜底分支接管。");
+                        + "超过 1024 的 Boss 血量将由 UdunosBoss 的兜底分支接管。");
             }
         } catch (Throwable t) {
             maxHealthRaised = false;

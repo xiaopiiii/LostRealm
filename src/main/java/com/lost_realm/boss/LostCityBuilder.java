@@ -19,7 +19,7 @@ import com.lost_realm.boss.block.RealmPortalBlock;
  *
  * <p>类名没改，因为 {@code BossPortalHandler}、旧 Boss 的技能 Goal、
  * 存档里可能存在的调用点都还引用它。改名收益为零，风险却是漏改一处就崩。
- * 真正的建造逻辑全部在 {@link ErebosArenaBuilder}。
+ * 真正的建造逻辑全部在 {@link UdunosArenaBuilder}。
  */
 public final class LostCityBuilder {
 
@@ -36,7 +36,7 @@ public final class LostCityBuilder {
      * @return 本次调用是否真的执行了生成
      */
     public static boolean ensureGenerated(ServerLevel level) {
-        return ErebosArenaBuilder.ensureGenerated(level);
+        return UdunosArenaBuilder.ensureGenerated(level);
     }
 
     // ================================================================
@@ -69,7 +69,7 @@ public final class LostCityBuilder {
 
     /** 玩家从传送门进来的落点（外墙内侧，正对中央祭坛）。 */
     public static BlockPos entrySpot() {
-        return ErebosArenaBuilder.entrySpot();
+        return UdunosArenaBuilder.entrySpot();
     }
 
     /** 判定某坐标是否在竞技场范围内（技能 / 波次判定用）。 */

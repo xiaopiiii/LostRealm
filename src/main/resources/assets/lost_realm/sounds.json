@@ -1,17 +1,17 @@
 {
-  "music.erebos_battle_1": {
+  "music.udunos_battle_1": {
     "sounds": [
       {
-        "name": "lost_realm:music/erebos_battle_1",
+        "name": "lost_realm:music/udunos_battle_1",
         "stream": true,
         "volume": 1.0
       }
     ]
   },
-  "music.erebos_battle_2": {
+  "music.udunos_battle_2": {
     "sounds": [
       {
-        "name": "lost_realm:music/erebos_battle_2",
+        "name": "lost_realm:music/udunos_battle_2",
         "stream": true,
         "volume": 1.0
       }

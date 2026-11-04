@@ -524,16 +524,16 @@ public final class MedalsConfig {
     public static IntValue TIME_CAPSULE_SHORTEN_SECONDS;
 
     // ---- 乌蠹诺斯(beta41):新版终局 Boss 的可调数值 ----
-    public static DoubleValue EREBOS_HEALTH;
-    public static IntValue EREBOS_PHASE_1;
-    public static IntValue EREBOS_PHASE_2;
-    public static IntValue EREBOS_PHASE_3;
-    public static DoubleValue EREBOS_CRUISE_SPEED;
-    public static DoubleValue EREBOS_CHARGE_SPEED;
-    public static DoubleValue EREBOS_CONTACT_HEAD;
-    public static DoubleValue EREBOS_CONTACT_BODY;
-    public static IntValue EREBOS_REDUCTION_CAP;
-    public static IntValue EREBOS_LEASH;
+    public static DoubleValue UDUNOS_HEALTH;
+    public static IntValue UDUNOS_PHASE_1;
+    public static IntValue UDUNOS_PHASE_2;
+    public static IntValue UDUNOS_PHASE_3;
+    public static DoubleValue UDUNOS_CRUISE_SPEED;
+    public static DoubleValue UDUNOS_CHARGE_SPEED;
+    public static DoubleValue UDUNOS_CONTACT_HEAD;
+    public static DoubleValue UDUNOS_CONTACT_BODY;
+    public static IntValue UDUNOS_REDUCTION_CAP;
+    public static IntValue UDUNOS_LEASH;
 
     /**
      * 内部标记:勋章「每级成长」的 0 值迁移是否已执行过。
@@ -944,16 +944,16 @@ public final class MedalsConfig {
         JOB_SLOT_SIZE = c.JOB_SLOT_SIZE;
         TIME_CAPSULE_MAX_USES = c.TIME_CAPSULE_MAX_USES;
         TIME_CAPSULE_SHORTEN_SECONDS = c.TIME_CAPSULE_SHORTEN_SECONDS;
-        EREBOS_HEALTH = c.EREBOS_HEALTH;
-        EREBOS_PHASE_1 = c.EREBOS_PHASE_1;
-        EREBOS_PHASE_2 = c.EREBOS_PHASE_2;
-        EREBOS_PHASE_3 = c.EREBOS_PHASE_3;
-        EREBOS_CRUISE_SPEED = c.EREBOS_CRUISE_SPEED;
-        EREBOS_CHARGE_SPEED = c.EREBOS_CHARGE_SPEED;
-        EREBOS_CONTACT_HEAD = c.EREBOS_CONTACT_HEAD;
-        EREBOS_CONTACT_BODY = c.EREBOS_CONTACT_BODY;
-        EREBOS_REDUCTION_CAP = c.EREBOS_REDUCTION_CAP;
-        EREBOS_LEASH = c.EREBOS_LEASH;
+        UDUNOS_HEALTH = c.UDUNOS_HEALTH;
+        UDUNOS_PHASE_1 = c.UDUNOS_PHASE_1;
+        UDUNOS_PHASE_2 = c.UDUNOS_PHASE_2;
+        UDUNOS_PHASE_3 = c.UDUNOS_PHASE_3;
+        UDUNOS_CRUISE_SPEED = c.UDUNOS_CRUISE_SPEED;
+        UDUNOS_CHARGE_SPEED = c.UDUNOS_CHARGE_SPEED;
+        UDUNOS_CONTACT_HEAD = c.UDUNOS_CONTACT_HEAD;
+        UDUNOS_CONTACT_BODY = c.UDUNOS_CONTACT_BODY;
+        UDUNOS_REDUCTION_CAP = c.UDUNOS_REDUCTION_CAP;
+        UDUNOS_LEASH = c.UDUNOS_LEASH;
         GROWTH_MIGRATED = c.GROWTH_MIGRATED;
         LEVEL_CAP_MIGRATED = c.LEVEL_CAP_MIGRATED;
         EXP_CURVE_MIGRATED = c.EXP_CURVE_MIGRATED;
@@ -1212,16 +1212,16 @@ public final class MedalsConfig {
         public IntValue TIME_CAPSULE_SHORTEN_SECONDS;
 
         // ---- 乌蠹诺斯 ----
-        public DoubleValue EREBOS_HEALTH;
-        public IntValue EREBOS_PHASE_1;
-        public IntValue EREBOS_PHASE_2;
-        public IntValue EREBOS_PHASE_3;
-        public DoubleValue EREBOS_CRUISE_SPEED;
-        public DoubleValue EREBOS_CHARGE_SPEED;
-        public DoubleValue EREBOS_CONTACT_HEAD;
-        public DoubleValue EREBOS_CONTACT_BODY;
-        public IntValue EREBOS_REDUCTION_CAP;
-        public IntValue EREBOS_LEASH;
+        public DoubleValue UDUNOS_HEALTH;
+        public IntValue UDUNOS_PHASE_1;
+        public IntValue UDUNOS_PHASE_2;
+        public IntValue UDUNOS_PHASE_3;
+        public DoubleValue UDUNOS_CRUISE_SPEED;
+        public DoubleValue UDUNOS_CHARGE_SPEED;
+        public DoubleValue UDUNOS_CONTACT_HEAD;
+        public DoubleValue UDUNOS_CONTACT_BODY;
+        public IntValue UDUNOS_REDUCTION_CAP;
+        public IntValue UDUNOS_LEASH;
 
         /** 内部迁移标记，见 {@link MedalsConfig#GROWTH_MIGRATED}。 */
         public BooleanValue GROWTH_MIGRATED;
@@ -2039,36 +2039,36 @@ public final class MedalsConfig {
 
         // ---------------------------------- 乌蠹诺斯 ----------------------------------
         // 新版终局 Boss(50 节巨虫)的可调数值。
-        // 读取点是 ErebosTuning.applyConfig() —— 它在配置加载后把这些值灌进静态字段,
+        // 读取点是 UdunosTuning.applyConfig() —— 它在配置加载后把这些值灌进静态字段,
         // 所以改完要重启(或 /reload)才生效,打到一半的 Boss 不会突然换血。
-        b.comment("乌蠹诺斯 —— 当前终局 Boss。这里的数值会覆盖 ErebosTuning 里的硬编码默认值。")
-                .push("erebos");
+        b.comment("乌蠹诺斯 —— 当前终局 Boss。这里的数值会覆盖 UdunosTuning 里的硬编码默认值。")
+                .push("udunos");
 
         b.comment("最大生命值。★ 当前默认 500 是 beta32 起的实测值,正式发布请把默认改回 12000。")
                 .push("health");
-        EREBOS_HEALTH = b.comment("最大生命值").defineInRange("value", 500.0D, 1.0D, 100000.0D);
+        UDUNOS_HEALTH = b.comment("最大生命值").defineInRange("value", 500.0D, 1.0D, 100000.0D);
         b.pop();
 
         b.comment("阶段血量阈值(百分比,按剩余血量从高到低)。").push("phases");
-        EREBOS_PHASE_1 = b.comment("阶段Ⅰ结束 / 阶段Ⅱ开始(%)").defineInRange("phase_1_end", 80, 1, 99);
-        EREBOS_PHASE_2 = b.comment("阶段Ⅱ结束 / 阶段Ⅲ开始(%)").defineInRange("phase_2_end", 60, 1, 99);
-        EREBOS_PHASE_3 = b.comment("阶段Ⅲ结束 / 阶段Ⅳ开始(%)").defineInRange("phase_3_end", 15, 1, 99);
+        UDUNOS_PHASE_1 = b.comment("阶段Ⅰ结束 / 阶段Ⅱ开始(%)").defineInRange("phase_1_end", 80, 1, 99);
+        UDUNOS_PHASE_2 = b.comment("阶段Ⅱ结束 / 阶段Ⅲ开始(%)").defineInRange("phase_2_end", 60, 1, 99);
+        UDUNOS_PHASE_3 = b.comment("阶段Ⅲ结束 / 阶段Ⅳ开始(%)").defineInRange("phase_3_end", 15, 1, 99);
         b.pop();
 
         b.comment("移动速度(格/tick;玩家跑速约 0.28)。").push("speed");
-        EREBOS_CRUISE_SPEED = b.comment("远距巡游速度").defineInRange("cruise", 1.25D, 0.05D, 10.0D);
-        EREBOS_CHARGE_SPEED = b.comment("冲锋最高速度。超过约 3.0 服务端会当传送处理,谨慎上调。")
+        UDUNOS_CRUISE_SPEED = b.comment("远距巡游速度").defineInRange("cruise", 1.25D, 0.05D, 10.0D);
+        UDUNOS_CHARGE_SPEED = b.comment("冲锋最高速度。超过约 3.0 服务端会当传送处理,谨慎上调。")
                 .defineInRange("charge", 4.5D, 0.5D, 20.0D);
         b.pop();
 
         b.comment("接触伤害(护甲减免前)。原设计按「挨三下死」反推:头 14 / 身体 8。").push("contact");
-        EREBOS_CONTACT_HEAD = b.comment("头部接触伤害").defineInRange("head", 14.0D, 0.0D, 200.0D);
-        EREBOS_CONTACT_BODY = b.comment("身体/尾部接触伤害").defineInRange("body", 8.0D, 0.0D, 200.0D);
+        UDUNOS_CONTACT_HEAD = b.comment("头部接触伤害").defineInRange("head", 14.0D, 0.0D, 200.0D);
+        UDUNOS_CONTACT_BODY = b.comment("身体/尾部接触伤害").defineInRange("body", 8.0D, 0.0D, 200.0D);
         b.pop();
 
-        EREBOS_REDUCTION_CAP = b.comment("动态减伤上限(%):短时间连续挨打会叠减伤,最高到这个比例")
+        UDUNOS_REDUCTION_CAP = b.comment("动态减伤上限(%):短时间连续挨打会叠减伤,最高到这个比例")
                 .defineInRange("reduction_cap", 75, 0, 95);
-        EREBOS_LEASH = b.comment("拴绳距离(格):玩家跑出这个范围 Boss 会脱战回到竞技场")
+        UDUNOS_LEASH = b.comment("拴绳距离(格):玩家跑出这个范围 Boss 会脱战回到竞技场")
                 .defineInRange("leash", 256, 32, 1024);
         b.pop();
 

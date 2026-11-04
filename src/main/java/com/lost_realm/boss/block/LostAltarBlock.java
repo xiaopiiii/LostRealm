@@ -119,7 +119,7 @@ public class LostAltarBlock extends Block implements EntityBlock {
         // ---- 已经有它了 ----
         if (altar.bossAlreadyPresent(server)) {
             player.displayClientMessage(
-                    Component.translatable("message.lost_realm.erebos.already_present"), true);
+                    Component.translatable("message.lost_realm.udunos.already_present"), true);
             server.playSound(null, pos, SoundEvents.NOTE_BLOCK_BASS.get(),
                     SoundSource.BLOCKS, 1.0F, 0.5F);
             return InteractionResult.CONSUME;

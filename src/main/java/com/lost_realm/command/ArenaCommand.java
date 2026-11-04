@@ -13,7 +13,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Blocks;
 
 import com.lost_realm.boss.BossRegistry;
-import com.lost_realm.boss.ErebosArenaBuilder;
+import com.lost_realm.boss.UdunosArenaBuilder;
 import com.lost_realm.boss.block.LostAltarBlock;
 import com.lost_realm.boss.block.LostAltarBlockEntity;
 
@@ -66,7 +66,7 @@ public final class ArenaCommand {
                 .withStyle(ChatFormatting.LIGHT_PURPLE), false);
 
         long t0 = System.currentTimeMillis();
-        boolean built = ErebosArenaBuilder.ensureGenerated(level);
+        boolean built = UdunosArenaBuilder.ensureGenerated(level);
         long ms = System.currentTimeMillis() - t0;
 
         if (built) {
@@ -90,7 +90,7 @@ public final class ArenaCommand {
             src.sendFailure(Component.literal("遗落境维度未加载。"));
             return 0;
         }
-        BlockPos spot = ErebosArenaBuilder.entrySpot();
+        BlockPos spot = UdunosArenaBuilder.entrySpot();
         player.teleportTo(level, spot.getX() + 0.5D, spot.getY(), spot.getZ() + 0.5D, 180.0F, 0.0F);
         src.sendSuccess(() -> Component.literal("已传送至竞技场入口。")
                 .withStyle(ChatFormatting.GRAY), false);
@@ -111,7 +111,7 @@ public final class ArenaCommand {
             return 0;
         }
 
-        BlockPos core = ErebosArenaBuilder.coreAltarPos();
+        BlockPos core = UdunosArenaBuilder.coreAltarPos();
         if (!(level.getBlockEntity(core) instanceof LostAltarBlockEntity altar)) {
             src.sendFailure(Component.literal("中央祭坛不存在 —— 先执行 /lr arena rebuild。"));
             return 0;
@@ -149,7 +149,7 @@ public final class ArenaCommand {
 
         BlockPos center = new BlockPos(BossRegistry.ARENA_CENTER_X,
                 BossRegistry.ARENA_CENTER_Y, BossRegistry.ARENA_CENTER_Z);
-        BlockPos core = ErebosArenaBuilder.coreAltarPos();
+        BlockPos core = UdunosArenaBuilder.coreAltarPos();
 
         src.sendSuccess(() -> Component.literal("===== 终末竞技场 =====")
                 .withStyle(ChatFormatting.LIGHT_PURPLE), false);
@@ -163,7 +163,7 @@ public final class ArenaCommand {
 
         int altars = 0;
         for (int i = 0; i < BossRegistry.PILLAR_COUNT; i++) {
-            BlockPos p = ErebosArenaBuilder.pillarAltarPos(i);
+            BlockPos p = UdunosArenaBuilder.pillarAltarPos(i);
             if (p != null && level.getBlockState(p).is(com.lost_realm.boss.BossBlocks.LOST_ALTAR.get())) {
                 altars++;
             }

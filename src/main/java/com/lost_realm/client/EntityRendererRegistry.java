@@ -8,10 +8,10 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
 import com.lost_realm.Medals;
 import com.lost_realm.boss.BossEntities;
-import com.lost_realm.client.boss.ErebosBoltRenderer;
-import com.lost_realm.client.boss.ErebosEffectRenderer;
-import com.lost_realm.client.boss.ErebosPartRenderer;
-import com.lost_realm.client.boss.ErebosRenderer;
+import com.lost_realm.client.boss.UdunosBoltRenderer;
+import com.lost_realm.client.boss.UdunosEffectRenderer;
+import com.lost_realm.client.boss.UdunosPartRenderer;
+import com.lost_realm.client.boss.UdunosRenderer;
 import com.lost_realm.client.boss.WardenBossRenderer;
 import com.lost_realm.client.boss.WardenSentinelRenderer;
 
@@ -79,22 +79,22 @@ public final class EntityRendererRegistry {
                 StarArrowRenderer::new);
 
         // ---- 遗落之主·乌蠹诺斯（dv58 新增）----
-        // 本体：自绘渲染器，沿轨迹逐节摆放 40 个模型（不走 GeckoLib，原因见 ErebosRenderer）
-        EntityRenderers.register(BossEntities.EREBOS.get(),
-                ErebosRenderer::new);
+        // 本体：自绘渲染器，沿轨迹逐节摆放 40 个模型（不走 GeckoLib，原因见 UdunosRenderer）
+        EntityRenderers.register(BossEntities.UDUNOS.get(),
+                UdunosRenderer::new);
         // 碰撞部件：一个"永远不画"的渲染器。看着像多此一举，其实是必需的 ——
         // 没注册渲染器的实体会让客户端在渲染循环里直接 NPE 崩溃（见类注释开头）。
-        EntityRenderers.register(BossEntities.EREBOS_PART.get(),
-                ErebosPartRenderer::new);
-        // 星弹：面向相机的发光小立方（billboard，原因见 ErebosBoltRenderer）
-        EntityRenderers.register(BossEntities.EREBOS_BOLT.get(),
-                ErebosBoltRenderer::new);
-        // 场上效果：空壳渲染器，视觉由实体自己在 tick 里撒粒子（见 ErebosEffectRenderer）
-        EntityRenderers.register(BossEntities.EREBOS_SHARD.get(),
-                com.lost_realm.client.boss.ErebosShardRenderer::new);
-        EntityRenderers.register(BossEntities.EREBOS_EFFECT.get(),
-                ErebosEffectRenderer::new);
+        EntityRenderers.register(BossEntities.UDUNOS_PART.get(),
+                UdunosPartRenderer::new);
+        // 星弹：面向相机的发光小立方（billboard，原因见 UdunosBoltRenderer）
+        EntityRenderers.register(BossEntities.UDUNOS_BOLT.get(),
+                UdunosBoltRenderer::new);
+        // 场上效果：空壳渲染器，视觉由实体自己在 tick 里撒粒子（见 UdunosEffectRenderer）
+        EntityRenderers.register(BossEntities.UDUNOS_SHARD.get(),
+                com.lost_realm.client.boss.UdunosShardRenderer::new);
+        EntityRenderers.register(BossEntities.UDUNOS_EFFECT.get(),
+                UdunosEffectRenderer::new);
 
-        Medals.LOGGER.info("[Lost Realm] 已注册 7 个实体渲染器(warden / warden_sentinel / arrow / erebos / erebos_part / erebos_bolt / erebos_effect)。");
+        Medals.LOGGER.info("[Lost Realm] 已注册 7 个实体渲染器(warden / warden_sentinel / arrow / udunos / udunos_part / udunos_bolt / udunos_effect)。");
     }
 }

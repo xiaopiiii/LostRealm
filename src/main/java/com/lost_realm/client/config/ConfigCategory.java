@@ -99,8 +99,8 @@ public final class ConfigCategory {
             reg("slots", "config.lost_realm.cat.slots");
 
     // ---- 乌蠹诺斯(beta41):当前终局 Boss ----
-    public static final ConfigCategory EREBOS =
-            reg("erebos", "config.lost_realm.cat.erebos");
+    public static final ConfigCategory UDUNOS =
+            reg("udunos", "config.lost_realm.cat.udunos");
 
     /**
      * ⚠️ 必须放在所有 {@code reg(...)} 静态初始化之后。

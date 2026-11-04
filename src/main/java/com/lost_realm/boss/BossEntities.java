@@ -11,12 +11,12 @@ import net.minecraftforge.registries.RegistryObject;
 import com.lost_realm.Medals;
 import com.lost_realm.boss.entity.WardenBoss;
 import com.lost_realm.boss.entity.WardenSentinel;
-import com.lost_realm.boss.erebos.ErebosBolt;
-import com.lost_realm.boss.erebos.ErebosEffect;
-import com.lost_realm.boss.erebos.ErebosBoss;
-import com.lost_realm.boss.erebos.ErebosPart;
-import com.lost_realm.boss.erebos.ErebosShard;
-import com.lost_realm.boss.erebos.ErebosTuning;
+import com.lost_realm.boss.udunos.UdunosBolt;
+import com.lost_realm.boss.udunos.UdunosEffect;
+import com.lost_realm.boss.udunos.UdunosBoss;
+import com.lost_realm.boss.udunos.UdunosPart;
+import com.lost_realm.boss.udunos.UdunosShard;
+import com.lost_realm.boss.udunos.UdunosTuning;
 
 /**
  * Boss 系统实体注册。
@@ -70,7 +70,7 @@ public final class BossEntities {
                     .build(Medals.MODID + ":warden_sentinel"));
 
     // ================================================================
-    // 遗落之主·乌蠹诺斯(Erebos) —— 终局宇宙蠕虫
+    // 遗落之主·乌蠹诺斯(Udunos) —— 终局宇宙蠕虫
     // ================================================================
 
     /**
@@ -80,7 +80,7 @@ public final class BossEntities {
      * 这不是"整条虫有多大"—— 96 格长的身体没法、也不该塞进一个碰撞箱。
      * 这个 2.4 格见方的箱子<b>只是头部</b>：它同时决定了
      * "玩家撞到虫头算头部伤害"和"实体位置点在哪"。
-     * 其余 39 节的判定由 {@link #EREBOS_PART} 负责。
+     * 其余 39 节的判定由 {@link #UDUNOS_PART} 负责。
      *
      * <h2>为什么 {@code updateInterval(1)}</h2>
      * 默认每 3 tick 才同步一次位置。这条虫巡游 0.55、冲锋 2.6 格/tick，
@@ -89,15 +89,15 @@ public final class BossEntities {
      *
      * <p>{@code noSummon()} <b>不加</b>：方便用指令直接生成来测试。
      */
-    public static final RegistryObject<EntityType<ErebosBoss>> EREBOS =
-            ENTITIES.register("erebos", () -> EntityType.Builder
-                    .of(ErebosBoss::new, MobCategory.MONSTER)
+    public static final RegistryObject<EntityType<UdunosBoss>> UDUNOS =
+            ENTITIES.register("udunos", () -> EntityType.Builder
+                    .of(UdunosBoss::new, MobCategory.MONSTER)
                     // 与 BODY_DIAMETER 同步（beta20 起 4.8）—— 准星选中、交互都靠它
-                    .sized((float) ErebosTuning.BODY_DIAMETER, (float) ErebosTuning.BODY_DIAMETER)
+                    .sized((float) UdunosTuning.BODY_DIAMETER, (float) UdunosTuning.BODY_DIAMETER)
                     .clientTrackingRange(16)
                     .updateInterval(1)
                     .fireImmune()
-                    .build(Medals.MODID + ":erebos"));
+                    .build(Medals.MODID + ":udunos"));
 
     /**
      * 乌蠹诺斯的碰撞部件 —— 沿身体每节一个。
@@ -105,7 +105,7 @@ public final class BossEntities {
      * <h2>为什么是独立实体</h2>
      * 攻击判定的入口是"射线检测命中哪个实体"。单个实体的碰撞箱只能覆盖头部，
      * 玩家对着中段身体砍刀会直接落空。部件实体让每一节都能被准星选中，
-     * 受击后把伤害<b>转发回本体</b>（见 {@code ErebosPart#hurt}）——
+     * 受击后把伤害<b>转发回本体</b>（见 {@code UdunosPart#hurt}）——
      * 于是"共享血量"天然成立，也不会出现打两处掉两份血。
      *
      * <h2>几个刻意的设置</h2>
@@ -116,14 +116,14 @@ public final class BossEntities {
      *   <li>{@code updateInterval(1)}：位置必须每 tick 跟上，否则判定会滞后于视觉。</li>
      * </ul>
      */
-    public static final RegistryObject<EntityType<ErebosPart>> EREBOS_PART =
-            ENTITIES.register("erebos_part", () -> EntityType.Builder
-                    // ⚠️ 必须显式写 <ErebosPart>。ErebosPart 有两个构造函数
-                    // （注册用的 (EntityType, Level) 与服务端创建用的 (ErebosBoss)），
+    public static final RegistryObject<EntityType<UdunosPart>> UDUNOS_PART =
+            ENTITIES.register("udunos_part", () -> EntityType.Builder
+                    // ⚠️ 必须显式写 <UdunosPart>。UdunosPart 有两个构造函数
+                    // （注册用的 (EntityType, Level) 与服务端创建用的 (UdunosBoss)），
                     // 不指定的话编译器会把 T 推断成 Entity，
-                    // 然后抱怨"EntityType<Entity> 无法转成 EntityType<? extends ErebosPart>"。
-                    .<ErebosPart>of(ErebosPart::new, MobCategory.MISC)
-                    .sized(ErebosTuning.PART_SIZE, ErebosTuning.PART_SIZE)
+                    // 然后抱怨"EntityType<Entity> 无法转成 EntityType<? extends UdunosPart>"。
+                    .<UdunosPart>of(UdunosPart::new, MobCategory.MISC)
+                    .sized(UdunosTuning.PART_SIZE, UdunosTuning.PART_SIZE)
                     .clientTrackingRange(16)
                     // ---- 从 1 降到 2 ----
                     // 部件有 40 个（每节一个），updateInterval(2) 意味着
@@ -135,7 +135,7 @@ public final class BossEntities {
                     .updateInterval(2)
                     .noSave()
                     .fireImmune()
-                    .build(Medals.MODID + ":erebos_part"));
+                    .build(Medals.MODID + ":udunos_part"));
 
     /**
      * 乌蠹诺斯的星弹 —— 全部招式的公共弹药。
@@ -148,14 +148,14 @@ public final class BossEntities {
      * <h2>{@code updateInterval(1)}</h2>
      * 弹幕速度 1.2 格/tick，默认的每 3 tick 同步一次会让客户端看到它"跳着走"。
      */
-    public static final RegistryObject<EntityType<ErebosBolt>> EREBOS_BOLT =
-            ENTITIES.register("erebos_bolt", () -> EntityType.Builder
-                    .<ErebosBolt>of(ErebosBolt::new, MobCategory.MISC)
-                    .sized(ErebosTuning.BOLT_HITBOX * 2.0F, ErebosTuning.BOLT_HITBOX * 2.0F)
+    public static final RegistryObject<EntityType<UdunosBolt>> UDUNOS_BOLT =
+            ENTITIES.register("udunos_bolt", () -> EntityType.Builder
+                    .<UdunosBolt>of(UdunosBolt::new, MobCategory.MISC)
+                    .sized(UdunosTuning.BOLT_HITBOX * 2.0F, UdunosTuning.BOLT_HITBOX * 2.0F)
                     .clientTrackingRange(10)
                     .updateInterval(2)
                     .noSave()
-                    .build(Medals.MODID + ":erebos_bolt"));
+                    .build(Medals.MODID + ":udunos_bolt"));
 
     /**
      * 死亡演出的装甲碎块。
@@ -164,15 +164,15 @@ public final class BossEntities {
      * {@code noPhysics}：不参与碰撞，只在自己的 tick 里做一次 AABB 检测，
      * 所以不会和玩家、方块实体互相卡住。
      */
-    public static final RegistryObject<EntityType<ErebosShard>> EREBOS_SHARD =
-            ENTITIES.register("erebos_shard", () -> EntityType.Builder
-                    .<ErebosShard>of(ErebosShard::new, MobCategory.MISC)
+    public static final RegistryObject<EntityType<UdunosShard>> UDUNOS_SHARD =
+            ENTITIES.register("udunos_shard", () -> EntityType.Builder
+                    .<UdunosShard>of(UdunosShard::new, MobCategory.MISC)
                     .sized(0.45F, 0.45F)
                     .clientTrackingRange(10)
                     .updateInterval(2)
                     .noSave()
                     .fireImmune()
-                    .build(Medals.MODID + ":erebos_shard"));
+                    .build(Medals.MODID + ":udunos_shard"));
 
     /**
      * 场上的效果载体 —— 激光 / 限制圈 / 审判柱 / 星痕 / 星门。
@@ -189,15 +189,15 @@ public final class BossEntities {
      * <p>{@code noSave()}：效果都是短命的，存档里留着没有意义，
      * 重载后由招式重新生成。
      */
-    public static final RegistryObject<EntityType<ErebosEffect>> EREBOS_EFFECT =
-            ENTITIES.register("erebos_effect", () -> EntityType.Builder
-                    .<ErebosEffect>of(ErebosEffect::new, MobCategory.MISC)
+    public static final RegistryObject<EntityType<UdunosEffect>> UDUNOS_EFFECT =
+            ENTITIES.register("udunos_effect", () -> EntityType.Builder
+                    .<UdunosEffect>of(UdunosEffect::new, MobCategory.MISC)
                     .sized(0.4F, 0.4F)
                     .clientTrackingRange(16)
                     .updateInterval(5)
                     .noSave()
                     .fireImmune()
-                    .build(Medals.MODID + ":erebos_effect"));
+                    .build(Medals.MODID + ":udunos_effect"));
 
     public static void init(IEventBus modBus) {
         ENTITIES.register(modBus);
@@ -208,8 +208,8 @@ public final class BossEntities {
     private static void onAttributeCreation(EntityAttributeCreationEvent event) {
         event.put(WARDEN.get(), WardenBoss.createAttributes().build());
         event.put(SENTINEL.get(), WardenSentinel.createAttributes().build());
-        event.put(EREBOS.get(), ErebosBoss.createAttributes().build());
-        // EREBOS_PART 没有属性：它是 Entity 而非 LivingEntity，没有生命值也不结算伤害
+        event.put(UDUNOS.get(), UdunosBoss.createAttributes().build());
+        // UDUNOS_PART 没有属性：它是 Entity 而非 LivingEntity，没有生命值也不结算伤害
     }
 
     private BossEntities() {}

@@ -19,8 +19,8 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import com.lost_realm.boss.BossEntities;
-import com.lost_realm.boss.erebos.ErebosBoss;
-import com.lost_realm.boss.erebos.ErebosTuning;
+import com.lost_realm.boss.udunos.UdunosBoss;
+import com.lost_realm.boss.udunos.UdunosTuning;
 
 /**
  * <b>黯星信标</b> —— 召唤遗落之主·乌蠹诺斯的道具。
@@ -77,12 +77,12 @@ public class DarkstarBeaconItem extends Item {
 
         // ---- 是否已经有活着的乌蠹诺斯 ----
         AABB area = player.getBoundingBox().inflate(EXISTING_CHECK_RADIUS);
-        List<ErebosBoss> existing = server.getEntitiesOfClass(ErebosBoss.class, area);
+        List<UdunosBoss> existing = server.getEntitiesOfClass(UdunosBoss.class, area);
 
         // 取最近的那一个：提示里带上距离，玩家才知道它游到哪去了
-        ErebosBoss nearest = null;
+        UdunosBoss nearest = null;
         double nearestSqr = Double.MAX_VALUE;
-        for (ErebosBoss b : existing) {
+        for (UdunosBoss b : existing) {
             if (!b.isAlive() || b.isRemoved()) {
                 continue;
             }
@@ -94,7 +94,7 @@ public class DarkstarBeaconItem extends Item {
         }
         if (nearest != null) {
             player.displayClientMessage(
-                    Component.translatable("message.lost_realm.erebos.already_present")
+                    Component.translatable("message.lost_realm.udunos.already_present")
                             .withStyle(ChatFormatting.GRAY)
                             .append(Component.literal(" §7(约 " + (int) Math.sqrt(nearestSqr) + " 格外)")
                                     .withStyle(ChatFormatting.DARK_GRAY)),
@@ -107,7 +107,7 @@ public class DarkstarBeaconItem extends Item {
         Vec3 spot = player.position()
                 .add(look.x * SPAWN_DISTANCE, 14.0D, look.z * SPAWN_DISTANCE);
 
-        ErebosBoss boss = BossEntities.EREBOS.get().create(server);
+        UdunosBoss boss = BossEntities.UDUNOS.get().create(server);
         if (boss == null) {
             return InteractionResultHolder.fail(stack);
         }
@@ -134,7 +134,7 @@ public class DarkstarBeaconItem extends Item {
         tooltip.add(Component.translatable("item.lost_realm.darkstar_beacon.tip")
                 .withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.translatable("item.lost_realm.darkstar_beacon.tip.2",
-                        (int) ErebosTuning.MAX_HEALTH)
+                        (int) UdunosTuning.MAX_HEALTH)
                 .withStyle(ChatFormatting.DARK_PURPLE));
         super.appendHoverText(stack, level, tooltip, flag);
     }
