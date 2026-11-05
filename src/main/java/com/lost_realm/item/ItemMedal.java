@@ -178,10 +178,11 @@ public class ItemMedal extends Item implements ICurioItem {
 
     @Override
     public void curioTick(SlotContext slotContext, ItemStack stack) {
-        if (slotContext.entity() instanceof ServerPlayer player) {
-            // 幂等刷新基础属性(固定 UUID,重复施加仅覆盖)
-            MedalRuntime.refresh(player, type, PlayerMedals.of(player), stack);
-        }
+        // ★ 这里原本每 tick 也调一次 MedalRuntime.refresh —— 与
+        //   PlayerTickHandler#onPlayerTick 里的那份完全重复(同一 tick 刷两遍)。
+        //   beta44 起只保留 PlayerTickHandler 那一处(它遍历全部 5 个槽位,
+        //   本方法只对「当前这件物品」触发,覆盖范围更小)。
+        //   这个空实现保留是为了说明"为什么不在这里刷",免得以后又被加回来。
     }
 
     // ================================================================

@@ -110,6 +110,9 @@ public class ConfigScreen extends Screen {
     /** 每行对应的控件(用于点击命中测试)。 */
     private final List<RowWidget> rows = new ArrayList<>();
 
+    /** 数值输入框 → 它编辑的那个配置项(用于"输完把越界值纠正回来")。 */
+    private final java.util.Map<EditBox, ConfigOption> boxOwner = new java.util.IdentityHashMap<>();
+
     /** 鼠标按下期间正在拖动的滑杆行(用于连续调节)。 */
     private ConfigOption dragging;
 
@@ -189,6 +192,7 @@ public class ConfigScreen extends Screen {
     private void rebuildRows() {
         clearWidgets();
         rows.clear();
+        boxOwner.clear();
 
         // 难度页:没有配置项,控件是五个「应用」按钮,单独构建
         if (isDifficultyPage()) {
@@ -267,6 +271,7 @@ public class ConfigScreen extends Screen {
                     }
                 });
                 row.widgets.add(box);
+                boxOwner.put(box, opt);
                 addRenderableWidget(box);
             }
             case SWITCH -> {
@@ -531,7 +536,56 @@ public class ConfigScreen extends Screen {
 
     @Override
     public void onClose() {
+        normalizeFocusedBox();
         minecraft.setScreen(parent);
+    }
+
+    /**
+     * 焦点离开输入框时，把「越界 / 解析失败」的文字改回真正生效的值。
+     *
+     * <p>以前只把值夹进缓冲区，框里的字照旧：敲 99999 → 存进去的是上限，
+     * 界面上却还写着 99999，看着像「保存没生效」。现在改成「输完（失焦）才纠正」——
+     * 不在每敲一个字符时就纠正，否则 min 是 32 的项会在你刚敲下 "5" 的瞬间被改成 32，
+     * 后面根本没法继续打字。
+     */
+    @Override
+    public void setFocused(net.minecraft.client.gui.components.events.GuiEventListener listener) {
+        net.minecraft.client.gui.components.events.GuiEventListener prev = getFocused();
+        if (prev instanceof EditBox box && prev != listener) {
+            normalizeBox(box);
+        }
+        super.setFocused(listener);
+    }
+
+    private void normalizeFocusedBox() {
+        if (getFocused() instanceof EditBox box) {
+            normalizeBox(box);
+        }
+    }
+
+    private void normalizeBox(EditBox box) {
+        ConfigOption opt = boxOwner.get(box);
+        if (opt == null) {
+            return;
+        }
+        String text = box.getValue();
+        boolean isDouble = opt.kind() == ConfigOption.Kind.DOUBLE_STEPPER;
+        String fixed;
+        try {
+            if (isDouble) {
+                opt.setDouble(Double.parseDouble(text));
+                fixed = trimDouble(opt.asDouble());
+            } else {
+                opt.setInt(Integer.parseInt(text));
+                fixed = String.valueOf(opt.asInt());
+            }
+        } catch (NumberFormatException e) {
+            // 空串 / 只有负号 / 只有小数点：恢复成缓冲区里的值
+            fixed = isDouble ? trimDouble(opt.asDouble()) : String.valueOf(opt.asInt());
+        }
+        if (!fixed.equals(text)) {
+            box.setValue(fixed);
+        }
     }
 
     @Override

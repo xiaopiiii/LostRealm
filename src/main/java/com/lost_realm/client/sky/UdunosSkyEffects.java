@@ -193,15 +193,27 @@ public class UdunosSkyEffects extends DimensionSpecialEffects {
                              double vx, double vy, double vz,
                              float size,
                              float r, float g, float b, float a) {
-        double[][] corners = {
-                {-1, -1}, {1, -1}, {1, 1}, {-1, 1}
-        };
-        for (double[] c : corners) {
-            float px = (float) (cx + (ux * c[0] + vx * c[1]) * size);
-            float py = (float) (cy + (vy * c[1]) * size);
-            float pz = (float) (cz + (uz * c[0] + vz * c[1]) * size);
-            buf.vertex(mat, px, py, pz).color(r, g, b, a).endVertex();
-        }
+        // ★ 零分配(beta44):原来是 `double[][] corners = {{-1,-1},...}`，
+        //   每画一个四边形就 new 5 个对象。星空 260 + 星云 9 = 每帧 1345 个，
+        //   60fps 下约 8 万个/秒，手机端直接反映成 GC 抖动。
+        //   四个角是常量，展开写即可，一个对象都不用分配。
+        quadVertex(buf, mat, cx, cy, cz, ux, uz, vx, vy, vz, size, -1.0D, -1.0D, r, g, b, a);
+        quadVertex(buf, mat, cx, cy, cz, ux, uz, vx, vy, vz, size, 1.0D, -1.0D, r, g, b, a);
+        quadVertex(buf, mat, cx, cy, cz, ux, uz, vx, vy, vz, size, 1.0D, 1.0D, r, g, b, a);
+        quadVertex(buf, mat, cx, cy, cz, ux, uz, vx, vy, vz, size, -1.0D, 1.0D, r, g, b, a);
+    }
+
+    /** {@link #quad} 的单个角点。抽出来只为把循环变成 4 次直调。 */
+    private static void quadVertex(BufferBuilder buf, Matrix4f mat,
+                                   double cx, double cy, double cz,
+                                   double ux, double uz,
+                                   double vx, double vy, double vz,
+                                   float size, double cu, double cv,
+                                   float r, float g, float b, float a) {
+        float px = (float) (cx + (ux * cu + vx * cv) * size);
+        float py = (float) (cy + (vy * cv) * size);
+        float pz = (float) (cz + (uz * cu + vz * cv) * size);
+        buf.vertex(mat, px, py, pz).color(r, g, b, a).endVertex();
     }
 
     /** 面向原点的圆盘（星体 / 光晕）。 */
@@ -240,27 +252,26 @@ public class UdunosSkyEffects extends DimensionSpecialEffects {
             float c1 = (float) Math.cos(a1);
             float s1 = (float) (Math.sin(a1) * tilt);
 
-            float[] p0 = pointOnRing(dx, dy, dz, u, v, c0, s0, radiusIn);
-            float[] p1 = pointOnRing(dx, dy, dz, u, v, c1, s1, radiusIn);
-            float[] p2 = pointOnRing(dx, dy, dz, u, v, c1, s1, radiusOut);
-            float[] p3 = pointOnRing(dx, dy, dz, u, v, c0, s0, radiusOut);
-
-            buf.vertex(mat, p0[0], p0[1], p0[2]).color(r, g, b, a).endVertex();
-            buf.vertex(mat, p1[0], p1[1], p1[2]).color(r, g, b, a).endVertex();
-            buf.vertex(mat, p2[0], p2[1], p2[2]).color(r, g, b, a * 0.3F).endVertex();
-            buf.vertex(mat, p3[0], p3[1], p3[2]).color(r, g, b, a * 0.3F).endVertex();
+            // ★ 零分配(beta44):原来是 4 次 pointOnRing，每次 new float[3]，
+            //   2 个环 × 56 段 = 每帧 448 个数组。改成直接算完就写顶点。
+            ringVertex(buf, mat, dx, dy, dz, u, v, c0, s0, radiusIn, r, g, b, a);
+            ringVertex(buf, mat, dx, dy, dz, u, v, c1, s1, radiusIn, r, g, b, a);
+            ringVertex(buf, mat, dx, dy, dz, u, v, c1, s1, radiusOut, r, g, b, a * 0.3F);
+            ringVertex(buf, mat, dx, dy, dz, u, v, c0, s0, radiusOut, r, g, b, a * 0.3F);
         }
     }
 
-    private static float[] pointOnRing(double dx, double dy, double dz,
-                                       double[] u, double[] v,
-                                       float ca, float sa, float radius) {
-        double px = dx * R + (u[0] * ca + v[0] * sa) * radius;
-        double py = dy * R + (u[1] * ca + v[1] * sa) * radius;
-        double pz = dz * R + (u[2] * ca + v[2] * sa) * radius;
-        return new float[]{(float) px, (float) py, (float) pz};
+    /** 星环上的一个顶点(直接写入缓冲区,不产生中间数组)。 */
+    private static void ringVertex(BufferBuilder buf, Matrix4f mat,
+                                   double dx, double dy, double dz,
+                                   double[] u, double[] v,
+                                   float ca, float sa, float radius,
+                                   float r, float g, float b, float a) {
+        float px = (float) (dx * R + (u[0] * ca + v[0] * sa) * radius);
+        float py = (float) (dy * R + (u[1] * ca + v[1] * sa) * radius);
+        float pz = (float) (dz * R + (u[2] * ca + v[2] * sa) * radius);
+        buf.vertex(mat, px, py, pz).color(r, g, b, a).endVertex();
     }
-
     private static void vertex(BufferBuilder buf, Matrix4f mat,
                                double dx, double dy, double dz,
                                double[] u, double[] v,

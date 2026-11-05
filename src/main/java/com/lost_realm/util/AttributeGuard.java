@@ -42,6 +42,18 @@ public final class AttributeGuard {
 
         // 防叠加:同 UUID 视为同一修饰符,先移除再加,避免重复触发导致无限叠加
         AttributeModifier existing = inst.getModifier(uuid);
+
+        // ★ 幂等短路(beta44):数值与运算都没变时什么都不做。
+        //
+        //   本方法在 tick 里被高频调用(每枚勋章每 tick 一次基础成长 + 每个已解锁技能
+        //   各若干项),原先每次都 remove+add —— 属性表被标脏、客户端每 tick 收到属性包、
+        //   其它模组的属性缓存全部失效。实测这是战斗掉帧的主要来源。
+        //   加上这三行后,稳态下每次调用只是一次 getModifier + 两次比较。
+        if (existing != null && existing.getOperation() == op
+                && Math.abs(existing.getAmount() - amount) < 1.0E-6D) {
+            return true;
+        }
+
         int sameCount = countByUuid(inst, uuid);
         if (sameCount > MedalsConfig.MAX_MODIFIERS_PER_UUID.get()) {
             Medals.LOGGER.warn("[Lost Realm] 检测到修饰符 {} 数量异常({}),已拒绝继续叠加以保护稳定性。",
@@ -80,12 +92,28 @@ public final class AttributeGuard {
         }
         Collection<AttributeModifier> mods = inst.getModifiers();
         UUID[] toRemove = mods.stream()
-                .filter(m -> isOurs(m))
+                .filter(m -> isOurs(m) && !isProtected(m))
                 .map(AttributeModifier::getId)
                 .toArray(UUID[]::new);
         for (UUID u : toRemove) {
             inst.removeModifier(u);
         }
+    }
+
+    /**
+     * 世界难度挂的修饰符不归「勋章清理」管。
+     *
+     * <p>勋章卸下时 {@link #clearOwned} 是按「{@code lost_realm:} 前缀」清整条属性的，
+     * 而难度的攻/甲修饰符正好也是同前缀、同属性（{@code ATTACK_DAMAGE} / {@code ARMOR}）。
+     * 不加这层排除的话，卸一枚战士勋章会把「深渊」的 -15% 攻击一起删掉 ——
+     * 虽然 40 tick 后会被 {@code DifficultyManager#refreshPlayer} 补回来，
+     * 但那两秒里玩家是无惩罚状态。
+     */
+    private static boolean isProtected(AttributeModifier m) {
+        UUID id = m.getId();
+        return id.equals(ModifierIds.DIFFICULTY_PLAYER_ATTACK)
+                || id.equals(ModifierIds.DIFFICULTY_PLAYER_ARMOR)
+                || id.equals(ModifierIds.DIFFICULTY_JOB_SLOT);
     }
 
     /** 判断修饰符是否由本模组创建。 */

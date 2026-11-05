@@ -160,12 +160,22 @@ public final class DifficultyManager {
         float oldMax = mob.getMaxHealth();
         float oldHealth = mob.getHealth();
 
+        // ★ 怪物的倍率用「持久修饰符」(beta44)。
+        //
+        //   原来是 addTransientModifier —— 它不写进实体 NBT。读档时
+        //   LivingEntity#readAdditionalSaveData 先把血量 setHealth() 夹到
+        //   **当时的**上限(此时倍率还没挂上 = 基础上限)，随后 EntityJoinLevelEvent
+        //   再挂倍率，于是 oldHealth == oldMax，被判成「满血」→ 直接回满。
+        //   表现为：困难以上，血量高于基础上限的怪走远再回来就满血了；
+        //   简单难度反过来，满血怪读档后会掉到 80%。
+        //   持久修饰符会随实体 NBT 保存，读档时上限本来就带着倍率，
+        //   血量不会被夹，比例自然保住。
         applyOrRemove(mob, Attributes.MAX_HEALTH, ModifierIds.DIFFICULTY_MOB_HEALTH,
-                "difficulty_mob_health", lv.mobHealth() - 1.0D);
+                "difficulty_mob_health", lv.mobHealth() - 1.0D, true);
         applyOrRemove(mob, Attributes.ARMOR, ModifierIds.DIFFICULTY_MOB_ARMOR,
-                "difficulty_mob_armor", lv.mobArmor() - 1.0D);
+                "difficulty_mob_armor", lv.mobArmor() - 1.0D, true);
         applyOrRemove(mob, Attributes.ATTACK_DAMAGE, ModifierIds.DIFFICULTY_MOB_ATTACK,
-                "difficulty_mob_attack", lv.mobAttack() - 1.0D);
+                "difficulty_mob_attack", lv.mobAttack() - 1.0D, true);
 
         float newMax = mob.getMaxHealth();
         // 血量按比例保留。oldHealth <= 0 时不碰 —— 有些 Boss 在构造期血量还是 0,
@@ -188,9 +198,9 @@ public final class DifficultyManager {
         DifficultyLevel lv = current;
 
         applyOrRemove(player, Attributes.ATTACK_DAMAGE, ModifierIds.DIFFICULTY_PLAYER_ATTACK,
-                "difficulty_player_attack", lv.playerAttack() - 1.0D);
+                "difficulty_player_attack", lv.playerAttack() - 1.0D, false);
         applyOrRemove(player, Attributes.ARMOR, ModifierIds.DIFFICULTY_PLAYER_ARMOR,
-                "difficulty_player_armor", lv.playerArmor() - 1.0D);
+                "difficulty_player_armor", lv.playerArmor() - 1.0D, false);
 
         refreshJobSlot(player, lv);
     }
@@ -269,9 +279,13 @@ public final class DifficultyManager {
      * <p>与直接调 {@link AttributeGuard#apply} 的区别:数值与运算都没变时
      * <b>什么都不做</b>。玩家每 40 tick 会走一次刷新,不加这层判断的话
      * 属性每秒被 remove+add 两次,其它模组的属性缓存会被无意义地反复失效。
+     *
+     * @param permanent {@code true} = 持久修饰符(随实体 NBT 保存,用于怪物);
+     *                  {@code false} = 临时修饰符(每次登录重挂,用于玩家 ——
+     *                  玩家的属性表本来就会在死亡/换维度时重建)
      */
     private static void applyOrRemove(LivingEntity entity, Attribute attribute, java.util.UUID uuid,
-                                      String name, double multiplier) {
+                                      String name, double multiplier, boolean permanent) {
         AttributeInstance instance = entity.getAttribute(attribute);
         if (instance == null) {
             return;
@@ -288,8 +302,17 @@ public final class DifficultyManager {
                 && Math.abs(existing.getAmount() - multiplier) < 1.0E-4D) {
             return;
         }
-        AttributeGuard.apply(entity, attribute, uuid, name, multiplier,
-                AttributeModifier.Operation.MULTIPLY_TOTAL);
+        // 同一个 UUID 只能有一条:持久与临时共用同一张表,先清掉旧的那条
+        if (existing != null) {
+            instance.removeModifier(uuid);
+        }
+        AttributeModifier modifier = new AttributeModifier(uuid, Medals.MODID + ":" + name,
+                multiplier, AttributeModifier.Operation.MULTIPLY_TOTAL);
+        if (permanent) {
+            instance.addPermanentModifier(modifier);
+        } else {
+            instance.addTransientModifier(modifier);
+        }
     }
 
     // ================================================================

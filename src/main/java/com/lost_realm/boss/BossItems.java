@@ -11,7 +11,6 @@ import net.minecraftforge.registries.RegistryObject;
 import com.lost_realm.Medals;
 import com.lost_realm.boss.item.RealmKeyItem;
 import com.lost_realm.boss.item.FragmentItem;
-import com.lost_realm.boss.item.RealmSourceItem;
 import com.lost_realm.boss.item.EchoItem;
 import com.lost_realm.boss.item.RealmCrownItem;
 import com.lost_realm.boss.item.ScytheItem;
@@ -29,8 +28,6 @@ import com.lost_realm.boss.item.DarkstarBeaconItem;
  *       <td>击杀守望者仆从 / 波次怪</td><td>合成门钥匙</td></tr>
  *   <tr><td>{@code warden_core} 遗落之主·核心</td>
  *       <td>Boss 掉落(100%)</td><td>合成门钥匙 / 遗落境冠冕</td></tr>
- *   <tr><td>{@code realm_source} 遗落本源</td>
- *       <td>Boss 掉落(100%)</td><td>突破勋章等级上限(30→35)</td></tr>
  *   <tr><td>{@code warden_echo} 遗落之主的残响</td>
  *       <td>Boss 掉落(30%)</td><td>装饰性战利品</td></tr>
  *   <tr><td>{@code realm_crown} 遗落境冠冕</td>
@@ -116,19 +113,6 @@ public final class BossItems {
      */
     public static final RegistryObject<Item> WARDEN_CORE = ITEMS.register("warden_core",
             () -> new Item(new Item.Properties().rarity(Rarity.EPIC).fireResistant()));
-
-    /**
-     * 遗落本源 —— 必然掉落,2~5 个。
-     *
-     * <p><b>关键设计</b>:用于突破勋章等级上限(30 → 35)。
-     * 它给了满级玩家一条继续成长的路,也让打 Boss 有实质收益 ——
-     * 否则熟练度练满之后,Boss 就只是"一次性的观赏内容"。
-     */
-    public static final RegistryObject<Item> REALM_SOURCE = ITEMS.register("realm_source",
-            () -> new RealmSourceItem(new Item.Properties()
-                    .rarity(Rarity.EPIC)
-                    .fireResistant()
-                    .stacksTo(16)));
 
     /**
      * 终末之影的残响 —— 30% 掉落的装饰性战利品。

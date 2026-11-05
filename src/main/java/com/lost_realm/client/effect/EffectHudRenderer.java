@@ -371,11 +371,14 @@ public final class EffectHudRenderer {
     private static void drawTimerBar(GuiGraphics gfx, MobEffectInstance inst,
                                      int x, int y, int slot) {
         int duration = Math.max(0, inst.getDuration());
-        // 满格基准 = 这份效果出现以来见过的最大剩余量（封底 600 tick = 30 秒，
-        // 避免一条超长药水从头到尾只动一点点）。Math.max 保证至少 600，
-        // 让 30 秒以内的效果能用满格表达。
+        // 满格基准 = 这份效果出现以来见过的最大剩余量。
+        //
+        // ★ beta44 去掉了原来的 `Math.max(peak, 600)` 封底。
+        //   那行注释写的是「让 30 秒以内的效果能用满格表达」，实际效果正好相反：
+        //   封底把分母顶到 600，10 秒的 buff 一上手就只显示 33%，一辈子满不了。
+        //   峰值本身就是「刚上身时的剩余量」，拿它当分母才是真正会从满格开始掉。
         int peak = DURATION_PEAK.merge(inst.getEffect(), duration, Math::max);
-        int full = Math.max(peak, 600);
+        int full = Math.max(peak, 1);
         float progress = duration <= 0 ? 0.0F : Math.min(1.0F, duration / (float) full);
 
         int barW = Math.max(4, Math.round(slot * BAR_WIDTH_RATIO));

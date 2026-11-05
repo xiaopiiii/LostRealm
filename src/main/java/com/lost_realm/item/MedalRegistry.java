@@ -107,7 +107,6 @@ public final class MedalRegistry {
 
                 // ---------- 遗落之主:战利品 ----------
                 output.accept(com.lost_realm.boss.BossItems.WARDEN_CORE.get());
-                output.accept(com.lost_realm.boss.BossItems.REALM_SOURCE.get());
                 output.accept(com.lost_realm.boss.BossItems.WARDEN_ECHO.get());
                 output.accept(com.lost_realm.boss.BossItems.REALM_CROWN.get());
 

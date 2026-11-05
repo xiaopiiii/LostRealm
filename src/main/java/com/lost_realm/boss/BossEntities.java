@@ -94,7 +94,10 @@ public final class BossEntities {
                     .of(UdunosBoss::new, MobCategory.MONSTER)
                     // 与 BODY_DIAMETER 同步（beta20 起 4.8）—— 准星选中、交互都靠它
                     .sized((float) UdunosTuning.BODY_DIAMETER, (float) UdunosTuning.BODY_DIAMETER)
-                    .clientTrackingRange(16)
+                    // 20 区块 = 320 格，必须 ≥ UdunosBoss#broadcastSpine 的 320 格门限（beta44）。
+                    // 原来写 16（256 格）：256~320 之间脊线包照发，但客户端那边实体
+                    // 早被移出追踪范围了，`level.getEntity(id)` 拿到 null，包全部白丢。
+                    .clientTrackingRange(20)
                     .updateInterval(1)
                     .fireImmune()
                     .build(Medals.MODID + ":udunos"));
@@ -124,7 +127,9 @@ public final class BossEntities {
                     // 然后抱怨"EntityType<Entity> 无法转成 EntityType<? extends UdunosPart>"。
                     .<UdunosPart>of(UdunosPart::new, MobCategory.MISC)
                     .sized(UdunosTuning.PART_SIZE, UdunosTuning.PART_SIZE)
-                    .clientTrackingRange(16)
+                    // 同样拉到 20 区块：部件分布在整条身体上，尾节离头部最远 200 格，
+                    // 追踪范围必须跟着本体一起放宽（beta44）。
+                    .clientTrackingRange(20)
                     // ---- 从 1 降到 2 ----
                     // 部件有 40 个（每节一个），updateInterval(2) 意味着
                     // 每个部件每 tick 都要发一次位置包 —— 单个 Boss 就是 800 包/秒。

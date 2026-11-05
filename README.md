@@ -1,6 +1,6 @@
 # Lost Realm（遗落境）—— 五枚勋章熟练度系统 + 遗落之都终局战
 
-> **当前版本:`1.0.0-beta40`**（`gradle.properties` 的 `mod_build`）。
+> **当前版本:`1.0.0-beta44`**（`gradle.properties` 的 `mod_build`）。
 > 编译用 Minecraft **1.20.1** / Forge **47.4.10**；玩家实例实测跑在 **47.4.28**。
 > 版本号规则：每次改动内容都要把 `mod_build` 末尾数字 +1 —— 它同时决定
 > 模组列表里显示的版本与 jar 文件名。完整约定见 [`.codebuddy/项目规则.md`](.codebuddy/项目规则.md)。
@@ -18,7 +18,7 @@
 
 | 项 | 现状 |
 |---|---|
-| 版本 | `1.0.0-beta40` |
+| 版本 | `1.0.0-beta44` |
 | 注册名 / 包名 | `lost_realm` / `com.lost_realm` |
 | 勋章 | 5 枚，各 6 个节点技能（Lv.5 / 10 / 15 / 20 / 25 / 30 解锁） |
 | 熟练度 | Lv.1~60；六段成长率 7/6/5/4/3/2%；枷锁在 Lv.20 与 Lv.40 |
@@ -35,7 +35,7 @@
 - **改代码前** → §二（核心机制的实现位置）+ §四（属性映射）+ 项目规则 §4「静默失效速查」。
 - **查功能在哪** → §六（体验改进）、§六·补充二（世界难度）、§六·补充三（乌蠹诺斯）。
 - **要构建** → §八。
-- **看历史** → `gradle.properties` 顶部的版本历史注释块（dv1 → beta40 逐条）。
+- **看历史** → `gradle.properties` 顶部的版本历史注释块（dv1 → beta44 逐条）。
   本文 §35.x 是 **dv 期档案**，其中的造型/机制描述**已作废**，只作检索用。
 
 ---
@@ -45,7 +45,7 @@
 | 线 | 范围 | 说明 |
 |---|---|---|
 | `dv1` ~ `dv30` | 早期 | 勋章系统成型、遗落之都、终末之影（人形 Boss）三形态迭代 |
-| `beta1` ~ `beta40` | 当前 | 架构重构与实测修复期：属性自注册、Boss 换代为巨虫、配置界面重做 |
+| `beta1` ~ `beta44` | 当前 | 架构重构与实测修复期：属性自注册、Boss 换代为巨虫、配置界面重做 |
 
 近期关键节点：
 
@@ -58,6 +58,9 @@
 - **beta38** 配置界面加「世界难度」页；新增 G 键作为配置界面第二入口。
 - **beta39** 配置项全量对账：补齐 97 项界面缺失、删除 6 项死配置。
 - **beta40** README 全量重写（本版只改文档，jar 内容与 beta39 一致）。
+- **beta41~43** 配置界面删旧 Boss / 加乌蠹诺斯配置 / Boss 全量改名 `udunos`。
+- **beta44** 代码审查修复：属性刷新幂等短路、星空渲染零分配、怪物难度倍率改持久修饰符、
+  删除失效的「遗落本源」与 `RealmCapConfig`。
 
 
 > **法师勋章**以【诡厄巫法 / Goety】为底座,通过其官方公开 API 实现
@@ -218,7 +221,9 @@ LivingDamageEvent(LOWEST) ──► 熟练度结算(取实际扣血量)
 | 21~40 | 游侠 | 精锐 |
 | 41~60 | 箭神 | 宗师 |
 
-枷锁落在 **Lv.20 / Lv.40**（`MedalProgression`），破枷要消耗「遗落本源」。
+枷锁落在 **Lv.20 / Lv.40**（`MedalProgression`），破枷要消耗**破枷印记**（`MedalShackleItem`）。
+> `beta44` 删掉了早期设计的「遗落本源」—— 它把上限写进一个静态字段，
+> 而真正的封顶读的是枷锁阶段，等于用了没效果；功能已被枷锁系统完全取代。
 
 ---
 
@@ -921,15 +926,11 @@ return false;
 `warden_sentinel`（守望者仆从，HP 120 / 纯近战，场上上限 6）
 
 **物品（12）**：`lost_realm_fragment`、`altar_core`、`realm_key`、
-`warden_core`、`realm_source`、`warden_echo`、`realm_crown` + 4 个 BlockItem
+`warden_core`、`warden_echo`、`realm_crown` + 4 个 BlockItem
 
 > **`warden_summon`（召唤符）已在 `dv5` 删除** —— 它的 4 项材料并入了 `realm_key` 配方。
 
-> **`realm_source`（遗落本源）的设计意图**：它把四勋章等级上限 **30 → 35 → … → 50** 永久提高。
-> 这给了满级玩家一条**继续成长的路**，也让打 Boss 有实质收益 ——
-> 否则熟练度练满之后，Boss 就只是一次性的观赏内容。
-
-**掉落**：`warden` → 终末之核 100% / 遗落本源 2~5 个 100% / 残响 30% / 冠冕 **8%**；
+**掉落**：`warden` → 终末之核 100% / 残响 30% / 冠冕 **8%**；
 `warden_sentinel` → 祭坛激活核心 100%。全部带 `killed_by_player` 条件。
 
 **合成（6）**：门钥匙（含原召唤符材料）、冠冕、虚空石、竞技场骨架、四相祭坛、残响→碎片回收
@@ -1019,7 +1020,7 @@ NBT 只存 `MedalOwner` / `MedalExp` / `LordIntro` / `LordDuel` 四项。
 #### ④ 「遗落境」标签页补齐全部 Boss 物品
 
 此前 `MedalRegistry.TAB` 只 `accept` 了 4 枚勋章，Boss 的 11 件物品
-（门钥匙 / 碎片 / 祭坛核心 / 遗落之主核心 / 遗落本源 / 残响 / 冠冕 /
+（门钥匙 / 碎片 / 祭坛核心 / 遗落之主核心 / 残响 / 冠冕 /
 虚空石 / 竞技场骨架 / 四相祭坛）**全部漏加**，玩家在创造模式翻遍标签页也找不到。
 现已按「勋章 → 门钥匙 → 材料 → 战利品 → 建材」的顺序补齐。
 
@@ -2755,9 +2756,9 @@ export JAVA_HOME=/path/to/jdk-17      # 必须 17(21/25 会在 ForgeGradle 处�
 ./gradlew build --offline             # 首次构建要联网拉 Forge / MC 依赖(约 500MB)
 ```
 
-产物：`build/libs/Lost Realm-<mod_version>-<mod_build>.jar`（当前：`Lost Realm-1.0.0-beta40.jar`）
+产物：`build/libs/Lost Realm-<mod_version>-<mod_build>.jar`（当前：`Lost Realm-1.0.0-beta44.jar`）
 （文件名 = `mod_version` + `mod_build`；`build.gradle` 用 `archiveFileName` 显式拼，
-不写会得到 `...-1.0.0-beta40-1.0.0-beta40.jar` 这种双版本名。）
+不写会得到 `...-1.0.0-beta44-1.0.0-beta44.jar` 这种双版本名。）
 
 **`libs/` 里必须放两个前置**（不入库，需自行下载）：
 
