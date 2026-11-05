@@ -110,17 +110,11 @@ public final class MedalRegistry {
                 output.accept(com.lost_realm.boss.BossItems.WARDEN_ECHO.get());
                 output.accept(com.lost_realm.boss.BossItems.REALM_CROWN.get());
 
-                // ---------- 遗落之主:兵刃(dv30)----------
-                // 死神镰 —— Boss 手里那把。放进标签页是为了方便查看/摆拍,
-                // 它不是玩家可获得的战利品(Boss 不掉落)。
-                output.accept(com.lost_realm.boss.BossItems.WARDEN_SCYTHE.get());
-
                 // ---------- 遗落之主:建材与方块 ----------
                 // 注:realm_portal(传送门门面)刻意不入标签页 ——
                 //    它必须由门钥匙点燃生成,直接放置会破坏流程。
                 output.accept(com.lost_realm.boss.BossBlocks.VOID_STONE_ITEM.get());
                 output.accept(com.lost_realm.boss.BossBlocks.ARENA_FRAME_ITEM.get());
-                output.accept(com.lost_realm.boss.BossBlocks.WARDEN_ALTAR_ITEM.get());
 
                 // ---------- 消耗品 ----------
                 output.accept(ArrowRegistry.TIME_CAPSULE.get());

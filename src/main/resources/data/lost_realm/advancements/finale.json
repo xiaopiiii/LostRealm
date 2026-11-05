@@ -15,11 +15,11 @@
     "announce_to_chat": true
   },
   "criteria": {
-    "killed_warden": {
+    "killed_udunos": {
       "trigger": "minecraft:player_killed_entity",
       "conditions": {
         "entity": {
-          "type": "lost_realm:warden"
+          "type": "lost_realm:udunos"
         }
       }
     }

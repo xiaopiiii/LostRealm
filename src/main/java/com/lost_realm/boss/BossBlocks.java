@@ -17,7 +17,6 @@ import com.lost_realm.Medals;
 import com.lost_realm.boss.block.LostAltarBlock;
 import com.lost_realm.boss.block.LostAltarBlockEntity;
 import com.lost_realm.boss.block.RealmPortalBlock;
-import com.lost_realm.boss.block.WardenAltarBlock;
 import com.lost_realm.boss.block.VoidStoneBlock;
 import com.lost_realm.boss.block.ArenaFrameBlock;
 
@@ -102,14 +101,6 @@ public final class BossBlocks {
      * <p>四个祭坛共用同一个方块类,通过 {@code ALTAR} 状态属性区分是哪一座。
      * 这样只需注册一个方块、一个方块实体,资产也只需一套。
      */
-    public static final RegistryObject<Block> WARDEN_ALTAR = BLOCKS.register("warden_altar",
-            () -> new WardenAltarBlock(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.COLOR_PURPLE)
-                    .strength(50.0F, 1200.0F)
-                    .requiresCorrectToolForDrops()
-                    .lightLevel(s -> s.getValue(WardenAltarBlock.LIT) ? 15 : 3)
-                    .sound(SoundType.AMETHYST)));
-
     // ================================================================
     // 遗落祭坛（终末竞技场核心）
     // ================================================================
@@ -150,8 +141,6 @@ public final class BossBlocks {
             () -> new BlockItem(ARENA_FRAME.get(), new Item.Properties()));
 
     /** 四相祭坛物品(可在创造模式放置,生存模式由竞技场生成)。 */
-    public static final RegistryObject<Item> WARDEN_ALTAR_ITEM = ITEMS.register("warden_altar",
-            () -> new BlockItem(WARDEN_ALTAR.get(), new Item.Properties()));
 
     /** 遗落祭坛物品（创造模式可用；生存模式由竞技场生成）。 */
     public static final RegistryObject<Item> LOST_ALTAR_ITEM = ITEMS.register("lost_altar",

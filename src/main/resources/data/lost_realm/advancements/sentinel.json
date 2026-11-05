@@ -15,18 +15,22 @@
     "announce_to_chat": true
   },
   "criteria": {
-    "killed_sentinel": {
-      "trigger": "minecraft:player_killed_entity",
+    "has_altar_core": {
+      "trigger": "minecraft:inventory_changed",
       "conditions": {
-        "entity": {
-          "type": "lost_realm:warden_sentinel"
-        }
+        "items": [
+          {
+            "items": [
+              "lost_realm:altar_core"
+            ]
+          }
+        ]
       }
     }
   },
   "requirements": [
     [
-      "killed_sentinel"
+      "has_altar_core"
     ]
   ]
 }

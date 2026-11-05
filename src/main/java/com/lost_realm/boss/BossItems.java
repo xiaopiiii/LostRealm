@@ -13,7 +13,6 @@ import com.lost_realm.boss.item.RealmKeyItem;
 import com.lost_realm.boss.item.FragmentItem;
 import com.lost_realm.boss.item.EchoItem;
 import com.lost_realm.boss.item.RealmCrownItem;
-import com.lost_realm.boss.item.ScytheItem;
 import com.lost_realm.boss.item.DarkstarBeaconItem;
 
 /**
@@ -68,21 +67,6 @@ public final class BossItems {
     public static final RegistryObject<Item> ALTAR_CORE = ITEMS.register("altar_core",
             () -> new Item(new Item.Properties().rarity(Rarity.RARE).stacksTo(3)));
 
-    /**
-     * 遗落之主的死神镰 —— <b>dv30 新增</b>：Boss 手中的兵刃。
-     *
-     * <p>★ 它不是模型几何：dv29 用长方体拼了十几版都不像新月弧，
-     * 现在改为独立物品，贴图直接取自参考图，由
-     * {@code client/boss/WardenItemInHandLayer} 挂到 {@code weapon} 骨骼上。
-     *
-     * <p>{@code fireResistant()} + {@code stacksTo(1)}：终局兵刃，
-     * 不掉进岩浆消失、不可堆叠。
-     */
-    public static final RegistryObject<Item> WARDEN_SCYTHE = ITEMS.register("warden_scythe",
-            () -> new ScytheItem(ScytheItem.TIER, 64, -3.0F, new Item.Properties()
-                    .rarity(Rarity.EPIC)
-                    .fireResistant()
-                    .stacksTo(1)));
 
     /**
      * 遗落之境门钥匙 —— 任务链③的产物。

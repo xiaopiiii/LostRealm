@@ -86,9 +86,6 @@ public class UdunosRenderer extends EntityRenderer<UdunosBoss> {
     private final ModelPart body;
     private final ModelPart tail;
 
-    /** 诊断帧计数（只打前几帧）。 */
-    private int diagFrames;
-
     /**
      * 最后一次真正进入 {@link #render} 的时刻（{@link System#nanoTime()}）。
      *
@@ -98,9 +95,6 @@ public class UdunosRenderer extends EntityRenderer<UdunosBoss> {
      */
     public static volatile long LAST_RENDER_NANOS;
 
-    private static String fmt(double v) {
-        return String.format("%.1f", v);
-    }
 
     public UdunosRenderer(EntityRendererProvider.Context ctx) {
         super(ctx);
@@ -146,18 +140,6 @@ public class UdunosRenderer extends EntityRenderer<UdunosBoss> {
             if (curr == null || prev == null) {
                 return;
             }
-        }
-
-        // 前 3 帧打一版快照：用来区分「渲染器根本没被调用」
-        // 和「被调用了但拿到的坐标是错的」——这两种情况在屏幕上都是"看不见"，
-        // 但从日志一眼就能分辨。
-        if (this.diagFrames++ < 3) {
-            com.lost_realm.Medals.LOGGER.info(
-                    "[LR/udunos] RENDER frame#{} count={} seg0=({}, {}, {}) segMid=({}, {}, {})",
-                    this.diagFrames, count,
-                    fmt(curr[0]), fmt(curr[1]), fmt(curr[2]),
-                    fmt(curr[(count / 2) * 3]), fmt(curr[(count / 2) * 3 + 1]),
-                    fmt(curr[(count / 2) * 3 + 2]));
         }
 
         Vec3 camera = this.entityRenderDispatcher.camera.getPosition();

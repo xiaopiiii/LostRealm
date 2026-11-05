@@ -84,14 +84,6 @@ public final class BossPortalHandler {
             return null;
         }
 
-        // 遗落境是单人挑战内容:若已有 Boss 战进行中,阻止其他人闯入
-        if (toRealm && entity instanceof ServerPlayer sp && !WardenFightManager.canEnter(sp)) {
-            sp.displayClientMessage(
-                    net.minecraft.network.chat.Component.translatable(
-                            "message.lost_realm.realm.locked"), true);
-            return null;
-        }
-
         return entity.changeDimension(target, new RealmTeleporter(toRealm));
     }
 
@@ -150,21 +142,18 @@ public final class BossPortalHandler {
      * <p>只在遗落境侧执行 —— 主世界侧的门由玩家自己搭(点燃)。
      * 这样"第一次去"和"以后往返"的体验是有区别的:初见要自己造门,之后门会一直在。
      *
-     * <p>dv5 起本方法还负责两件事:
+     * <p>本方法负责两件事:
      * <ol>
      *   <li>确保遗落之都已生成({@link LostCityBuilder#ensureGenerated})</li>
-     *   <li><b>首次进入时生成遗落之主</b> —— 需求改为「无需召唤物,
-     *       进维度后 Boss 就在场景中间」。因此不再需要召唤符。</li>
+     *   <li>在城门内侧搭一座返回门</li>
      * </ol>
+     *
+     * <p>不再自动生成 Boss —— 旧的人形 Boss「终末之影」已随 beta45 整体删除,
+     * 现在的终局 Boss 乌蠹诺斯由失落祭坛仪式或暗星信标召唤。
      */
     private static void ensureRealmArrivalPlatform(ServerLevel realm) {
-        // 先确保遗落之都已生成(幂等)—— 首次进入时在此搭建
-        boolean firstTime = LostCityBuilder.ensureGenerated(realm);
-
-        // 首次进入 → 在中央高台上放置遗落之主
-        if (firstTime) {
-            spawnLordIfAbsent(realm);
-        }
+        // 确保遗落之都已生成(幂等)—— 首次进入时在此搭建
+        LostCityBuilder.ensureGenerated(realm);
 
         // 接应门开在城门内侧偏南,避免挡住视野
         BlockPos entry = LostCityBuilder.entrySpot();
@@ -189,25 +178,6 @@ public final class BossPortalHandler {
         }
         realm.playSound(null, portalFoot, SoundEvents.PORTAL_TRIGGER,
                 SoundSource.BLOCKS, 1.0F, 1.0F);
-    }
-
-    /**
-     * 在中央高台上放置遗落之主(若尚未存在)。
-     *
-     * <p>这是 dv5 新流程的起点:玩家无需任何召唤物,
-     * 进入遗落境就能看到遗落之主站在城中心,处于
-     * {@link com.lost_realm.boss.LordState#DORMANT 零阶段}(无敌、可对话)。
-     */
-    public static void spawnLordIfAbsent(ServerLevel realm) {
-        // ★ 已停用（beta24）。
-        //
-        // 旧「遗落之主」是一位人形 Boss（WardenBoss，三形态 + 五波清场 + 对话链），
-        // 进遗落境时自动站在城中心。现在那个位置由乌蠹诺斯接管 ——
-        // 玩家要求「原来的遗落之主直接删掉，把这条虫子改为遗落之主」。
-        //
-        // 这里保留空方法而不是删掉调用点：旧存档里可能还引用着它，
-        // 删方法会引发 NoSuchMethodError；空实现最安全。
-        // WardenBoss 的类、渲染器、模型都还在（存档兼容），只是不再生成。
     }
 
     /** 找一个可站立的落脚点(向下探 8 格,找不到就抬高到地表)。 */

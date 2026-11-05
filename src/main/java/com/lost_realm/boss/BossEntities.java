@@ -9,8 +9,6 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 import com.lost_realm.Medals;
-import com.lost_realm.boss.entity.WardenBoss;
-import com.lost_realm.boss.entity.WardenSentinel;
 import com.lost_realm.boss.udunos.UdunosBolt;
 import com.lost_realm.boss.udunos.UdunosEffect;
 import com.lost_realm.boss.udunos.UdunosBoss;
@@ -37,37 +35,6 @@ public final class BossEntities {
     public static final DeferredRegister<EntityType<?>> ENTITIES =
             DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, Medals.MODID);
 
-    /**
-     * 终末之影。
-     *
-     * <p>尺寸设为 1.2 × 4.0 —— 比普通怪物高大很多,营造压迫感;
-     * 第三阶段视觉上会通过缩放(渲染层)进一步放大。
-     *
-     * <p>{@code noSummon()} <b>不能</b>加:本 Boss 需要被召唤物生成。
-     * {@code fireImmune()} 加上:终末之影免疫火焰,符合"非血肉之躯"的设定。
-     */
-    public static final RegistryObject<EntityType<WardenBoss>> WARDEN =
-            ENTITIES.register("warden", () -> EntityType.Builder
-                    .of(WardenBoss::new, MobCategory.MONSTER)
-                    .sized(1.2F, 4.0F)
-                    .clientTrackingRange(16)
-                    .updateInterval(3)
-                    .fireImmune()
-                    .build(Medals.MODID + ":warden"));
-
-    /**
-     * 守望者仆从 —— 任务链的守门怪。
-     *
-     * <p>比本体弱得多(1/8 血量),单独注册实体是为了有独立的名字与掉落表,
-     * 而非复用本体缩小版。
-     */
-    public static final RegistryObject<EntityType<WardenSentinel>> SENTINEL =
-            ENTITIES.register("warden_sentinel", () -> EntityType.Builder
-                    .of(WardenSentinel::new, MobCategory.MONSTER)
-                    .sized(0.9F, 2.6F)
-                    .clientTrackingRange(10)
-                    .fireImmune()
-                    .build(Medals.MODID + ":warden_sentinel"));
 
     // ================================================================
     // 遗落之主·乌蠹诺斯(Udunos) —— 终局宇宙蠕虫
@@ -211,8 +178,6 @@ public final class BossEntities {
 
     /** 属性注册 —— 必须挂在 MOD 总线。 */
     private static void onAttributeCreation(EntityAttributeCreationEvent event) {
-        event.put(WARDEN.get(), WardenBoss.createAttributes().build());
-        event.put(SENTINEL.get(), WardenSentinel.createAttributes().build());
         event.put(UDUNOS.get(), UdunosBoss.createAttributes().build());
         // UDUNOS_PART 没有属性：它是 Entity 而非 LivingEntity，没有生命值也不结算伤害
     }

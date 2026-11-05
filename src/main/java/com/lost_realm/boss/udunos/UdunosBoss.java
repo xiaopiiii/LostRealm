@@ -436,7 +436,7 @@ public class UdunosBoss extends Monster {
             //   客户端实体的体节数据随之冻结、整条虫不再渲染。
             //   而"服务端还活着（右键召唤物提示已存在）+ 屏幕上看不见"
             //   正好就是这个症状。所以这里必须留下痕迹，否则永远查不出来。
-            if (this.diagTicks++ < 5) {
+            if (this.diagTicks++ == 0) {
                 Medals.LOGGER.warn(
                         "[LR/udunos] {} aiStep SKIPPED: alive={} removed={} reason={} hp={}",
                         this.level().isClientSide ? "CLIENT" : "SERVER",
@@ -447,17 +447,6 @@ public class UdunosBoss extends Monster {
         }
 
         ServerLevel serverLevel = (ServerLevel) this.level();
-
-        if (this.diagTicks++ < 5) {
-            Medals.LOGGER.info(
-                    "[LR/udunos] SERVER tick#{} action={} target={} hp={}/{} pos={} trail={} seg0={}",
-                    this.diagTicks, this.brain.action(),
-                    this.getTarget() == null ? "-" : this.getTarget().getName().getString(),
-                    this.getHealth(), this.getMaxHealth(),
-                    fmt(this.position()),
-                    this.trail.size(),
-                    fmtSeg(0));
-        }
 
         // 重置本 tick 的特效配额 —— 原设计"全局设每帧和存活数量上限"的落点。
         // 放在这里而不是放在每个招式里，是为了让"上限"这件事只有一个出口。
@@ -565,13 +554,6 @@ public class UdunosBoss extends Monster {
         this.syncSegmentsFromSpine();
         this.spawnMoveWarningFx();
         this.spawnAmbience();
-
-        if (this.diagTicks++ < 5) {
-            Medals.LOGGER.info(
-                    "[LR/udunos] CLIENT tick#{} alive={} removed={} hp={} seg0={} trail={}",
-                    this.diagTicks, this.isAlive(), this.isRemoved(),
-                    this.getHealth(), fmtSeg(0), this.trail.size());
-        }
     }
 
     private static String fmt(Vec3 v) {
@@ -616,14 +598,6 @@ public class UdunosBoss extends Monster {
         this.updateCullBox();
     }
 
-    private String fmtSeg(int i) {
-        int k = i * 3;
-        if (k + 2 >= this.segments.length) {
-            return "?";
-        }
-        return String.format("(%.1f, %.1f, %.1f)",
-                this.segments[k], this.segments[k + 1], this.segments[k + 2]);
-    }
 
     /**
      * 宇宙氛围 —— 战斗期间在玩家周围漂浮的星光。
@@ -1185,6 +1159,7 @@ public class UdunosBoss extends Monster {
 
         if (this.deathTime >= total) {
             dropRelics(level);
+            dropMaterials(level);
             this.remove(Entity.RemovalReason.KILLED);
         }
     }
@@ -1223,6 +1198,41 @@ public class UdunosBoss extends Monster {
         level.playSound(null, base.x, base.y, base.z,
                 net.minecraft.sounds.SoundEvents.END_PORTAL_SPAWN,
                 net.minecraft.sounds.SoundSource.HOSTILE, 4.0F, 0.5F);
+    }
+
+    /**
+     * 材料掉落 —— 核心 / 祭坛核心 / 残响。
+     *
+     * <p>这三种材料原本由旧人形 Boss(及其仆从)掉落,beta45 把那套内容整体删除后,
+     * 改由乌蠹诺斯供应,门钥匙与冠冕的配方因此仍然成立。
+     *
+     * <p>数量与原掉落保持一致:核心 2~5、祭坛核心 1~3、残响 1。
+     * 祭坛核心的堆叠上限是 3,所以上限定在 3。
+     */
+    private void dropMaterials(ServerLevel level) {
+        var random = this.getRandom();
+        Vec3 base = this.position();
+        dropStack(level, base, random,
+                com.lost_realm.boss.BossItems.WARDEN_CORE.get(), 2 + random.nextInt(4));
+        dropStack(level, base, random,
+                com.lost_realm.boss.BossItems.ALTAR_CORE.get(), 1 + random.nextInt(3));
+        dropStack(level, base, random,
+                com.lost_realm.boss.BossItems.WARDEN_ECHO.get(), 1);
+    }
+
+    private static void dropStack(ServerLevel level, Vec3 base, net.minecraft.util.RandomSource random,
+                                  net.minecraft.world.item.Item item, int count) {
+        double angle = random.nextDouble() * Math.PI * 2.0D;
+        double radius = 1.5D + random.nextDouble() * 2.0D;
+        net.minecraft.world.entity.item.ItemEntity entity =
+                new net.minecraft.world.entity.item.ItemEntity(level,
+                        base.x + Math.cos(angle) * radius,
+                        base.y + 0.8D,
+                        base.z + Math.sin(angle) * radius,
+                        new net.minecraft.world.item.ItemStack(item, count));
+        entity.setDefaultPickUpDelay();
+        entity.setExtendedLifetime();
+        level.addFreshEntity(entity);
     }
 
     @Override

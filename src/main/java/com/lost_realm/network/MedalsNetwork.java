@@ -48,22 +48,11 @@ public final class MedalsNetwork {
                 PacketRefreshEnchant::new,
                 PacketRefreshEnchant::handle);
 
-        // ---- 遗落之主:对话系统(dv5) ----
-        CHANNEL.registerMessage(id++, PacketOpenDialogue.class,
-                PacketOpenDialogue::encode,
-                PacketOpenDialogue::new,
-                PacketOpenDialogue::handle);
-
         // ---- 突进之刃(dv49) ----
         CHANNEL.registerMessage(id++, PacketDash.class,
                 PacketDash::encode,
                 PacketDash::new,
                 PacketDash::handle);
-
-        CHANNEL.registerMessage(id++, PacketDialogueChoice.class,
-                PacketDialogueChoice::encode,
-                PacketDialogueChoice::new,
-                PacketDialogueChoice::handle);
 
         // ---- 乌蠹诺斯脊线同步(beta18) ----
         // 客户端位置同步在这套环境里不可靠(实测轨迹永远只有 1 个点),

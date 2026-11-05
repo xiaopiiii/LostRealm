@@ -12,8 +12,6 @@ import com.lost_realm.client.boss.UdunosBoltRenderer;
 import com.lost_realm.client.boss.UdunosEffectRenderer;
 import com.lost_realm.client.boss.UdunosPartRenderer;
 import com.lost_realm.client.boss.UdunosRenderer;
-import com.lost_realm.client.boss.WardenBossRenderer;
-import com.lost_realm.client.boss.WardenSentinelRenderer;
 
 /**
  * 实体的<b>客户端渲染器注册</b>。
@@ -33,23 +31,10 @@ import com.lost_realm.client.boss.WardenSentinelRenderer;
  *
  * <p>表现特征:实体在服务端一切正常(能生成、能打、能掉血),
  * 但玩家<b>只要把它纳入视野就立刻崩客户端</b>。
- * 这也是"进维度后崩溃"的真实原因 —— 遗落之主就站在落点正前方。
  *
- * <h2>为什么用 MobRenderer 而不是自定义渲染器</h2>
- * {@link WardenBoss} 与 {@link WardenSentinel} 都继承 {@code Monster}(原版僵尸那一支),
- * 几何与骨骼就是标准的 {@link HumanoidModel}。因此直接复用原版的人形模型层
- * ({@link ModelLayers#ZOMBIE})即可,无需自制模型文件与动画。
- *
- * <h2>体型放大由谁负责</h2>
- * ⚠️ <b>不是渲染器自动完成的。</b>{@code Entity#getScale()} 只影响碰撞箱,
- * 原版渲染管线不消费它(已验证 {@code LivingEntityRenderer#render} 字节码里
- * 无 {@code getScale} 调用)。模型缩放由
- * {@code WardenBossRenderer#preRender} 显式 {@code poseStack.scale(...)} 完成,
- * 数值取自同一个 {@code getScale()},保证视觉与判定一致。
- *
- * <h2>几何与动画由 GeckoLib 提供(dv13 起)</h2>
- * 两个实体都实现 {@code GeoAnimatable},渲染器为 {@code GeoEntityRenderer}。
- * 几何/动画文件由 {@code tools/gen_geo.py} 与 {@code tools/gen_anim.py} 生成。
+ * <p>⚠️ 因此<b>每注册一个 EntityType,就必须在这里补一行渲染器</b> ——
+ * 包括 {@code udunos_part} 这种"根本不需要画"的纯判定盒(给它一个什么都不画的
+ * 渲染器,见 {@code UdunosPartRenderer})。
  *
  * <h2>为什么挂在 MOD 总线上</h2>
  * {@code FMLClientSetupEvent} 属于 MOD 生命周期事件,
@@ -67,12 +52,6 @@ public final class EntityRendererRegistry {
     }
 
     private static void registerAll() {
-        EntityRenderers.register(BossEntities.WARDEN.get(),
-                WardenBossRenderer::new);
-
-        EntityRenderers.register(BossEntities.SENTINEL.get(),
-                WardenSentinelRenderer::new);
-
         // 星辰贯穿之箭：接管原版箭的渲染器，只有带标记的那一支会被放大、常亮
         // （见 StarArrowRenderer 的说明）。普通箭走 super.render，外观不变。
         EntityRenderers.register(net.minecraft.world.entity.EntityType.ARROW,
