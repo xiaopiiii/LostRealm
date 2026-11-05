@@ -18,12 +18,12 @@ import com.lost_realm.skill.tank.SkillHeavyStrike;
 import com.lost_realm.skill.tank.SkillOffensiveDrain;
 import com.lost_realm.skill.tank.SkillStarShield;
 import com.lost_realm.skill.tank.SkillUnyieldingBulwark;
-import com.lost_realm.skill.warrior.SkillBloodIntent;
-import com.lost_realm.skill.warrior.SkillBladeOfFrost;
-import com.lost_realm.skill.warrior.SkillBurningSelf;
-import com.lost_realm.skill.warrior.SkillFightHarder;
-import com.lost_realm.skill.warrior.SkillRend;
-import com.lost_realm.skill.warrior.SkillWarTrail;
+import com.lost_realm.skill.blade.SkillBloodIntent;
+import com.lost_realm.skill.blade.SkillBladeOfFrost;
+import com.lost_realm.skill.blade.SkillBurningSelf;
+import com.lost_realm.skill.blade.SkillFightHarder;
+import com.lost_realm.skill.blade.SkillRend;
+import com.lost_realm.skill.blade.SkillWarTrail;
 
 /**
  * 节点技能注册表。
@@ -44,14 +44,14 @@ public final class SkillRegistry {
         archer.add(new SkillArrowVolley());       // Lv.30 三发(被动)
         SKILLS.put(MedalType.ARCHER, Collections.unmodifiableList(archer));
 
-        List<Skill> warrior = new ArrayList<>();
-        warrior.add(new SkillRend());             // Lv.5  撕裂
-        warrior.add(new SkillFightHarder());      // Lv.10 愈战愈勇
-        warrior.add(new SkillBurningSelf());      // Lv.15 燃烧自我(主动)
-        warrior.add(new SkillBladeOfFrost());     // Lv.20 寒霜之刃
-        warrior.add(new SkillWarTrail());         // Lv.25 战迹血淋(主动)
-        warrior.add(new SkillBloodIntent());      // Lv.30 血意
-        SKILLS.put(MedalType.WARRIOR, Collections.unmodifiableList(warrior));
+        List<Skill> blade = new ArrayList<>();
+        blade.add(new SkillRend());             // Lv.5  撕裂
+        blade.add(new SkillFightHarder());      // Lv.10 愈战愈勇
+        blade.add(new SkillBurningSelf());      // Lv.15 燃烧自我(主动)
+        blade.add(new SkillBladeOfFrost());     // Lv.20 寒霜之刃
+        blade.add(new SkillWarTrail());         // Lv.25 战迹血淋(主动)
+        blade.add(new SkillBloodIntent());      // Lv.30 血意
+        SKILLS.put(MedalType.BLADE, Collections.unmodifiableList(blade));
 
         List<Skill> tank = new ArrayList<>();
         tank.add(new SkillHeavyStrike());         // Lv.5  重击

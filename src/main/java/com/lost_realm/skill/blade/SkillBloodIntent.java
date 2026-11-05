@@ -1,4 +1,4 @@
-package com.lost_realm.skill.warrior;
+package com.lost_realm.skill.blade;
 
 import java.util.List;
 
@@ -24,11 +24,11 @@ import com.lost_realm.util.ModifierIds;
  */
 public class SkillBloodIntent implements Skill {
 
-    public static final String ID = "w30_blood_intent";
+    public static final String ID = "b30_blood_intent";
 
     @Override
     public MedalType medal() {
-        return MedalType.WARRIOR;
+        return MedalType.BLADE;
     }
 
     @Override
@@ -43,32 +43,32 @@ public class SkillBloodIntent implements Skill {
 
     @Override
     public Component displayName() {
-        return Component.translatable("skill.lost_realm.w30_blood_intent");
+        return Component.translatable("skill.lost_realm.b30_blood_intent");
     }
 
     @Override
     public List<Component> description() {
-        return List.of(Component.translatable("skill.lost_realm.w30_blood_intent.desc",
-                MedalsConfig.W30_LOST_HP_DAMAGE.get(),
-                MedalsConfig.W30_LOST_HP_DAMAGE_LOW.get(),
-                MedalsConfig.W30_LOW_HP_THRESHOLD.get(),
-                MedalsConfig.W30_LOW_HP_CRIT_CHANCE.get()));
+        return List.of(Component.translatable("skill.lost_realm.b30_blood_intent.desc",
+                MedalsConfig.B30_LOST_HP_DAMAGE.get(),
+                MedalsConfig.B30_LOST_HP_DAMAGE_LOW.get(),
+                MedalsConfig.B30_LOW_HP_THRESHOLD.get(),
+                MedalsConfig.B30_LOW_HP_CRIT_CHANCE.get()));
     }
 
     @Override
     public void applyPassive(ServerPlayer player, int level) {
         double ratio = player.getMaxHealth() <= 0 ? 1.0D
                 : player.getHealth() / player.getMaxHealth();
-        boolean low = ratio < MedalsConfig.pct(MedalsConfig.W30_LOW_HP_THRESHOLD);
+        boolean low = ratio < MedalsConfig.pct(MedalsConfig.B30_LOW_HP_THRESHOLD);
 
         if (low) {
             // 低血量:额外暴击率
             AttributeGuard.apply(player, RealmAttributes.critChance(),
-                    ModifierIds.WARRIOR_W30_CRIT_CHANCE, "warrior_w30_crit_chance",
-                    MedalsConfig.pct(MedalsConfig.W30_LOW_HP_CRIT_CHANCE),
+                    ModifierIds.BLADE_W30_CRIT_CHANCE, "blade_w30_crit_chance",
+                    MedalsConfig.pct(MedalsConfig.B30_LOW_HP_CRIT_CHANCE),
                     AttributeModifier.Operation.ADDITION);
         } else {
-            AttributeGuard.remove(player, RealmAttributes.critChance(), ModifierIds.WARRIOR_W30_CRIT_CHANCE);
+            AttributeGuard.remove(player, RealmAttributes.critChance(), ModifierIds.BLADE_W30_CRIT_CHANCE);
         }
     }
 
@@ -83,11 +83,11 @@ public class SkillBloodIntent implements Skill {
         double lostHp = Math.max(0.0D, target.getMaxHealth() - target.getHealth());
         double ratio = attacker.getMaxHealth() <= 0 ? 1.0D
                 : attacker.getHealth() / attacker.getMaxHealth();
-        boolean low = ratio < MedalsConfig.pct(MedalsConfig.W30_LOW_HP_THRESHOLD);
+        boolean low = ratio < MedalsConfig.pct(MedalsConfig.B30_LOW_HP_THRESHOLD);
 
         double pct = low
-                ? MedalsConfig.pct(MedalsConfig.W30_LOST_HP_DAMAGE_LOW)
-                : MedalsConfig.pct(MedalsConfig.W30_LOST_HP_DAMAGE);
+                ? MedalsConfig.pct(MedalsConfig.B30_LOST_HP_DAMAGE_LOW)
+                : MedalsConfig.pct(MedalsConfig.B30_LOST_HP_DAMAGE);
         return lostHp * pct;
     }
 
@@ -95,11 +95,11 @@ public class SkillBloodIntent implements Skill {
     public static boolean isLowHp(ServerPlayer attacker) {
         double ratio = attacker.getMaxHealth() <= 0 ? 1.0D
                 : attacker.getHealth() / attacker.getMaxHealth();
-        return ratio < MedalsConfig.pct(MedalsConfig.W30_LOW_HP_THRESHOLD);
+        return ratio < MedalsConfig.pct(MedalsConfig.B30_LOW_HP_THRESHOLD);
     }
 
     @Override
     public void clear(net.minecraft.world.entity.player.Player player) {
-        AttributeGuard.clearByPrefix(player, RealmAttributes.critChance(), "warrior_w30_");
+        AttributeGuard.clearByPrefix(player, RealmAttributes.critChance(), "blade_w30_");
     }
 }

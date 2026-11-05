@@ -14,7 +14,7 @@ import com.lost_realm.Medals;
  *
  * <h2>★ 为什么是五件，不是四件</h2>
  * 原设计写的是"掉落的四职业武器"，因为泰拉瑞亚只有四个职业。
- * 但 <b>MC 这边的 Lost Realm 有五个</b>：射手 / 战士 / 坦克 / 法师 / 召唤师。
+ * 但 <b>MC 这边的 Lost Realm 有五个</b>：射手 / 刃 / 坦克 / 法师 / 召唤师。
  * 照搬四件的话，<b>坦克会是唯一一个"打完了最终 Boss 却什么都没拿到"的职业</b> ——
  * 那是设计事故，不是设计选择。所以这里补齐第五件
  * （{@link #BULWARK_OF_THE_LAST_LIGHT 末光壁垒}，坦克的盾）。
@@ -34,7 +34,7 @@ public final class UdunosRelics {
     public static final DeferredRegister<Item> ITEMS =
             DeferredRegister.create(ForgeRegistries.ITEMS, Medals.MODID);
 
-    /** 战士：断轨·裂星巨剑。 */
+    /** 刃：断轨·裂星巨剑。 */
     public static final RegistryObject<Item> STARFALL_GREATSWORD =
             ITEMS.register("starfall_greatsword",
                     () -> new StarfallGreatswordItem(new Item.Properties()

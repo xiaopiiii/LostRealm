@@ -35,12 +35,12 @@ import com.lost_realm.attribute.RealmAttributes;
 import com.lost_realm.config.MedalsConfig;
 import com.lost_realm.data.PlayerMedals;
 import com.lost_realm.effect.ModEffects;
-import com.lost_realm.item.WarriorCharmType;
+import com.lost_realm.item.BladeCharmType;
 import com.lost_realm.util.AttributeGuard;
 import com.lost_realm.util.ModifierIds;
 
 /**
- * 九枚「刃」类战士饰品的全部效果。
+ * 九枚「刃」类刃饰品的全部效果。
  *
  * <h2>分三大类</h2>
  * <ul>
@@ -58,10 +58,10 @@ import com.lost_realm.util.ModifierIds;
  * 突进要客户端的按键序列（见 network/PacketDash 与 client/DashClientHandler）。
  */
 @Mod.EventBusSubscriber(modid = Medals.MODID)
-public final class WarriorCharmHandler {
+public final class BladeCharmHandler {
 
     /** 蓄能之刃：玩家上一次近战命中的游戏刻。 */
-    public static final String STATE_LAST_HIT = "warrior_charm_last_hit";
+    public static final String STATE_LAST_HIT = "blade_charm_last_hit";
 
     /** 缴械冷却：记在目标身上的「下次可被缴械」游戏刻。 */
     private static final String TAG_DISARM_READY = "lr_disarm_ready";
@@ -121,9 +121,9 @@ public final class WarriorCharmHandler {
             return;
         }
         // 一次 Curios 遍历拿全，别让它每 tick 跑两遍
-        Set<WarriorCharmType> active = WarriorCharmType.activeSet(player);
-        refreshDual(player, active.contains(WarriorCharmType.DUAL));
-        refreshCrit(player, active.contains(WarriorCharmType.CRIT));
+        Set<BladeCharmType> active = BladeCharmType.activeSet(player);
+        refreshDual(player, active.contains(BladeCharmType.DUAL));
+        refreshCrit(player, active.contains(BladeCharmType.CRIT));
     }
 
     /** 双持之刃：主副手都有武器时给伤害与攻速加成。 */
@@ -139,16 +139,16 @@ public final class WarriorCharmHandler {
 
         if (dual) {
             AttributeGuard.apply(player, Attributes.ATTACK_DAMAGE,
-                    ModifierIds.WARRIOR_CHARM_DUAL_DAMAGE, "warrior_charm_dual_damage",
-                    MedalsConfig.pct(MedalsConfig.WARRIOR_DUAL_DAMAGE),
+                    ModifierIds.BLADE_CHARM_DUAL_DAMAGE, "blade_charm_dual_damage",
+                    MedalsConfig.pct(MedalsConfig.BLADE_DUAL_DAMAGE),
                     AttributeModifier.Operation.MULTIPLY_BASE);
             AttributeGuard.apply(player, Attributes.ATTACK_SPEED,
-                    ModifierIds.WARRIOR_CHARM_DUAL_ATTACK_SPEED, "warrior_charm_dual_attack_speed",
-                    MedalsConfig.pct(MedalsConfig.WARRIOR_DUAL_ATTACK_SPEED),
+                    ModifierIds.BLADE_CHARM_DUAL_ATTACK_SPEED, "blade_charm_dual_attack_speed",
+                    MedalsConfig.pct(MedalsConfig.BLADE_DUAL_ATTACK_SPEED),
                     AttributeModifier.Operation.MULTIPLY_BASE);
         } else {
-            AttributeGuard.remove(player, Attributes.ATTACK_DAMAGE, ModifierIds.WARRIOR_CHARM_DUAL_DAMAGE);
-            AttributeGuard.remove(player, Attributes.ATTACK_SPEED, ModifierIds.WARRIOR_CHARM_DUAL_ATTACK_SPEED);
+            AttributeGuard.remove(player, Attributes.ATTACK_DAMAGE, ModifierIds.BLADE_CHARM_DUAL_DAMAGE);
+            AttributeGuard.remove(player, Attributes.ATTACK_SPEED, ModifierIds.BLADE_CHARM_DUAL_ATTACK_SPEED);
         }
     }
 
@@ -164,15 +164,15 @@ public final class WarriorCharmHandler {
         var critDamage = RealmAttributes.critDamage();
 
         if (active) {
-            AttributeGuard.apply(player, critChance, ModifierIds.WARRIOR_CHARM_CRIT_CHANCE,
-                    "warrior_charm_crit_chance", MedalsConfig.pct(MedalsConfig.WARRIOR_CRIT_CHANCE),
+            AttributeGuard.apply(player, critChance, ModifierIds.BLADE_CHARM_CRIT_CHANCE,
+                    "blade_charm_crit_chance", MedalsConfig.pct(MedalsConfig.BLADE_CRIT_CHANCE),
                     AttributeModifier.Operation.ADDITION);
-            AttributeGuard.apply(player, critDamage, ModifierIds.WARRIOR_CHARM_CRIT_DAMAGE,
-                    "warrior_charm_crit_damage", MedalsConfig.pct(MedalsConfig.WARRIOR_CRIT_DAMAGE),
+            AttributeGuard.apply(player, critDamage, ModifierIds.BLADE_CHARM_CRIT_DAMAGE,
+                    "blade_charm_crit_damage", MedalsConfig.pct(MedalsConfig.BLADE_CRIT_DAMAGE),
                     AttributeModifier.Operation.MULTIPLY_BASE);
         } else {
-            AttributeGuard.remove(player, critChance, ModifierIds.WARRIOR_CHARM_CRIT_CHANCE);
-            AttributeGuard.remove(player, critDamage, ModifierIds.WARRIOR_CHARM_CRIT_DAMAGE);
+            AttributeGuard.remove(player, critChance, ModifierIds.BLADE_CHARM_CRIT_CHANCE);
+            AttributeGuard.remove(player, critDamage, ModifierIds.BLADE_CHARM_CRIT_DAMAGE);
         }
     }
 
@@ -187,7 +187,7 @@ public final class WarriorCharmHandler {
     }
 
     // ================================================================
-    // 坚韧之刃 —— 战士唯一的防御手段
+    // 坚韧之刃 —— 刃唯一的防御手段
     // ================================================================
 
     /** 同一敌人最近的连续打击记录。 */
@@ -222,7 +222,7 @@ public final class WarriorCharmHandler {
         if (!(event.getEntity() instanceof ServerPlayer player)) {
             return;
         }
-        if (!WarriorCharmType.TOUGHNESS.isActive(player)) {
+        if (!BladeCharmType.TOUGHNESS.isActive(player)) {
             return;
         }
         // 虚空、饥饿、中毒这类没有来源实体的伤害不计入连击
@@ -232,7 +232,7 @@ public final class WarriorCharmHandler {
         }
 
         long now = player.level().getGameTime();
-        long window = Math.max(1, MedalsConfig.WARRIOR_TOUGHNESS_WINDOW_SECONDS.get()) * 20L;
+        long window = Math.max(1, MedalsConfig.BLADE_TOUGHNESS_WINDOW_SECONDS.get()) * 20L;
         UUID sourceId = source.getUUID();
 
         Toughness prev = TOUGHNESS.get(player.getUUID());
@@ -243,15 +243,15 @@ public final class WarriorCharmHandler {
         TOUGHNESS.put(player.getUUID(), new Toughness(sourceId, now, hits));
 
         // 第 1 下全额,第 2 下 -5%,第 3 下 -10%…
-        double reduce = (hits - 1) * MedalsConfig.pct(MedalsConfig.WARRIOR_TOUGHNESS_PER_HIT);
+        double reduce = (hits - 1) * MedalsConfig.pct(MedalsConfig.BLADE_TOUGHNESS_PER_HIT);
 
         // 每损失 25% 生命,上限 +5%
         double ratio = player.getMaxHealth() <= 0.0F
                 ? 0.0D
                 : player.getHealth() / player.getMaxHealth();
         int lostSteps = (int) Math.floor(Math.max(0.0D, 1.0D - ratio) / 0.25D);
-        double cap = MedalsConfig.pct(MedalsConfig.WARRIOR_TOUGHNESS_BASE_CAP)
-                + lostSteps * MedalsConfig.pct(MedalsConfig.WARRIOR_TOUGHNESS_CAP_PER_STEP);
+        double cap = MedalsConfig.pct(MedalsConfig.BLADE_TOUGHNESS_BASE_CAP)
+                + lostSteps * MedalsConfig.pct(MedalsConfig.BLADE_TOUGHNESS_CAP_PER_STEP);
 
         reduce = Math.min(reduce, cap);
         if (reduce <= 0.0D) {
@@ -299,7 +299,7 @@ public final class WarriorCharmHandler {
         }
 
         LivingEntity target = event.getEntity();
-        Set<WarriorCharmType> active = WarriorCharmType.activeSet(attacker);
+        Set<BladeCharmType> active = BladeCharmType.activeSet(attacker);
         if (active.isEmpty()) {
             return;
         }
@@ -308,18 +308,18 @@ public final class WarriorCharmHandler {
         double mult = 1.0D;
 
         // ---------- 背刺之刃 ----------
-        if (active.contains(WarriorCharmType.BACKSTAB) && isBehind(attacker, target)) {
-            mult += MedalsConfig.pct(MedalsConfig.WARRIOR_BACKSTAB_BONUS);
+        if (active.contains(BladeCharmType.BACKSTAB) && isBehind(attacker, target)) {
+            mult += MedalsConfig.pct(MedalsConfig.BLADE_BACKSTAB_BONUS);
         }
 
         // ---------- 蓄能之刃 ----------
-        if (active.contains(WarriorCharmType.CHARGING)) {
+        if (active.contains(BladeCharmType.CHARGING)) {
             mult += chargingBonus(attacker);
         }
 
         // ---------- 运气之刃 ----------
         // ★ 必须放在 setAmount 之前:它是个乘区,不是独立效果
-        if (active.contains(WarriorCharmType.LUCK)) {
+        if (active.contains(BladeCharmType.LUCK)) {
             mult += luckRoll(attacker);
         }
 
@@ -328,7 +328,7 @@ public final class WarriorCharmHandler {
         }
 
         // ---------- 缴械之刃 ----------
-        if (active.contains(WarriorCharmType.DISARM)) {
+        if (active.contains(BladeCharmType.DISARM)) {
             tryDisarm(attacker, target);
         }
     }
@@ -349,8 +349,8 @@ public final class WarriorCharmHandler {
             return 0.0D;
         }
         double seconds = (now - last) / 20.0D;
-        return Math.min(MedalsConfig.pct(MedalsConfig.WARRIOR_CHARGE_MAX),
-                seconds * MedalsConfig.pct(MedalsConfig.WARRIOR_CHARGE_PER_SECOND));
+        return Math.min(MedalsConfig.pct(MedalsConfig.BLADE_CHARGE_MAX),
+                seconds * MedalsConfig.pct(MedalsConfig.BLADE_CHARGE_PER_SECOND));
     }
 
     /**
@@ -381,13 +381,13 @@ public final class WarriorCharmHandler {
      * 幸运够高时区间会收缩成「只有好结果」。
      */
     private static double luckRoll(ServerPlayer attacker) {
-        double range = MedalsConfig.pct(MedalsConfig.WARRIOR_LUCK_RANGE);
+        double range = MedalsConfig.pct(MedalsConfig.BLADE_LUCK_RANGE);
         if (range <= 0.0D) {
             return 0.0D;
         }
         int luck = (int) Math.floor(Math.max(0.0D, attacker.getAttributeValue(Attributes.LUCK)));
-        double low = Math.min(MedalsConfig.pct(MedalsConfig.WARRIOR_LUCK_FLOOR_CAP),
-                -range + luck * MedalsConfig.pct(MedalsConfig.WARRIOR_LUCK_PER_POINT));
+        double low = Math.min(MedalsConfig.pct(MedalsConfig.BLADE_LUCK_FLOOR_CAP),
+                -range + luck * MedalsConfig.pct(MedalsConfig.BLADE_LUCK_PER_POINT));
         double high = range;
         // low 被配置成大于 high 时兜一手,免得 nextDouble() 乘出反向区间
         if (low >= high) {
@@ -408,14 +408,14 @@ public final class WarriorCharmHandler {
         if (now < ready) {
             return;
         }
-        if (attacker.getRandom().nextDouble() >= MedalsConfig.pct(MedalsConfig.WARRIOR_DISARM_CHANCE)) {
+        if (attacker.getRandom().nextDouble() >= MedalsConfig.pct(MedalsConfig.BLADE_DISARM_CHANCE)) {
             return;
         }
 
-        int ticks = Math.max(1, MedalsConfig.WARRIOR_DISARM_SECONDS.get()) * 20;
+        int ticks = Math.max(1, MedalsConfig.BLADE_DISARM_SECONDS.get()) * 20;
         target.addEffect(new MobEffectInstance(ModEffects.DISARMED.get(), ticks, 0, false, true), attacker);
         target.getPersistentData().putLong(TAG_DISARM_READY,
-                now + MedalsConfig.WARRIOR_DISARM_COOLDOWN.get() * 20L);
+                now + MedalsConfig.BLADE_DISARM_COOLDOWN.get() * 20L);
 
         if (target.level() instanceof ServerLevel level) {
             // 视觉：兵刃脱手的一小撮火星
@@ -439,5 +439,5 @@ public final class WarriorCharmHandler {
                 .containsKey(Attributes.ATTACK_DAMAGE);
     }
 
-    private WarriorCharmHandler() {}
+    private BladeCharmHandler() {}
 }

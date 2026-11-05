@@ -18,7 +18,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 /**
- * 模组主类:四枚勋章(射手/战士/坦克/法师)熟练度进阶系统。
+ * 模组主类:四枚勋章(射手/刃/坦克/法师)熟练度进阶系统。
  *
  * <p>硬性前置:Curios API(饰品槽位)、Apotheosis 及前置 Apothic Attributes(属性库)。
  * 法师勋章额外以<b>诡厄巫法 Goety</b>为底座(可选软依赖,未安装时自动禁用)。
@@ -48,7 +48,7 @@ public class Medals {
         MedalRegistry.init(modBus);
         // 箭类饰品（五枚）+ 时间胶囊
         ArrowRegistry.init(modBus);
-        com.lost_realm.item.WarriorCharmRegistry.init(modBus);
+        com.lost_realm.item.BladeCharmRegistry.init(modBus);
         com.lost_realm.item.TankShieldRegistry.init(modBus);
         com.lost_realm.item.MageCrystalRegistry.init(modBus);
         com.lost_realm.item.ContractCharmRegistry.init(modBus);
@@ -79,7 +79,7 @@ public class Medals {
                 int fixed = com.lost_realm.config.MedalsConfig.migrateGrowthDefaults();
                 if (fixed > 0) {
                     LOGGER.info("[Lost Realm] 已修正 {} 项被旧版整数配置吞成 0 的勋章每级成长"
-                            + "(战士/射手/坦克的加成此前一直没随等级增长)。", fixed);
+                            + "(刃/射手/坦克的加成此前一直没随等级增长)。", fixed);
                 }
                 // 等级上限 30 → 60：老配置里写死 30，不改的话新默认值读不到
                 if (com.lost_realm.config.MedalsConfig.migrateLevelCap()) {

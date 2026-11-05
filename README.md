@@ -1,6 +1,6 @@
 # Lost Realm（遗落境）—— 五枚勋章熟练度系统 + 遗落之都终局战
 
-> **当前版本:`1.0.0-beta45`**（`gradle.properties` 的 `mod_build`）。
+> **当前版本:`1.0.0-beta46`**（`gradle.properties` 的 `mod_build`）。
 > 编译用 Minecraft **1.20.1** / Forge **47.4.10**；玩家实例实测跑在 **47.4.28**。
 > 版本号规则：每次改动内容都要把 `mod_build` 末尾数字 +1 —— 它同时决定
 > 模组列表里显示的版本与 jar 文件名。完整约定见 [`.codebuddy/项目规则.md`](.codebuddy/项目规则.md)。
@@ -10,7 +10,7 @@
 
 ## 一句话
 
-五枚勋章（射手 / 战士 / 坦克 / 法师 / 召唤师）各自 1~60 级熟练度与 6 个节点技能，
+五枚勋章（射手 / 刃 / 坦克 / 法师 / 召唤师）各自 1~60 级熟练度与 6 个节点技能，
 外加一整套体验改进（QoL）、一个可视化配置界面、五档世界难度，
 以及一条 50 节、约 206 格长的巨虫终局 Boss —— **乌蠹诺斯**。
 
@@ -18,7 +18,7 @@
 
 | 项 | 现状 |
 |---|---|
-| 版本 | `1.0.0-beta45` |
+| 版本 | `1.0.0-beta46` |
 | 注册名 / 包名 | `lost_realm` / `com.lost_realm` |
 | 勋章 | 5 枚，各 6 个节点技能（Lv.5 / 10 / 15 / 20 / 25 / 30 解锁） |
 | 熟练度 | Lv.1~60；六段成长率 7/6/5/4/3/2%；枷锁在 Lv.20 与 Lv.40 |
@@ -35,7 +35,7 @@
 - **改代码前** → §二（核心机制的实现位置）+ §四（属性映射）+ 项目规则 §4「静默失效速查」。
 - **查功能在哪** → §六（体验改进）、§六·补充二（世界难度）、§六·补充三（乌蠹诺斯）。
 - **要构建** → §八。
-- **看历史** → `gradle.properties` 顶部的版本历史注释块（dv1 → beta45 逐条）。
+- **看历史** → `gradle.properties` 顶部的版本历史注释块（dv1 → beta46 逐条）。
   旧人形 Boss 的 dv 期档案已随代码一起删除（`beta45`），本文不再保留那 1700 行。
 
 ---
@@ -45,7 +45,7 @@
 | 线 | 范围 | 说明 |
 |---|---|---|
 | `dv1` ~ `dv30` | 早期 | 勋章系统成型、遗落之都、终末之影（人形 Boss）三形态迭代 |
-| `beta1` ~ `beta45` | 当前 | 架构重构与实测修复期：属性自注册、Boss 换代为巨虫、配置界面重做 |
+| `beta1` ~ `beta46` | 当前 | 架构重构与实测修复期：属性自注册、Boss 换代为巨虫、配置界面重做 |
 
 近期关键节点：
 
@@ -61,6 +61,8 @@
 - **beta41~43** 配置界面删旧 Boss / 加乌蠹诺斯配置 / Boss 全量改名 `udunos`。
 - **beta44** 代码审查修复：属性刷新幂等短路、星空渲染零分配、怪物难度倍率改持久修饰符、
   删除失效的「遗落本源」与 `RealmCapConfig`。
+- **beta46** 「战士」全量改名为「刃」（内部标识 `blade` / 槽位 `blade`），
+  九枚刃换新贴图；顺带修好一直缺失的契约槽。
 - **beta45** 删除旧人形 Boss「终末之影」整套死代码（28 个文件 / 约 6700 行），
   材料掉落改由乌蠹诺斯供应，两条进度改判据。
 
@@ -365,7 +367,7 @@ lost_realm:spell_crit_damage   // 1.0 = 100%,ADDITION 存"额外倍率"
 ```
 
 由 `CombatHandler#handleMageOnDamage` 在**魔法伤害分支内**掷骰并乘算,
-与神话前置、战士暴击完全解耦。成长联动:每解锁一个后续技能(Lv.15/20/25/30)
+与神话前置、刃的暴击完全解耦。成长联动:每解锁一个后续技能(Lv.15/20/25/30)
 额外 +3% 暴击率、+5% 暴击伤害。
 
 #### Lv.15【灵魂虹吸】—— 「负面效果」的判定
@@ -403,7 +405,7 @@ Goety 的法术投射物种类极多,逐一 Mixin 成本高且易冲突。但所
 冷却刷新直接调用公开 API `FocusCooldown#removeCooldown`。
 概率带**保底递增**:20% → 35% → 50% …,触发后归零。
 
-### 战士勋章
+### 刃勋章
 | 等级 | 技能 | 类型 | 实现类 |
 |---|---|---|---|
 | 5 | 撕裂 | 命中施加 | `SkillRend` |
@@ -745,8 +747,8 @@ return false;
 
 **分类清单（18）**
 
-世界难度 · 体验改进 · 状态效果 HUD · 熟练度与经验 · 射手数值 · 战士数值 ·
-坦克数值 · 法师数值 · 召唤师 · 箭类饰品 · 战士饰品 · 法师晶石 · 召唤契约 ·
+世界难度 · 体验改进 · 状态效果 HUD · 熟练度与经验 · 射手数值 · 刃数值 ·
+坦克数值 · 法师数值 · 召唤师 · 箭类饰品 · 刃饰品 · 法师晶石 · 召唤契约 ·
 终极武器 · 盾类饰品 · 职业槽位 · 乌蠹诺斯 ·（外加综合视图「全部配置」）
 
 | 文件 | 职责 |
@@ -1023,7 +1025,7 @@ src/main/resources/
 ├── assets/minecraft/                  覆盖原版贴图(无限弓等)
 └── data/
     ├── lost_realm/{advancements,dimension,dimension_type,loot_tables,recipes,damage_type}
-    ├── lost_realm/curios/slots/        6 个饰品槽(medal / arrow / weapon / shield / crystal / contract)
+    ├── lost_realm/curios/slots/        6 个饰品槽(medal / arrow / blade / shield / crystal / contract)
     └── lost_realm/tags/entity_types/   中立生物名单
 ```
 
@@ -1042,9 +1044,9 @@ export JAVA_HOME=/path/to/jdk-17      # 必须 17(21/25 会在 ForgeGradle 处�
 ./gradlew build --offline             # 首次构建要联网拉 Forge / MC 依赖(约 500MB)
 ```
 
-产物：`build/libs/Lost Realm-<mod_version>-<mod_build>.jar`（当前：`Lost Realm-1.0.0-beta45.jar`）
+产物：`build/libs/Lost Realm-<mod_version>-<mod_build>.jar`（当前：`Lost Realm-1.0.0-beta46.jar`）
 （文件名 = `mod_version` + `mod_build`；`build.gradle` 用 `archiveFileName` 显式拼，
-不写会得到 `...-1.0.0-beta45-1.0.0-beta45.jar` 这种双版本名。）
+不写会得到 `...-1.0.0-beta46-1.0.0-beta46.jar` 这种双版本名。）
 
 **`libs/` 里必须放两个前置**（不入库，需自行下载）：
 

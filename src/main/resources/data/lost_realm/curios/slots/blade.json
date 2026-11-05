@@ -3,7 +3,7 @@
   "size": 0,
   "operation": "SET",
   "use_native_gui": true,
-  "icon": "lost_realm:slot/weapon",
+  "icon": "lost_realm:slot/blade",
   "validators": [
     "curios:tag"
   ]

@@ -59,7 +59,7 @@ public final class DashClientHandler {
         }
 
         int now = player.tickCount;
-        int window = Math.max(2, MedalsConfig.WARRIOR_DASH_DOUBLE_TAP_TICKS.get());
+        int window = Math.max(2, MedalsConfig.BLADE_DASH_DOUBLE_TAP_TICKS.get());
         if (now - lastClickTick <= window) {
             MedalsNetwork.sendToServer(new PacketDash());
             // 清掉时间戳,免得三连点被判成两次突进

@@ -1,4 +1,4 @@
-package com.lost_realm.skill.warrior;
+package com.lost_realm.skill.blade;
 
 import java.util.List;
 
@@ -23,12 +23,12 @@ import com.lost_realm.util.ModifierIds;
  */
 public class SkillWarTrail implements Skill {
 
-    public static final String ID = "w25_war_trail";
+    public static final String ID = "b25_war_trail";
     public static final String STATE_REMAIN = ID + "_remain";
 
     @Override
     public MedalType medal() {
-        return MedalType.WARRIOR;
+        return MedalType.BLADE;
     }
 
     @Override
@@ -43,18 +43,18 @@ public class SkillWarTrail implements Skill {
 
     @Override
     public Component displayName() {
-        return Component.translatable("skill.lost_realm.w25_war_trail");
+        return Component.translatable("skill.lost_realm.b25_war_trail");
     }
 
     @Override
     public List<Component> description() {
-        return List.of(Component.translatable("skill.lost_realm.w25_war_trail.desc",
-                MedalsConfig.W25_DURATION_SECONDS.get(),
-                MedalsConfig.W25_ATTACK_RANGE.get(),
-                MedalsConfig.W25_ATTACK_SPEED.get(),
-                MedalsConfig.W25_MOVE_SPEED.get(),
-                MedalsConfig.W25_LIFESTEAL.get(),
-                MedalsConfig.W25_COOLDOWN_SECONDS.get()));
+        return List.of(Component.translatable("skill.lost_realm.b25_war_trail.desc",
+                MedalsConfig.B25_DURATION_SECONDS.get(),
+                MedalsConfig.B25_ATTACK_RANGE.get(),
+                MedalsConfig.B25_ATTACK_SPEED.get(),
+                MedalsConfig.B25_MOVE_SPEED.get(),
+                MedalsConfig.B25_LIFESTEAL.get(),
+                MedalsConfig.B25_COOLDOWN_SECONDS.get()));
     }
 
     @Override
@@ -64,7 +64,7 @@ public class SkillWarTrail implements Skill {
 
     @Override
     public int cooldownTicks() {
-        return MedalsConfig.W25_COOLDOWN_SECONDS.get() * 20;
+        return MedalsConfig.B25_COOLDOWN_SECONDS.get() * 20;
     }
 
     public static boolean isActive(PlayerMedals data) {
@@ -77,7 +77,7 @@ public class SkillWarTrail implements Skill {
         if (isActive(data)) {
             return false;
         }
-        data.setState(STATE_REMAIN, MedalsConfig.W25_DURATION_SECONDS.get() * 20);
+        data.setState(STATE_REMAIN, MedalsConfig.B25_DURATION_SECONDS.get() * 20);
         return true;
     }
 
@@ -93,27 +93,27 @@ public class SkillWarTrail implements Skill {
 
         // 攻击距离
         AttributeGuard.apply(player, ForgeMod.ENTITY_REACH.get(),
-                ModifierIds.WARRIOR_W25_ATTACK_RANGE, "warrior_w25_attack_range",
-                MedalsConfig.W25_ATTACK_RANGE.get(), AttributeModifier.Operation.ADDITION);
+                ModifierIds.BLADE_W25_ATTACK_RANGE, "blade_w25_attack_range",
+                MedalsConfig.B25_ATTACK_RANGE.get(), AttributeModifier.Operation.ADDITION);
 
         AttributeGuard.apply(player, Attributes.ATTACK_SPEED,
-                ModifierIds.WARRIOR_W25_ATTACK_SPEED, "warrior_w25_attack_speed",
-                MedalsConfig.pct(MedalsConfig.W25_ATTACK_SPEED), AttributeModifier.Operation.MULTIPLY_BASE);
+                ModifierIds.BLADE_W25_ATTACK_SPEED, "blade_w25_attack_speed",
+                MedalsConfig.pct(MedalsConfig.B25_ATTACK_SPEED), AttributeModifier.Operation.MULTIPLY_BASE);
 
         AttributeGuard.apply(player, Attributes.MOVEMENT_SPEED,
-                ModifierIds.WARRIOR_W25_MOVE_SPEED, "warrior_w25_move_speed",
-                MedalsConfig.pct(MedalsConfig.W25_MOVE_SPEED), AttributeModifier.Operation.MULTIPLY_BASE);
+                ModifierIds.BLADE_W25_MOVE_SPEED, "blade_w25_move_speed",
+                MedalsConfig.pct(MedalsConfig.B25_MOVE_SPEED), AttributeModifier.Operation.MULTIPLY_BASE);
 
         AttributeGuard.apply(player, RealmAttributes.lifeSteal(),
-                ModifierIds.WARRIOR_W25_LIFESTEAL, "warrior_w25_lifesteal",
-                MedalsConfig.pct(MedalsConfig.W25_LIFESTEAL), AttributeModifier.Operation.ADDITION);
+                ModifierIds.BLADE_W25_LIFESTEAL, "blade_w25_lifesteal",
+                MedalsConfig.pct(MedalsConfig.B25_LIFESTEAL), AttributeModifier.Operation.ADDITION);
     }
 
     @Override
     public void clear(net.minecraft.world.entity.player.Player player) {
-        AttributeGuard.clearByPrefix(player, ForgeMod.ENTITY_REACH.get(), "warrior_w25_");
-        AttributeGuard.clearByPrefix(player, Attributes.ATTACK_SPEED, "warrior_w25_");
-        AttributeGuard.clearByPrefix(player, Attributes.MOVEMENT_SPEED, "warrior_w25_");
-        AttributeGuard.clearByPrefix(player, RealmAttributes.lifeSteal(), "warrior_w25_");
+        AttributeGuard.clearByPrefix(player, ForgeMod.ENTITY_REACH.get(), "blade_w25_");
+        AttributeGuard.clearByPrefix(player, Attributes.ATTACK_SPEED, "blade_w25_");
+        AttributeGuard.clearByPrefix(player, Attributes.MOVEMENT_SPEED, "blade_w25_");
+        AttributeGuard.clearByPrefix(player, RealmAttributes.lifeSteal(), "blade_w25_");
     }
 }

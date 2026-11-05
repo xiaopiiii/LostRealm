@@ -6,8 +6,9 @@
   "slots": [
     "medal",
     "arrow",
-    "weapon",
+    "blade",
     "shield",
-    "crystal"
+    "crystal",
+    "contract"
   ]
 }

@@ -1,4 +1,4 @@
-package com.lost_realm.skill.warrior;
+package com.lost_realm.skill.blade;
 
 import java.util.List;
 
@@ -25,11 +25,11 @@ import com.lost_realm.skill.Skill;
  */
 public class SkillRend implements Skill {
 
-    public static final String ID = "w5_rend";
+    public static final String ID = "b5_rend";
 
     @Override
     public MedalType medal() {
-        return MedalType.WARRIOR;
+        return MedalType.BLADE;
     }
 
     @Override
@@ -44,16 +44,16 @@ public class SkillRend implements Skill {
 
     @Override
     public Component displayName() {
-        return Component.translatable("skill.lost_realm.w5_rend");
+        return Component.translatable("skill.lost_realm.b5_rend");
     }
 
     @Override
     public List<Component> description() {
-        return List.of(Component.translatable("skill.lost_realm.w5_rend.desc",
-                MedalsConfig.W5_BLEED_CHANCE.get(),
-                MedalsConfig.W5_BLEED_SECONDS.get(),
-                MedalsConfig.W5_BLEED_ARMOR_PIERCE.get(),
-                MedalsConfig.W5_BLEED_CRIT_CHANCE.get()));
+        return List.of(Component.translatable("skill.lost_realm.b5_rend.desc",
+                MedalsConfig.B5_BLEED_CHANCE.get(),
+                MedalsConfig.B5_BLEED_SECONDS.get(),
+                MedalsConfig.B5_BLEED_ARMOR_PIERCE.get(),
+                MedalsConfig.B5_BLEED_CRIT_CHANCE.get()));
     }
 
     @Override
@@ -71,12 +71,12 @@ public class SkillRend implements Skill {
         if (target.level().isClientSide) {
             return;
         }
-        if (target.getRandom().nextDouble() >= MedalsConfig.pct(MedalsConfig.W5_BLEED_CHANCE)) {
+        if (target.getRandom().nextDouble() >= MedalsConfig.pct(MedalsConfig.B5_BLEED_CHANCE)) {
             return;
         }
         target.addEffect(new MobEffectInstance(
                 ModEffects.BLEEDING.get(),
-                MedalsConfig.W5_BLEED_SECONDS.get() * 20,
+                MedalsConfig.B5_BLEED_SECONDS.get() * 20,
                 0, false, true, true));
     }
 }

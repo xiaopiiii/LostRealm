@@ -25,7 +25,7 @@ import net.minecraftforge.fml.common.Mod;
 import com.lost_realm.Medals;
 import com.lost_realm.config.MedalsConfig;
 import com.lost_realm.data.PlayerMedals;
-import com.lost_realm.item.WarriorCharmType;
+import com.lost_realm.item.BladeCharmType;
 
 /**
  * 突进之刃 —— 服务端的位移驱动与路径伤害。
@@ -48,7 +48,7 @@ import com.lost_realm.item.WarriorCharmType;
 public final class DashHandler {
 
     /** 冷却：存在玩家数据里的「下次可用」游戏刻。 */
-    private static final String STATE_READY = "warrior_dash_ready";
+    private static final String STATE_READY = "blade_dash_ready";
 
     /** 突进持续几 tick —— 太短会像瞬移，太长会像滑冰。 */
     private static final int DASH_TICKS = 4;
@@ -93,7 +93,7 @@ public final class DashHandler {
             return;
         }
         // 没戴这枚饰品就彻底静默 —— 玩家每次双击都弹提示会很烦
-        if (!WarriorCharmType.DASH.isActive(player)) {
+        if (!BladeCharmType.DASH.isActive(player)) {
             return;
         }
         if (ACTIVE.containsKey(player.getUUID())) {
@@ -101,7 +101,7 @@ public final class DashHandler {
         }
 
         // ---------- 以下失败都会给一条 actionbar,方便玩家自己看出卡在哪 ----------
-        double threshold = MedalsConfig.WARRIOR_DASH_SPEED_THRESHOLD.get();
+        double threshold = MedalsConfig.BLADE_DASH_SPEED_THRESHOLD.get();
         double speed = weaponAttackSpeed(player.getMainHandItem());
         // ⚠️ 必须留容差:剑的攻速修饰符是 -2.4F,转成 double 是 -2.4000000953674316,
         //    4.0 减完得到 1.5999999... —— 直接比 < 1.6 会把合格的剑判成不合格。
@@ -129,18 +129,18 @@ public final class DashHandler {
         }
         dir = dir.normalize();
 
-        double distance = MedalsConfig.WARRIOR_DASH_DISTANCE.get();
+        double distance = MedalsConfig.BLADE_DASH_DISTANCE.get();
         float damage = (float) (player.getAttributeValue(Attributes.ATTACK_DAMAGE)
-                * MedalsConfig.pct(MedalsConfig.WARRIOR_DASH_DAMAGE));
+                * MedalsConfig.pct(MedalsConfig.BLADE_DASH_DAMAGE));
 
         ACTIVE.put(player.getUUID(), new Dash(level, dir, distance / DASH_TICKS, damage, DASH_TICKS));
 
         // 冷却 & 消耗
-        int cooldown = MedalsConfig.WARRIOR_DASH_COOLDOWN.get();
+        int cooldown = MedalsConfig.BLADE_DASH_COOLDOWN.get();
         if (cooldown > 0) {
             data.setTimestamp(STATE_READY, now + cooldown * 20L);
         }
-        double hunger = MedalsConfig.WARRIOR_DASH_HUNGER.get();
+        double hunger = MedalsConfig.BLADE_DASH_HUNGER.get();
         if (hunger > 0.0D) {
             player.causeFoodExhaustion((float) hunger);
         }

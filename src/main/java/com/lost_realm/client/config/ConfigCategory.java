@@ -59,8 +59,8 @@ public final class ConfigCategory {
     // ---- 原作系统数值:四个职业各自一类 ----
     public static final ConfigCategory ARCHER =
             reg("archer", "config.lost_realm.cat.archer");
-    public static final ConfigCategory WARRIOR =
-            reg("warrior", "config.lost_realm.cat.warrior");
+    public static final ConfigCategory BLADE =
+            reg("blade", "config.lost_realm.cat.blade");
     public static final ConfigCategory TANK =
             reg("tank", "config.lost_realm.cat.tank");
     public static final ConfigCategory MAGE =
@@ -74,9 +74,9 @@ public final class ConfigCategory {
     public static final ConfigCategory ARROWS =
             reg("arrows", "config.lost_realm.cat.arrows");
 
-    // ---- 「刃」类战士饰品(dv49)----
-    public static final ConfigCategory WARRIOR_CHARMS =
-            reg("warrior_charms", "config.lost_realm.cat.warrior_charms");
+    // ---- 「刃」类刃饰品(dv49)----
+    public static final ConfigCategory BLADE_CHARMS =
+            reg("blade_charms", "config.lost_realm.cat.blade_charms");
 
     // ---- 「晶石」类法师饰品 ----
     public static final ConfigCategory CRYSTALS =
@@ -86,7 +86,7 @@ public final class ConfigCategory {
     public static final ConfigCategory CONTRACTS =
             reg("contracts", "config.lost_realm.cat.contracts");
 
-    // ---- 战士终极武器 ----
+    // ---- 刃终极武器 ----
     public static final ConfigCategory SWORD =
             reg("sword", "config.lost_realm.cat.sword");
 

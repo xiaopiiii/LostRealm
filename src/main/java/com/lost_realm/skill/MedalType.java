@@ -8,7 +8,7 @@ package com.lost_realm.skill;
  *   <li>射手:1~10 游射 / 11~20 游侠 / 21~30 箭神</li>
  *   <li>法师:1~10 学徒 / 11~20 术士 / 21~30 大巫</li>
  *   <li>召唤师:1~10 唤灵者 / 11~20 结契者 / 21~30 深渊召唤者</li>
- *   <li>战士、坦克:1~10 见习 / 11~20 精锐 / 21~30 宗师</li>
+ *   <li>刃、坦克:1~10 见习 / 11~20 精锐 / 21~30 宗师</li>
  * </ul>
  */
 public enum MedalType {
@@ -16,8 +16,8 @@ public enum MedalType {
     /** 射手勋章:远程伤害与机动 */
     ARCHER("archer", "射手勋章", 1),
 
-    /** 战士勋章:近战输出与暴击 */
-    WARRIOR("warrior", "战士勋章", 2),
+    /** 刃勋章:近战输出与暴击 */
+    BLADE("blade", "刃勋章", 2),
 
     /** 坦克勋章:防御与续航 */
     TANK("tank", "坦克勋章", 3),
@@ -77,7 +77,7 @@ public enum MedalType {
     public String jobSlot() {
         return switch (this) {
             case ARCHER -> "arrow";
-            case WARRIOR -> "weapon";
+            case BLADE -> "blade";
             case TANK -> "shield";
             case MAGE -> "crystal";
             case SUMMONER -> "contract";

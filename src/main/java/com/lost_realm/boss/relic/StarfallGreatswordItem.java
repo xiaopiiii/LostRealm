@@ -18,7 +18,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 
 /**
- * <b>断轨·裂星巨剑</b>（战士）—— 乌蠹诺斯遗物。
+ * <b>断轨·裂星巨剑</b>（刃）—— 乌蠹诺斯遗物。
  *
  * <h2>原设计 → MC</h2>
  * 原设计是"发射三道穿透追踪星刃，每道首次命中追加三颗 65% 伤害追击星陨"。

@@ -10,7 +10,7 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.phys.AABB;
 
 import com.lost_realm.config.MedalsConfig;
-import com.lost_realm.item.WarriorCharmType;
+import com.lost_realm.item.BladeCharmType;
 
 /**
  * 横扫之刃 —— 由 {@code PlayerMixin} 在原版 {@code Player#attack} 返回后调用。
@@ -26,12 +26,12 @@ import com.lost_realm.item.WarriorCharmType;
  *
  * <p>早先是按「疾跑 / 非疾跑」去推断原版扫没扫、再决定补内圈还是外圈，
  * 实机上不可靠：疾跑状态是客户端同步过来的，攻击那一帧未必是最新值。
- * 现在改成直接观测 {@link WarriorCharmHandler#hitThisTick} —— 谁被原版扫过就跳过谁。
+ * 现在改成直接观测 {@link BladeCharmHandler#hitThisTick} —— 谁被原版扫过就跳过谁。
  *
  * <p>伤害公式沿用原版的 {@code 1.0 + 横扫附魔比率 × 攻击伤害}，
  * 因此有没有这枚饰品，原版那部分的行为完全不变。
  */
-public final class WarriorSweep {
+public final class BladeSweep {
 
     /**
      * 原版 {@code attack} 结束后调用。
@@ -44,11 +44,11 @@ public final class WarriorSweep {
         if (!(player instanceof ServerPlayer server) || target == null) {
             return;
         }
-        if (!WarriorCharmType.SWEEPING.isActive(server)) {
+        if (!BladeCharmType.SWEEPING.isActive(server)) {
             return;
         }
 
-        double radius = Math.max(1.0D, MedalsConfig.WARRIOR_SWEEP_RADIUS.get());
+        double radius = Math.max(1.0D, MedalsConfig.BLADE_SWEEP_RADIUS.get());
         double radiusSqr = radius * radius;
 
         float attackDamage = (float) server.getAttributeValue(Attributes.ATTACK_DAMAGE);
@@ -67,7 +67,7 @@ public final class WarriorSweep {
                 continue;
             }
             // ★ 原版这一下已经打过它了（横扫或主目标），别再补一刀
-            if (com.lost_realm.event.WarriorCharmHandler.hitThisTick(server, victim)) {
+            if (com.lost_realm.event.BladeCharmHandler.hitThisTick(server, victim)) {
                 continue;
             }
             // 与原版横扫一致的击退方向:以玩家为原点推出去
@@ -78,5 +78,5 @@ public final class WarriorSweep {
         }
     }
 
-    private WarriorSweep() {}
+    private BladeSweep() {}
 }

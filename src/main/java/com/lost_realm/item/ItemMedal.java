@@ -137,7 +137,7 @@ public class ItemMedal extends Item implements ICurioItem {
      * <h2>为什么用 SlotAttribute</h2>
      * 四个职业槽（箭 / 武器 / 盾牌 / 聚晶）在数据包里都定义为 <b>0 格</b>，
      * 于是没戴勋章的人在饰品界面上根本看不到它们 —— 这正是我们要的效果：
-     * 玩射手的玩家不该被战士/坦克/法师的槽位占掉三行位置。
+     * 玩射手的玩家不该被刃/坦克/法师的槽位占掉三行位置。
      *
      * <p>Curios 的槽位数量是「基础值 + SlotAttribute 修饰符」算出来的，
      * 而物品的 {@code getAttributeModifiers} 恰好只在<b>物品位于饰品槽中</b>时生效，

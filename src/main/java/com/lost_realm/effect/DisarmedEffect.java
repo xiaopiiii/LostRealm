@@ -8,7 +8,7 @@ import net.minecraft.world.effect.MobEffectCategory;
  *
  * <p>Minecraft 里没有「无法攻击」这种原生状态（虚弱只是降低伤害，不是不能打），
  * 所以这里自己注册一个纯标记效果：真正的作用点在
- * {@code WarriorCharmHandler} 的伤害拦截里 —— 谁身上带着它，他造成的伤害直接被取消。
+ * {@code BladeCharmHandler} 的伤害拦截里 —— 谁身上带着它，他造成的伤害直接被取消。
  *
  * <p>效果本身不带任何属性修饰符，图标也只是一个提示用的符号。
  */

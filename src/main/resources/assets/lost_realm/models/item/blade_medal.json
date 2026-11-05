@@ -1,6 +1,6 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "lost_realm:item/warrior_medal"
+    "layer0": "lost_realm:item/blade_medal"
   }
 }

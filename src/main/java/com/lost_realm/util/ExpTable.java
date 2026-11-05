@@ -120,7 +120,7 @@ public final class ExpTable {
         return "箭神";
     }
 
-    /** 阶位：1~20 见习 / 21~40 精锐 / 41~60 宗师（战士与坦克使用）。 */
+    /** 阶位：1~20 见习 / 21~40 精锐 / 41~60 宗师（刃与坦克使用）。 */
     public static String tierOf(int level) {
         if (level <= TIER_1_END) {
             return "见习";

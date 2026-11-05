@@ -38,9 +38,9 @@ import com.lost_realm.skill.archer.SkillWeaknessInsight;
 import com.lost_realm.skill.tank.SkillBlock;
 import com.lost_realm.skill.tank.SkillOffensiveDrain;
 import com.lost_realm.skill.tank.SkillStarShield;
-import com.lost_realm.skill.warrior.SkillBladeOfFrost;
-import com.lost_realm.skill.warrior.SkillBloodIntent;
-import com.lost_realm.skill.warrior.SkillBurningSelf;
+import com.lost_realm.skill.blade.SkillBladeOfFrost;
+import com.lost_realm.skill.blade.SkillBloodIntent;
+import com.lost_realm.skill.blade.SkillBurningSelf;
 
 /**
  * 战斗事件处理 —— 熟练度获取与节点技能的战斗结算。
@@ -153,16 +153,16 @@ public class CombatHandler {
             double gain = effective * MedalsConfig.pct(MedalsConfig.ARCHER_EXP_DAMAGE);
             applyNeutralPenalty(target, gain, attacker, MedalType.ARCHER);
         } else {
-            // ---------- 战士:近战伤害 ----------
-            int lv = MedalSource.level(attacker, MedalType.WARRIOR);
+            // ---------- 刃:近战伤害 ----------
+            int lv = MedalSource.level(attacker, MedalType.BLADE);
             double effective = effectiveDamage(applied, target);
-            double gain = effective * MedalsConfig.pct(MedalsConfig.WARRIOR_EXP_DAMAGE);
+            double gain = effective * MedalsConfig.pct(MedalsConfig.BLADE_EXP_DAMAGE);
 
             // 近战附带节点技能
             SkillBladeOfFrost.tryFreeze(attacker, target);
             SkillBurningSelf.igniteTarget(attacker, target);
 
-            applyNeutralPenalty(target, gain, attacker, MedalType.WARRIOR);
+            applyNeutralPenalty(target, gain, attacker, MedalType.BLADE);
         }
 
         // 记录有效伤害,供击杀奖励使用
@@ -315,9 +315,9 @@ public class CombatHandler {
         }
 
         // 【撕裂】施加流血
-        int warriorLv = MedalSource.level(attacker, MedalType.WARRIOR);
-        if (warriorLv >= 5) {
-            com.lost_realm.skill.warrior.SkillRend.tryApplyBleeding(target, warriorLv);
+        int bladeLv = MedalSource.level(attacker, MedalType.BLADE);
+        if (bladeLv >= 5) {
+            com.lost_realm.skill.blade.SkillRend.tryApplyBleeding(target, bladeLv);
         }
 
         // 【攻势汲取】获得伤害吸收
@@ -509,24 +509,24 @@ public class CombatHandler {
 
         // 射手击败奖励
         double archerGain = maxHp * MedalsConfig.pct(MedalsConfig.ARCHER_EXP_KILL_HP);
-        // 战士击败奖励
-        double warriorGain = maxHp * MedalsConfig.pct(MedalsConfig.WARRIOR_EXP_KILL_HP);
+        // 刃击败奖励
+        double bladeGain = maxHp * MedalsConfig.pct(MedalsConfig.BLADE_EXP_KILL_HP);
         // 坦克击败奖励
         double tankGain = maxHp * MedalsConfig.pct(MedalsConfig.TANK_EXP_KILL_HP);
 
         // 中立生物收益减半
         if (neutral) {
             archerGain *= 0.5D;
-            warriorGain *= 0.5D;
+            bladeGain *= 0.5D;
             tankGain *= 0.5D;
         }
 
-        // 依据击杀方式决定主要归属:远程击杀给射手,近战给战士
+        // 依据击杀方式决定主要归属:远程击杀给射手,近战给刃
         boolean ranged = event.getSource().getDirectEntity() instanceof Projectile;
         if (ranged) {
             MedalSource.addExp(killer, MedalType.ARCHER, archerGain);
         } else {
-            MedalSource.addExp(killer, MedalType.WARRIOR, warriorGain);
+            MedalSource.addExp(killer, MedalType.BLADE, bladeGain);
         }
         // 坦克无论方式都获得击杀奖励
         MedalSource.addExp(killer, MedalType.TANK, tankGain);

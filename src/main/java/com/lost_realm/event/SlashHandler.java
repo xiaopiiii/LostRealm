@@ -28,7 +28,7 @@ import com.lost_realm.Medals;
 import com.lost_realm.config.MedalsConfig;
 
 /**
- * 战士终极「我有一剑！」的那一剑 —— <b>一道巨大的剑气横扫而出</b>。
+ * 刃终极「我有一剑！」的那一剑 —— <b>一道巨大的剑气横扫而出</b>。
  *
  * <h2>一次斩击由三件事组成</h2>
  * <ol>

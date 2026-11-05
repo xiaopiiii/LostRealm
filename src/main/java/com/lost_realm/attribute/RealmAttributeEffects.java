@@ -45,7 +45,7 @@ import com.lost_realm.Medals;
  * 逐条照抄了它的判定顺序与公式，唯一两处<b>有意的偏离</b>：
  * <ol>
  *   <li><b>暴击限定物理伤害</b>：attributeslib 对任意 {@code LivingHurtEvent} 掷骰，
- *       于是法师的魔法伤害也会吃战士的暴击率，和法师自己的
+ *       于是法师的魔法伤害也会吃刃的暴击率，和法师自己的
  *       {@code spell_crit_chance} 叠成双重暴击。这里限定
  *       {@link #isPhysical(DamageSource)}，把两套暴击彻底分开。</li>
  *   <li><b>火焰/冰霜附加伤害并入本次结算</b>：attributeslib 会另起一次
@@ -81,7 +81,7 @@ public final class RealmAttributeEffects {
      * 而每多暴一次，暴击倍率乘以 0.85 —— 所以「100% 暴击率」只保证暴一次，
      * 想连暴两次需要 200% 的暴击率。
      *
-     * <p>历史数值：战士 60 级 + 终极剑的 +100% 正好凑到 105%，即必定单暴。
+     * <p>历史数值：刃 60 级 + 终极剑的 +100% 正好凑到 105%，即必定单暴。
      */
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onHurtCrit(LivingHurtEvent event) {
@@ -273,7 +273,7 @@ public final class RealmAttributeEffects {
     // 经验倍率
     // ================================================================
 
-    /** 生物掉落经验的经验倍率（战士终极「我有一剑！」的 +1000% 挂在这里）。 */
+    /** 生物掉落经验的经验倍率（刃终极「我有一剑！」的 +1000% 挂在这里）。 */
     @SubscribeEvent
     public static void onXpDrop(LivingExperienceDropEvent event) {
         Player player = event.getAttackingPlayer();

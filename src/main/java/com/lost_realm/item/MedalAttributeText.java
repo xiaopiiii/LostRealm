@@ -62,20 +62,20 @@ public final class MedalAttributeText {
                                 + MedalsConfig.pctD(MedalsConfig.ARCHER_PER_DODGE) * steps, true);
             }
 
-            // ---- 战士:Lv.2 伤害+5% 攻速+5% 暴击率+5% 暴击伤害+5% ----
-            case WARRIOR -> {
+            // ---- 刃:Lv.2 伤害+5% 攻速+5% 暴击率+5% 暴击伤害+5% ----
+            case BLADE -> {
                 percent(out, "attack_damage",
-                        MedalsConfig.pct(MedalsConfig.WARRIOR_L1_DAMAGE)
-                                + MedalsConfig.pctD(MedalsConfig.WARRIOR_PER_DAMAGE) * steps, false);
+                        MedalsConfig.pct(MedalsConfig.BLADE_L1_DAMAGE)
+                                + MedalsConfig.pctD(MedalsConfig.BLADE_PER_DAMAGE) * steps, false);
                 percent(out, "attack_speed",
-                        MedalsConfig.pct(MedalsConfig.WARRIOR_L1_ATTACK_SPEED)
-                                + MedalsConfig.pctD(MedalsConfig.WARRIOR_PER_ATTACK_SPEED) * steps, false);
+                        MedalsConfig.pct(MedalsConfig.BLADE_L1_ATTACK_SPEED)
+                                + MedalsConfig.pctD(MedalsConfig.BLADE_PER_ATTACK_SPEED) * steps, false);
                 percent(out, "crit_chance",
-                        MedalsConfig.pct(MedalsConfig.WARRIOR_L1_CRIT_CHANCE)
-                                + MedalsConfig.pctD(MedalsConfig.WARRIOR_PER_CRIT_CHANCE) * steps, false);
+                        MedalsConfig.pct(MedalsConfig.BLADE_L1_CRIT_CHANCE)
+                                + MedalsConfig.pctD(MedalsConfig.BLADE_PER_CRIT_CHANCE) * steps, false);
                 percent(out, "crit_damage",
-                        MedalsConfig.pct(MedalsConfig.WARRIOR_L1_CRIT_DAMAGE)
-                                + MedalsConfig.pctD(MedalsConfig.WARRIOR_PER_CRIT_DAMAGE) * steps, false);
+                        MedalsConfig.pct(MedalsConfig.BLADE_L1_CRIT_DAMAGE)
+                                + MedalsConfig.pctD(MedalsConfig.BLADE_PER_CRIT_DAMAGE) * steps, false);
             }
 
             // ---- 坦克:Lv.2 护甲+5% 最大生命+5% 过量治疗+10% 减免+5% ----

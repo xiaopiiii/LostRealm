@@ -48,7 +48,7 @@ public final class MedalRuntime {
         DIRTY.add(key(player, type));
         switch (type) {
             case ARCHER -> applyArcher(player, level);
-            case WARRIOR -> applyWarrior(player, level);
+            case BLADE -> applyBlade(player, level);
             case TANK -> applyTank(player, level);
             case MAGE -> applyMage(player, level);
             case SUMMONER -> applySummoner(player, level);
@@ -88,7 +88,7 @@ public final class MedalRuntime {
                 AttributeGuard.clearOwned(player, RealmAttributes.dodgeChance());
                 AttributeGuard.clearOwned(player, RealmAttributes.critDamage());
             }
-            case WARRIOR -> {
+            case BLADE -> {
                 AttributeGuard.clearOwned(player, Attributes.ATTACK_DAMAGE);
                 AttributeGuard.clearOwned(player, Attributes.ATTACK_SPEED);
                 AttributeGuard.clearOwned(player, RealmAttributes.critChance());
@@ -169,35 +169,35 @@ public final class MedalRuntime {
     }
 
     // ================================================================
-    // 战士:Lv.2 伤害+5% 攻速+5% 暴击率+5% 暴击伤害+5%
+    // 刃:Lv.2 伤害+5% 攻速+5% 暴击率+5% 暴击伤害+5%
     //       1~29 级每级 伤害+0.75% 攻速+0.5% 暴击率+0.5% 暴击伤害+1%
     // ================================================================
-    private static void applyWarrior(ServerPlayer player, int level) {
+    private static void applyBlade(ServerPlayer player, int level) {
         int steps = Math.max(0, level - 1);
 
-        double dmg = MedalsConfig.pct(MedalsConfig.WARRIOR_L1_DAMAGE)
-                + MedalsConfig.pctD(MedalsConfig.WARRIOR_PER_DAMAGE) * steps;
-        double atkSpeed = MedalsConfig.pct(MedalsConfig.WARRIOR_L1_ATTACK_SPEED)
-                + MedalsConfig.pctD(MedalsConfig.WARRIOR_PER_ATTACK_SPEED) * steps;
-        double critChance = MedalsConfig.pct(MedalsConfig.WARRIOR_L1_CRIT_CHANCE)
-                + MedalsConfig.pctD(MedalsConfig.WARRIOR_PER_CRIT_CHANCE) * steps;
-        double critDamage = MedalsConfig.pct(MedalsConfig.WARRIOR_L1_CRIT_DAMAGE)
-                + MedalsConfig.pctD(MedalsConfig.WARRIOR_PER_CRIT_DAMAGE) * steps;
+        double dmg = MedalsConfig.pct(MedalsConfig.BLADE_L1_DAMAGE)
+                + MedalsConfig.pctD(MedalsConfig.BLADE_PER_DAMAGE) * steps;
+        double atkSpeed = MedalsConfig.pct(MedalsConfig.BLADE_L1_ATTACK_SPEED)
+                + MedalsConfig.pctD(MedalsConfig.BLADE_PER_ATTACK_SPEED) * steps;
+        double critChance = MedalsConfig.pct(MedalsConfig.BLADE_L1_CRIT_CHANCE)
+                + MedalsConfig.pctD(MedalsConfig.BLADE_PER_CRIT_CHANCE) * steps;
+        double critDamage = MedalsConfig.pct(MedalsConfig.BLADE_L1_CRIT_DAMAGE)
+                + MedalsConfig.pctD(MedalsConfig.BLADE_PER_CRIT_DAMAGE) * steps;
 
         // 近战伤害:原版 attack_damage,MULTIPLY_BASE 表示按基础值百分比提升
-        apply(player, Attributes.ATTACK_DAMAGE, ModifierIds.WARRIOR_DAMAGE,
-                "warrior_damage", dmg, AttributeModifier.Operation.MULTIPLY_BASE);
+        apply(player, Attributes.ATTACK_DAMAGE, ModifierIds.BLADE_DAMAGE,
+                "blade_damage", dmg, AttributeModifier.Operation.MULTIPLY_BASE);
 
-        apply(player, Attributes.ATTACK_SPEED, ModifierIds.WARRIOR_ATTACK_SPEED,
-                "warrior_attack_speed", atkSpeed, AttributeModifier.Operation.MULTIPLY_BASE);
+        apply(player, Attributes.ATTACK_SPEED, ModifierIds.BLADE_ATTACK_SPEED,
+                "blade_attack_speed", atkSpeed, AttributeModifier.Operation.MULTIPLY_BASE);
 
         // 暴击率:0~10 上限,基础 0.05,加法即为绝对百分点
-        apply(player, RealmAttributes.critChance(), ModifierIds.WARRIOR_CRIT_CHANCE,
-                "warrior_crit_chance", critChance, AttributeModifier.Operation.ADDITION);
+        apply(player, RealmAttributes.critChance(), ModifierIds.BLADE_CRIT_CHANCE,
+                "blade_crit_chance", critChance, AttributeModifier.Operation.ADDITION);
 
         // 暴击伤害:基础 1.5,基础值百分比提升
-        apply(player, RealmAttributes.critDamage(), ModifierIds.WARRIOR_CRIT_DAMAGE,
-                "warrior_crit_damage", critDamage, AttributeModifier.Operation.MULTIPLY_BASE);
+        apply(player, RealmAttributes.critDamage(), ModifierIds.BLADE_CRIT_DAMAGE,
+                "blade_crit_damage", critDamage, AttributeModifier.Operation.MULTIPLY_BASE);
     }
 
     // ================================================================

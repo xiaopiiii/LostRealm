@@ -1,4 +1,4 @@
-package com.lost_realm.skill.warrior;
+package com.lost_realm.skill.blade;
 
 import java.util.List;
 
@@ -24,11 +24,11 @@ import com.lost_realm.util.ModifierIds;
  */
 public class SkillBladeOfFrost implements Skill {
 
-    public static final String ID = "w20_blade_of_frost";
+    public static final String ID = "b20_blade_of_frost";
 
     @Override
     public MedalType medal() {
-        return MedalType.WARRIOR;
+        return MedalType.BLADE;
     }
 
     @Override
@@ -43,22 +43,22 @@ public class SkillBladeOfFrost implements Skill {
 
     @Override
     public Component displayName() {
-        return Component.translatable("skill.lost_realm.w20_blade_of_frost");
+        return Component.translatable("skill.lost_realm.b20_blade_of_frost");
     }
 
     @Override
     public List<Component> description() {
-        return List.of(Component.translatable("skill.lost_realm.w20_blade_of_frost.desc",
-                MedalsConfig.W20_COLD_DAMAGE.get(),
-                MedalsConfig.W20_FREEZE_CHANCE.get()));
+        return List.of(Component.translatable("skill.lost_realm.b20_blade_of_frost.desc",
+                MedalsConfig.B20_COLD_DAMAGE.get(),
+                MedalsConfig.B20_FREEZE_CHANCE.get()));
     }
 
     @Override
     public void applyPassive(ServerPlayer player, int level) {
         // 冰霜伤害为常驻属性
         AttributeGuard.apply(player, RealmAttributes.coldDamage(),
-                ModifierIds.WARRIOR_W20_COLD_DAMAGE, "warrior_w20_cold_damage",
-                MedalsConfig.W20_COLD_DAMAGE.get(), AttributeModifier.Operation.ADDITION);
+                ModifierIds.BLADE_W20_COLD_DAMAGE, "blade_w20_cold_damage",
+                MedalsConfig.B20_COLD_DAMAGE.get(), AttributeModifier.Operation.ADDITION);
     }
 
     /** 命中时尝试冰冻目标。 */
@@ -66,10 +66,10 @@ public class SkillBladeOfFrost implements Skill {
         if (target.level().isClientSide) {
             return;
         }
-        if (target.getRandom().nextDouble() >= MedalsConfig.pct(MedalsConfig.W20_FREEZE_CHANCE)) {
+        if (target.getRandom().nextDouble() >= MedalsConfig.pct(MedalsConfig.B20_FREEZE_CHANCE)) {
             return;
         }
-        int ticks = MedalsConfig.W20_FREEZE_SECONDS.get() * 20;
+        int ticks = MedalsConfig.B20_FREEZE_SECONDS.get() * 20;
         // 视觉冰冻:缓慢 + 挖掘疲劳 + 冰块粒子
         target.addEffect(new net.minecraft.world.effect.MobEffectInstance(
                 net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN, ticks, 4, false, false, true));
@@ -84,6 +84,6 @@ public class SkillBladeOfFrost implements Skill {
 
     @Override
     public void clear(net.minecraft.world.entity.player.Player player) {
-        AttributeGuard.clearByPrefix(player, RealmAttributes.coldDamage(), "warrior_w20_");
+        AttributeGuard.clearByPrefix(player, RealmAttributes.coldDamage(), "blade_w20_");
     }
 }

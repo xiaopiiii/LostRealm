@@ -27,8 +27,8 @@ public final class MedalRegistry {
     public static final RegistryObject<Item> ARCHER_MEDAL =
             ITEMS.register("archer_medal", () -> new ItemMedal(MedalType.ARCHER));
 
-    public static final RegistryObject<Item> WARRIOR_MEDAL =
-            ITEMS.register("warrior_medal", () -> new ItemMedal(MedalType.WARRIOR));
+    public static final RegistryObject<Item> BLADE_MEDAL =
+            ITEMS.register("blade_medal", () -> new ItemMedal(MedalType.BLADE));
 
     public static final RegistryObject<Item> TANK_MEDAL =
             ITEMS.register("tank_medal", () -> new ItemMedal(MedalType.TANK));
@@ -52,7 +52,7 @@ public final class MedalRegistry {
             ITEMS.register("summoner_medal", () -> new ItemMedal(MedalType.SUMMONER));
 
     /**
-     * 战士终极武器:「我有一剑！」
+     * 刃终极武器:「我有一剑！」
      *
      * <p>它是一把<b>剑</b>而不是饰品 —— 走主手装备槽，九把「刃」合成。
      * 常驻属性靠物品自己的 MAINHAND 修饰符，主动技是 Shift + 右键蓄力 10 秒。
@@ -75,7 +75,7 @@ public final class MedalRegistry {
             .displayItems((params, output) -> {
                 // ---------- 五枚职业勋章 ----------
                 output.accept(ARCHER_MEDAL.get());
-                output.accept(WARRIOR_MEDAL.get());
+                output.accept(BLADE_MEDAL.get());
                 output.accept(TANK_MEDAL.get());
                 // 仅在 Goety 可用时展示法师 / 召唤师勋章
                 if (com.lost_realm.compat.goety.GoetyCompat.isLoaded()) {
@@ -132,19 +132,19 @@ public final class MedalRegistry {
                 output.accept(ArrowRegistry.SUMMON_ARROW.get());
                 output.accept(ArrowRegistry.STAR_ARROW.get());
 
-                // ---------- 「刃」类战士饰品(dv49) ----------
-                // 只能放进「武器」槽,该槽位由战士勋章撑开。
-                output.accept(WarriorCharmRegistry.SWEEPING_BLADE.get());
-                output.accept(WarriorCharmRegistry.DUAL_BLADE.get());
-                output.accept(WarriorCharmRegistry.CRIT_BLADE.get());
-                output.accept(WarriorCharmRegistry.BACKSTAB_BLADE.get());
-                output.accept(WarriorCharmRegistry.DISARM_BLADE.get());
-                output.accept(WarriorCharmRegistry.LUCK_BLADE.get());
-                output.accept(WarriorCharmRegistry.CHARGING_BLADE.get());
-                output.accept(WarriorCharmRegistry.DASH_BLADE.get());
-                output.accept(WarriorCharmRegistry.TOUGHNESS_BLADE.get());
+                // ---------- 「刃」类刃饰品(dv49) ----------
+                // 只能放进「武器」槽,该槽位由刃勋章撑开。
+                output.accept(BladeCharmRegistry.SWEEPING_BLADE.get());
+                output.accept(BladeCharmRegistry.DUAL_BLADE.get());
+                output.accept(BladeCharmRegistry.CRIT_BLADE.get());
+                output.accept(BladeCharmRegistry.BACKSTAB_BLADE.get());
+                output.accept(BladeCharmRegistry.DISARM_BLADE.get());
+                output.accept(BladeCharmRegistry.LUCK_BLADE.get());
+                output.accept(BladeCharmRegistry.CHARGING_BLADE.get());
+                output.accept(BladeCharmRegistry.DASH_BLADE.get());
+                output.accept(BladeCharmRegistry.TOUGHNESS_BLADE.get());
 
-                // ---------- 战士终极武器(九把「刃」合成) ----------
+                // ---------- 刃终极武器(九把「刃」合成) ----------
                 output.accept(I_HAVE_A_SWORD.get());
 
                 // ---------- 「盾」类坦克饰品 ----------
@@ -197,7 +197,7 @@ public final class MedalRegistry {
     public static Item itemOf(MedalType type) {
         return switch (type) {
             case ARCHER -> ARCHER_MEDAL.get();
-            case WARRIOR -> WARRIOR_MEDAL.get();
+            case BLADE -> BLADE_MEDAL.get();
             case TANK -> TANK_MEDAL.get();
             case MAGE -> MAGE_MEDAL.get();
             case SUMMONER -> SUMMONER_MEDAL.get();

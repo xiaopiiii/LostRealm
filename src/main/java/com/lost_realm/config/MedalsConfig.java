@@ -70,42 +70,42 @@ public final class MedalsConfig {
     public static IntValue S30_ARROW_DAMAGE;
     public static IntValue S30_MAX_EXTEND;
     public static IntValue S30_COOLDOWN_SECONDS;
-    public static IntValue WARRIOR_EXP_DAMAGE;
-    public static IntValue WARRIOR_EXP_KILL_HP;
-    public static IntValue WARRIOR_L1_DAMAGE;
-    public static IntValue WARRIOR_L1_ATTACK_SPEED;
-    public static IntValue WARRIOR_L1_CRIT_CHANCE;
-    public static IntValue WARRIOR_L1_CRIT_DAMAGE;
-    public static DoubleValue WARRIOR_PER_DAMAGE;
-    public static DoubleValue WARRIOR_PER_ATTACK_SPEED;
-    public static DoubleValue WARRIOR_PER_CRIT_CHANCE;
-    public static DoubleValue WARRIOR_PER_CRIT_DAMAGE;
-    public static IntValue W5_BLEED_CHANCE;
-    public static IntValue W5_BLEED_SECONDS;
-    public static IntValue W5_BLEED_ARMOR_PIERCE;
-    public static IntValue W5_BLEED_CRIT_CHANCE;
-    public static IntValue W10_HP_THRESHOLD;
-    public static IntValue W10_ARMOR_PIERCE_PER_STEP;
-    public static IntValue W10_LIFESTEAL_PER_STEP;
-    public static IntValue W15_DURATION_SECONDS;
-    public static IntValue W15_HP_COST_PER_SECOND;
-    public static IntValue W15_FIRE_DAMAGE;
-    public static IntValue W15_TARGET_FIRE_SECONDS;
-    public static IntValue W15_ATTACK_DAMAGE;
-    public static IntValue W15_MOVE_SPEED;
-    public static IntValue W20_COLD_DAMAGE;
-    public static IntValue W20_FREEZE_CHANCE;
-    public static IntValue W20_FREEZE_SECONDS;
-    public static IntValue W25_DURATION_SECONDS;
-    public static IntValue W25_ATTACK_RANGE;
-    public static IntValue W25_ATTACK_SPEED;
-    public static IntValue W25_MOVE_SPEED;
-    public static IntValue W25_LIFESTEAL;
-    public static IntValue W25_COOLDOWN_SECONDS;
-    public static IntValue W30_LOST_HP_DAMAGE;
-    public static IntValue W30_LOST_HP_DAMAGE_LOW;
-    public static IntValue W30_LOW_HP_THRESHOLD;
-    public static IntValue W30_LOW_HP_CRIT_CHANCE;
+    public static IntValue BLADE_EXP_DAMAGE;
+    public static IntValue BLADE_EXP_KILL_HP;
+    public static IntValue BLADE_L1_DAMAGE;
+    public static IntValue BLADE_L1_ATTACK_SPEED;
+    public static IntValue BLADE_L1_CRIT_CHANCE;
+    public static IntValue BLADE_L1_CRIT_DAMAGE;
+    public static DoubleValue BLADE_PER_DAMAGE;
+    public static DoubleValue BLADE_PER_ATTACK_SPEED;
+    public static DoubleValue BLADE_PER_CRIT_CHANCE;
+    public static DoubleValue BLADE_PER_CRIT_DAMAGE;
+    public static IntValue B5_BLEED_CHANCE;
+    public static IntValue B5_BLEED_SECONDS;
+    public static IntValue B5_BLEED_ARMOR_PIERCE;
+    public static IntValue B5_BLEED_CRIT_CHANCE;
+    public static IntValue B10_HP_THRESHOLD;
+    public static IntValue B10_ARMOR_PIERCE_PER_STEP;
+    public static IntValue B10_LIFESTEAL_PER_STEP;
+    public static IntValue B15_DURATION_SECONDS;
+    public static IntValue B15_HP_COST_PER_SECOND;
+    public static IntValue B15_FIRE_DAMAGE;
+    public static IntValue B15_TARGET_FIRE_SECONDS;
+    public static IntValue B15_ATTACK_DAMAGE;
+    public static IntValue B15_MOVE_SPEED;
+    public static IntValue B20_COLD_DAMAGE;
+    public static IntValue B20_FREEZE_CHANCE;
+    public static IntValue B20_FREEZE_SECONDS;
+    public static IntValue B25_DURATION_SECONDS;
+    public static IntValue B25_ATTACK_RANGE;
+    public static IntValue B25_ATTACK_SPEED;
+    public static IntValue B25_MOVE_SPEED;
+    public static IntValue B25_LIFESTEAL;
+    public static IntValue B25_COOLDOWN_SECONDS;
+    public static IntValue B30_LOST_HP_DAMAGE;
+    public static IntValue B30_LOST_HP_DAMAGE_LOW;
+    public static IntValue B30_LOW_HP_THRESHOLD;
+    public static IntValue B30_LOW_HP_CRIT_CHANCE;
     public static IntValue TANK_EXP_DAMAGE;
     public static IntValue TANK_EXP_KILL_HP;
     public static IntValue TANK_EXP_HEAL;
@@ -267,7 +267,7 @@ public final class MedalsConfig {
     public static IntValue CONTRACT_OVERLORD_LIMIT;
     public static IntValue CONTRACT_REFRESH_INTERVAL;
 
-    // ---------------- 战士终极「我有一剑！」 ----------------
+    // ---------------- 刃终极「我有一剑！」 ----------------
     // 这是一把剑(不是饰品):常驻属性挂在 STR 物品的 MAINHAND 修饰符上,
     // 主动技是按住 Shift + 右键蓄力 10 秒后的一道巨型剑气。
     public static IntValue SWORD_CRIT_CHANCE;
@@ -438,23 +438,23 @@ public final class MedalsConfig {
     public static DoubleValue ARROW_STAR_BREAK_RADIUS;
     public static BooleanValue ARROW_STAR_BREAK_BLOCKS;
     public static BooleanValue ARROW_STAR_BLOCK_DROPS;
-    // ---------- 「刃」类战士饰品(dv49) ----------
-    public static DoubleValue WARRIOR_SWEEP_RADIUS;
-    public static IntValue WARRIOR_DUAL_DAMAGE;
-    public static IntValue WARRIOR_DUAL_ATTACK_SPEED;
-    public static IntValue WARRIOR_CRIT_CHANCE;
-    public static IntValue WARRIOR_CRIT_DAMAGE;
-    public static IntValue WARRIOR_BACKSTAB_BONUS;
-    public static IntValue WARRIOR_DISARM_CHANCE;
-    public static IntValue WARRIOR_DISARM_SECONDS;
-    public static IntValue WARRIOR_DISARM_COOLDOWN;
-    public static IntValue WARRIOR_LUCK_RANGE;
-    public static IntValue WARRIOR_LUCK_PER_POINT;
-    public static IntValue WARRIOR_LUCK_FLOOR_CAP;
-    public static IntValue WARRIOR_TOUGHNESS_PER_HIT;
-    public static IntValue WARRIOR_TOUGHNESS_BASE_CAP;
-    public static IntValue WARRIOR_TOUGHNESS_CAP_PER_STEP;
-    public static IntValue WARRIOR_TOUGHNESS_WINDOW_SECONDS;
+    // ---------- 「刃」类刃饰品(dv49) ----------
+    public static DoubleValue BLADE_SWEEP_RADIUS;
+    public static IntValue BLADE_DUAL_DAMAGE;
+    public static IntValue BLADE_DUAL_ATTACK_SPEED;
+    public static IntValue BLADE_CRIT_CHANCE;
+    public static IntValue BLADE_CRIT_DAMAGE;
+    public static IntValue BLADE_BACKSTAB_BONUS;
+    public static IntValue BLADE_DISARM_CHANCE;
+    public static IntValue BLADE_DISARM_SECONDS;
+    public static IntValue BLADE_DISARM_COOLDOWN;
+    public static IntValue BLADE_LUCK_RANGE;
+    public static IntValue BLADE_LUCK_PER_POINT;
+    public static IntValue BLADE_LUCK_FLOOR_CAP;
+    public static IntValue BLADE_TOUGHNESS_PER_HIT;
+    public static IntValue BLADE_TOUGHNESS_BASE_CAP;
+    public static IntValue BLADE_TOUGHNESS_CAP_PER_STEP;
+    public static IntValue BLADE_TOUGHNESS_WINDOW_SECONDS;
     public static IntValue SHIELD_THORNS_REFLECT;
     public static IntValue SHIELD_ADAPT_PER_HIT;
     public static IntValue SHIELD_ADAPT_CAP;
@@ -511,14 +511,14 @@ public final class MedalsConfig {
     public static IntValue CRYSTAL_SOVEREIGN_CASTING;
     public static IntValue CRYSTAL_SOVEREIGN_RADIUS;
     public static IntValue CRYSTAL_SOVEREIGN_SOUL;
-    public static IntValue WARRIOR_CHARGE_PER_SECOND;
-    public static IntValue WARRIOR_CHARGE_MAX;
-    public static DoubleValue WARRIOR_DASH_SPEED_THRESHOLD;
-    public static DoubleValue WARRIOR_DASH_DISTANCE;
-    public static IntValue WARRIOR_DASH_DAMAGE;
-    public static IntValue WARRIOR_DASH_COOLDOWN;
-    public static DoubleValue WARRIOR_DASH_HUNGER;
-    public static IntValue WARRIOR_DASH_DOUBLE_TAP_TICKS;
+    public static IntValue BLADE_CHARGE_PER_SECOND;
+    public static IntValue BLADE_CHARGE_MAX;
+    public static DoubleValue BLADE_DASH_SPEED_THRESHOLD;
+    public static DoubleValue BLADE_DASH_DISTANCE;
+    public static IntValue BLADE_DASH_DAMAGE;
+    public static IntValue BLADE_DASH_COOLDOWN;
+    public static DoubleValue BLADE_DASH_HUNGER;
+    public static IntValue BLADE_DASH_DOUBLE_TAP_TICKS;
     public static IntValue JOB_SLOT_SIZE;
     public static IntValue TIME_CAPSULE_MAX_USES;
     public static IntValue TIME_CAPSULE_SHORTEN_SECONDS;
@@ -610,42 +610,42 @@ public final class MedalsConfig {
         S30_ARROW_DAMAGE = c.S30_ARROW_DAMAGE;
         S30_MAX_EXTEND = c.S30_MAX_EXTEND;
         S30_COOLDOWN_SECONDS = c.S30_COOLDOWN_SECONDS;
-        WARRIOR_EXP_DAMAGE = c.WARRIOR_EXP_DAMAGE;
-        WARRIOR_EXP_KILL_HP = c.WARRIOR_EXP_KILL_HP;
-        WARRIOR_L1_DAMAGE = c.WARRIOR_L1_DAMAGE;
-        WARRIOR_L1_ATTACK_SPEED = c.WARRIOR_L1_ATTACK_SPEED;
-        WARRIOR_L1_CRIT_CHANCE = c.WARRIOR_L1_CRIT_CHANCE;
-        WARRIOR_L1_CRIT_DAMAGE = c.WARRIOR_L1_CRIT_DAMAGE;
-        WARRIOR_PER_DAMAGE = c.WARRIOR_PER_DAMAGE;
-        WARRIOR_PER_ATTACK_SPEED = c.WARRIOR_PER_ATTACK_SPEED;
-        WARRIOR_PER_CRIT_CHANCE = c.WARRIOR_PER_CRIT_CHANCE;
-        WARRIOR_PER_CRIT_DAMAGE = c.WARRIOR_PER_CRIT_DAMAGE;
-        W5_BLEED_CHANCE = c.W5_BLEED_CHANCE;
-        W5_BLEED_SECONDS = c.W5_BLEED_SECONDS;
-        W5_BLEED_ARMOR_PIERCE = c.W5_BLEED_ARMOR_PIERCE;
-        W5_BLEED_CRIT_CHANCE = c.W5_BLEED_CRIT_CHANCE;
-        W10_HP_THRESHOLD = c.W10_HP_THRESHOLD;
-        W10_ARMOR_PIERCE_PER_STEP = c.W10_ARMOR_PIERCE_PER_STEP;
-        W10_LIFESTEAL_PER_STEP = c.W10_LIFESTEAL_PER_STEP;
-        W15_DURATION_SECONDS = c.W15_DURATION_SECONDS;
-        W15_HP_COST_PER_SECOND = c.W15_HP_COST_PER_SECOND;
-        W15_FIRE_DAMAGE = c.W15_FIRE_DAMAGE;
-        W15_TARGET_FIRE_SECONDS = c.W15_TARGET_FIRE_SECONDS;
-        W15_ATTACK_DAMAGE = c.W15_ATTACK_DAMAGE;
-        W15_MOVE_SPEED = c.W15_MOVE_SPEED;
-        W20_COLD_DAMAGE = c.W20_COLD_DAMAGE;
-        W20_FREEZE_CHANCE = c.W20_FREEZE_CHANCE;
-        W20_FREEZE_SECONDS = c.W20_FREEZE_SECONDS;
-        W25_DURATION_SECONDS = c.W25_DURATION_SECONDS;
-        W25_ATTACK_RANGE = c.W25_ATTACK_RANGE;
-        W25_ATTACK_SPEED = c.W25_ATTACK_SPEED;
-        W25_MOVE_SPEED = c.W25_MOVE_SPEED;
-        W25_LIFESTEAL = c.W25_LIFESTEAL;
-        W25_COOLDOWN_SECONDS = c.W25_COOLDOWN_SECONDS;
-        W30_LOST_HP_DAMAGE = c.W30_LOST_HP_DAMAGE;
-        W30_LOST_HP_DAMAGE_LOW = c.W30_LOST_HP_DAMAGE_LOW;
-        W30_LOW_HP_THRESHOLD = c.W30_LOW_HP_THRESHOLD;
-        W30_LOW_HP_CRIT_CHANCE = c.W30_LOW_HP_CRIT_CHANCE;
+        BLADE_EXP_DAMAGE = c.BLADE_EXP_DAMAGE;
+        BLADE_EXP_KILL_HP = c.BLADE_EXP_KILL_HP;
+        BLADE_L1_DAMAGE = c.BLADE_L1_DAMAGE;
+        BLADE_L1_ATTACK_SPEED = c.BLADE_L1_ATTACK_SPEED;
+        BLADE_L1_CRIT_CHANCE = c.BLADE_L1_CRIT_CHANCE;
+        BLADE_L1_CRIT_DAMAGE = c.BLADE_L1_CRIT_DAMAGE;
+        BLADE_PER_DAMAGE = c.BLADE_PER_DAMAGE;
+        BLADE_PER_ATTACK_SPEED = c.BLADE_PER_ATTACK_SPEED;
+        BLADE_PER_CRIT_CHANCE = c.BLADE_PER_CRIT_CHANCE;
+        BLADE_PER_CRIT_DAMAGE = c.BLADE_PER_CRIT_DAMAGE;
+        B5_BLEED_CHANCE = c.B5_BLEED_CHANCE;
+        B5_BLEED_SECONDS = c.B5_BLEED_SECONDS;
+        B5_BLEED_ARMOR_PIERCE = c.B5_BLEED_ARMOR_PIERCE;
+        B5_BLEED_CRIT_CHANCE = c.B5_BLEED_CRIT_CHANCE;
+        B10_HP_THRESHOLD = c.B10_HP_THRESHOLD;
+        B10_ARMOR_PIERCE_PER_STEP = c.B10_ARMOR_PIERCE_PER_STEP;
+        B10_LIFESTEAL_PER_STEP = c.B10_LIFESTEAL_PER_STEP;
+        B15_DURATION_SECONDS = c.B15_DURATION_SECONDS;
+        B15_HP_COST_PER_SECOND = c.B15_HP_COST_PER_SECOND;
+        B15_FIRE_DAMAGE = c.B15_FIRE_DAMAGE;
+        B15_TARGET_FIRE_SECONDS = c.B15_TARGET_FIRE_SECONDS;
+        B15_ATTACK_DAMAGE = c.B15_ATTACK_DAMAGE;
+        B15_MOVE_SPEED = c.B15_MOVE_SPEED;
+        B20_COLD_DAMAGE = c.B20_COLD_DAMAGE;
+        B20_FREEZE_CHANCE = c.B20_FREEZE_CHANCE;
+        B20_FREEZE_SECONDS = c.B20_FREEZE_SECONDS;
+        B25_DURATION_SECONDS = c.B25_DURATION_SECONDS;
+        B25_ATTACK_RANGE = c.B25_ATTACK_RANGE;
+        B25_ATTACK_SPEED = c.B25_ATTACK_SPEED;
+        B25_MOVE_SPEED = c.B25_MOVE_SPEED;
+        B25_LIFESTEAL = c.B25_LIFESTEAL;
+        B25_COOLDOWN_SECONDS = c.B25_COOLDOWN_SECONDS;
+        B30_LOST_HP_DAMAGE = c.B30_LOST_HP_DAMAGE;
+        B30_LOST_HP_DAMAGE_LOW = c.B30_LOST_HP_DAMAGE_LOW;
+        B30_LOW_HP_THRESHOLD = c.B30_LOW_HP_THRESHOLD;
+        B30_LOW_HP_CRIT_CHANCE = c.B30_LOW_HP_CRIT_CHANCE;
         TANK_EXP_DAMAGE = c.TANK_EXP_DAMAGE;
         TANK_EXP_KILL_HP = c.TANK_EXP_KILL_HP;
         TANK_EXP_HEAL = c.TANK_EXP_HEAL;
@@ -861,22 +861,22 @@ public final class MedalsConfig {
         ARROW_STAR_BREAK_RADIUS = c.ARROW_STAR_BREAK_RADIUS;
         ARROW_STAR_BREAK_BLOCKS = c.ARROW_STAR_BREAK_BLOCKS;
         ARROW_STAR_BLOCK_DROPS = c.ARROW_STAR_BLOCK_DROPS;
-        WARRIOR_SWEEP_RADIUS = c.WARRIOR_SWEEP_RADIUS;
-        WARRIOR_DUAL_DAMAGE = c.WARRIOR_DUAL_DAMAGE;
-        WARRIOR_DUAL_ATTACK_SPEED = c.WARRIOR_DUAL_ATTACK_SPEED;
-        WARRIOR_CRIT_CHANCE = c.WARRIOR_CRIT_CHANCE;
-        WARRIOR_CRIT_DAMAGE = c.WARRIOR_CRIT_DAMAGE;
-        WARRIOR_BACKSTAB_BONUS = c.WARRIOR_BACKSTAB_BONUS;
-        WARRIOR_DISARM_CHANCE = c.WARRIOR_DISARM_CHANCE;
-        WARRIOR_DISARM_SECONDS = c.WARRIOR_DISARM_SECONDS;
-        WARRIOR_DISARM_COOLDOWN = c.WARRIOR_DISARM_COOLDOWN;
-        WARRIOR_LUCK_RANGE = c.WARRIOR_LUCK_RANGE;
-        WARRIOR_LUCK_PER_POINT = c.WARRIOR_LUCK_PER_POINT;
-        WARRIOR_LUCK_FLOOR_CAP = c.WARRIOR_LUCK_FLOOR_CAP;
-        WARRIOR_TOUGHNESS_PER_HIT = c.WARRIOR_TOUGHNESS_PER_HIT;
-        WARRIOR_TOUGHNESS_BASE_CAP = c.WARRIOR_TOUGHNESS_BASE_CAP;
-        WARRIOR_TOUGHNESS_CAP_PER_STEP = c.WARRIOR_TOUGHNESS_CAP_PER_STEP;
-        WARRIOR_TOUGHNESS_WINDOW_SECONDS = c.WARRIOR_TOUGHNESS_WINDOW_SECONDS;
+        BLADE_SWEEP_RADIUS = c.BLADE_SWEEP_RADIUS;
+        BLADE_DUAL_DAMAGE = c.BLADE_DUAL_DAMAGE;
+        BLADE_DUAL_ATTACK_SPEED = c.BLADE_DUAL_ATTACK_SPEED;
+        BLADE_CRIT_CHANCE = c.BLADE_CRIT_CHANCE;
+        BLADE_CRIT_DAMAGE = c.BLADE_CRIT_DAMAGE;
+        BLADE_BACKSTAB_BONUS = c.BLADE_BACKSTAB_BONUS;
+        BLADE_DISARM_CHANCE = c.BLADE_DISARM_CHANCE;
+        BLADE_DISARM_SECONDS = c.BLADE_DISARM_SECONDS;
+        BLADE_DISARM_COOLDOWN = c.BLADE_DISARM_COOLDOWN;
+        BLADE_LUCK_RANGE = c.BLADE_LUCK_RANGE;
+        BLADE_LUCK_PER_POINT = c.BLADE_LUCK_PER_POINT;
+        BLADE_LUCK_FLOOR_CAP = c.BLADE_LUCK_FLOOR_CAP;
+        BLADE_TOUGHNESS_PER_HIT = c.BLADE_TOUGHNESS_PER_HIT;
+        BLADE_TOUGHNESS_BASE_CAP = c.BLADE_TOUGHNESS_BASE_CAP;
+        BLADE_TOUGHNESS_CAP_PER_STEP = c.BLADE_TOUGHNESS_CAP_PER_STEP;
+        BLADE_TOUGHNESS_WINDOW_SECONDS = c.BLADE_TOUGHNESS_WINDOW_SECONDS;
         SHIELD_THORNS_REFLECT = c.SHIELD_THORNS_REFLECT;
         SHIELD_ADAPT_PER_HIT = c.SHIELD_ADAPT_PER_HIT;
         SHIELD_ADAPT_CAP = c.SHIELD_ADAPT_CAP;
@@ -933,14 +933,14 @@ public final class MedalsConfig {
         CRYSTAL_SOVEREIGN_CASTING = c.CRYSTAL_SOVEREIGN_CASTING;
         CRYSTAL_SOVEREIGN_RADIUS = c.CRYSTAL_SOVEREIGN_RADIUS;
         CRYSTAL_SOVEREIGN_SOUL = c.CRYSTAL_SOVEREIGN_SOUL;
-        WARRIOR_CHARGE_PER_SECOND = c.WARRIOR_CHARGE_PER_SECOND;
-        WARRIOR_CHARGE_MAX = c.WARRIOR_CHARGE_MAX;
-        WARRIOR_DASH_SPEED_THRESHOLD = c.WARRIOR_DASH_SPEED_THRESHOLD;
-        WARRIOR_DASH_DISTANCE = c.WARRIOR_DASH_DISTANCE;
-        WARRIOR_DASH_DAMAGE = c.WARRIOR_DASH_DAMAGE;
-        WARRIOR_DASH_COOLDOWN = c.WARRIOR_DASH_COOLDOWN;
-        WARRIOR_DASH_HUNGER = c.WARRIOR_DASH_HUNGER;
-        WARRIOR_DASH_DOUBLE_TAP_TICKS = c.WARRIOR_DASH_DOUBLE_TAP_TICKS;
+        BLADE_CHARGE_PER_SECOND = c.BLADE_CHARGE_PER_SECOND;
+        BLADE_CHARGE_MAX = c.BLADE_CHARGE_MAX;
+        BLADE_DASH_SPEED_THRESHOLD = c.BLADE_DASH_SPEED_THRESHOLD;
+        BLADE_DASH_DISTANCE = c.BLADE_DASH_DISTANCE;
+        BLADE_DASH_DAMAGE = c.BLADE_DASH_DAMAGE;
+        BLADE_DASH_COOLDOWN = c.BLADE_DASH_COOLDOWN;
+        BLADE_DASH_HUNGER = c.BLADE_DASH_HUNGER;
+        BLADE_DASH_DOUBLE_TAP_TICKS = c.BLADE_DASH_DOUBLE_TAP_TICKS;
         JOB_SLOT_SIZE = c.JOB_SLOT_SIZE;
         TIME_CAPSULE_MAX_USES = c.TIME_CAPSULE_MAX_USES;
         TIME_CAPSULE_SHORTEN_SECONDS = c.TIME_CAPSULE_SHORTEN_SECONDS;
@@ -1013,42 +1013,42 @@ public final class MedalsConfig {
         public IntValue S30_ARROW_DAMAGE;
         public IntValue S30_MAX_EXTEND;
         public IntValue S30_COOLDOWN_SECONDS;
-        public IntValue WARRIOR_EXP_DAMAGE;
-        public IntValue WARRIOR_EXP_KILL_HP;
-        public IntValue WARRIOR_L1_DAMAGE;
-        public IntValue WARRIOR_L1_ATTACK_SPEED;
-        public IntValue WARRIOR_L1_CRIT_CHANCE;
-        public IntValue WARRIOR_L1_CRIT_DAMAGE;
-        public DoubleValue WARRIOR_PER_DAMAGE;
-        public DoubleValue WARRIOR_PER_ATTACK_SPEED;
-        public DoubleValue WARRIOR_PER_CRIT_CHANCE;
-        public DoubleValue WARRIOR_PER_CRIT_DAMAGE;
-        public IntValue W5_BLEED_CHANCE;
-        public IntValue W5_BLEED_SECONDS;
-        public IntValue W5_BLEED_ARMOR_PIERCE;
-        public IntValue W5_BLEED_CRIT_CHANCE;
-        public IntValue W10_HP_THRESHOLD;
-        public IntValue W10_ARMOR_PIERCE_PER_STEP;
-        public IntValue W10_LIFESTEAL_PER_STEP;
-        public IntValue W15_DURATION_SECONDS;
-        public IntValue W15_HP_COST_PER_SECOND;
-        public IntValue W15_FIRE_DAMAGE;
-        public IntValue W15_TARGET_FIRE_SECONDS;
-        public IntValue W15_ATTACK_DAMAGE;
-        public IntValue W15_MOVE_SPEED;
-        public IntValue W20_COLD_DAMAGE;
-        public IntValue W20_FREEZE_CHANCE;
-        public IntValue W20_FREEZE_SECONDS;
-        public IntValue W25_DURATION_SECONDS;
-        public IntValue W25_ATTACK_RANGE;
-        public IntValue W25_ATTACK_SPEED;
-        public IntValue W25_MOVE_SPEED;
-        public IntValue W25_LIFESTEAL;
-        public IntValue W25_COOLDOWN_SECONDS;
-        public IntValue W30_LOST_HP_DAMAGE;
-        public IntValue W30_LOST_HP_DAMAGE_LOW;
-        public IntValue W30_LOW_HP_THRESHOLD;
-        public IntValue W30_LOW_HP_CRIT_CHANCE;
+        public IntValue BLADE_EXP_DAMAGE;
+        public IntValue BLADE_EXP_KILL_HP;
+        public IntValue BLADE_L1_DAMAGE;
+        public IntValue BLADE_L1_ATTACK_SPEED;
+        public IntValue BLADE_L1_CRIT_CHANCE;
+        public IntValue BLADE_L1_CRIT_DAMAGE;
+        public DoubleValue BLADE_PER_DAMAGE;
+        public DoubleValue BLADE_PER_ATTACK_SPEED;
+        public DoubleValue BLADE_PER_CRIT_CHANCE;
+        public DoubleValue BLADE_PER_CRIT_DAMAGE;
+        public IntValue B5_BLEED_CHANCE;
+        public IntValue B5_BLEED_SECONDS;
+        public IntValue B5_BLEED_ARMOR_PIERCE;
+        public IntValue B5_BLEED_CRIT_CHANCE;
+        public IntValue B10_HP_THRESHOLD;
+        public IntValue B10_ARMOR_PIERCE_PER_STEP;
+        public IntValue B10_LIFESTEAL_PER_STEP;
+        public IntValue B15_DURATION_SECONDS;
+        public IntValue B15_HP_COST_PER_SECOND;
+        public IntValue B15_FIRE_DAMAGE;
+        public IntValue B15_TARGET_FIRE_SECONDS;
+        public IntValue B15_ATTACK_DAMAGE;
+        public IntValue B15_MOVE_SPEED;
+        public IntValue B20_COLD_DAMAGE;
+        public IntValue B20_FREEZE_CHANCE;
+        public IntValue B20_FREEZE_SECONDS;
+        public IntValue B25_DURATION_SECONDS;
+        public IntValue B25_ATTACK_RANGE;
+        public IntValue B25_ATTACK_SPEED;
+        public IntValue B25_MOVE_SPEED;
+        public IntValue B25_LIFESTEAL;
+        public IntValue B25_COOLDOWN_SECONDS;
+        public IntValue B30_LOST_HP_DAMAGE;
+        public IntValue B30_LOST_HP_DAMAGE_LOW;
+        public IntValue B30_LOW_HP_THRESHOLD;
+        public IntValue B30_LOW_HP_CRIT_CHANCE;
         public IntValue TANK_EXP_DAMAGE;
         public IntValue TANK_EXP_KILL_HP;
         public IntValue TANK_EXP_HEAL;
@@ -1127,22 +1127,22 @@ public final class MedalsConfig {
         public DoubleValue ARROW_STAR_BREAK_RADIUS;
         public BooleanValue ARROW_STAR_BREAK_BLOCKS;
         public BooleanValue ARROW_STAR_BLOCK_DROPS;
-        public DoubleValue WARRIOR_SWEEP_RADIUS;
-        public IntValue WARRIOR_DUAL_DAMAGE;
-        public IntValue WARRIOR_DUAL_ATTACK_SPEED;
-        public IntValue WARRIOR_CRIT_CHANCE;
-        public IntValue WARRIOR_CRIT_DAMAGE;
-        public IntValue WARRIOR_BACKSTAB_BONUS;
-        public IntValue WARRIOR_DISARM_CHANCE;
-        public IntValue WARRIOR_DISARM_SECONDS;
-        public IntValue WARRIOR_DISARM_COOLDOWN;
-        public IntValue WARRIOR_LUCK_RANGE;
-        public IntValue WARRIOR_LUCK_PER_POINT;
-        public IntValue WARRIOR_LUCK_FLOOR_CAP;
-        public IntValue WARRIOR_TOUGHNESS_PER_HIT;
-        public IntValue WARRIOR_TOUGHNESS_BASE_CAP;
-        public IntValue WARRIOR_TOUGHNESS_CAP_PER_STEP;
-        public IntValue WARRIOR_TOUGHNESS_WINDOW_SECONDS;
+        public DoubleValue BLADE_SWEEP_RADIUS;
+        public IntValue BLADE_DUAL_DAMAGE;
+        public IntValue BLADE_DUAL_ATTACK_SPEED;
+        public IntValue BLADE_CRIT_CHANCE;
+        public IntValue BLADE_CRIT_DAMAGE;
+        public IntValue BLADE_BACKSTAB_BONUS;
+        public IntValue BLADE_DISARM_CHANCE;
+        public IntValue BLADE_DISARM_SECONDS;
+        public IntValue BLADE_DISARM_COOLDOWN;
+        public IntValue BLADE_LUCK_RANGE;
+        public IntValue BLADE_LUCK_PER_POINT;
+        public IntValue BLADE_LUCK_FLOOR_CAP;
+        public IntValue BLADE_TOUGHNESS_PER_HIT;
+        public IntValue BLADE_TOUGHNESS_BASE_CAP;
+        public IntValue BLADE_TOUGHNESS_CAP_PER_STEP;
+        public IntValue BLADE_TOUGHNESS_WINDOW_SECONDS;
         public IntValue SHIELD_THORNS_REFLECT;
         public IntValue SHIELD_ADAPT_PER_HIT;
         public IntValue SHIELD_ADAPT_CAP;
@@ -1199,14 +1199,14 @@ public final class MedalsConfig {
         public IntValue CRYSTAL_SOVEREIGN_CASTING;
         public IntValue CRYSTAL_SOVEREIGN_RADIUS;
         public IntValue CRYSTAL_SOVEREIGN_SOUL;
-        public IntValue WARRIOR_CHARGE_PER_SECOND;
-        public IntValue WARRIOR_CHARGE_MAX;
-        public DoubleValue WARRIOR_DASH_SPEED_THRESHOLD;
-        public DoubleValue WARRIOR_DASH_DISTANCE;
-        public IntValue WARRIOR_DASH_DAMAGE;
-        public IntValue WARRIOR_DASH_COOLDOWN;
-        public DoubleValue WARRIOR_DASH_HUNGER;
-        public IntValue WARRIOR_DASH_DOUBLE_TAP_TICKS;
+        public IntValue BLADE_CHARGE_PER_SECOND;
+        public IntValue BLADE_CHARGE_MAX;
+        public DoubleValue BLADE_DASH_SPEED_THRESHOLD;
+        public DoubleValue BLADE_DASH_DISTANCE;
+        public IntValue BLADE_DASH_DAMAGE;
+        public IntValue BLADE_DASH_COOLDOWN;
+        public DoubleValue BLADE_DASH_HUNGER;
+        public IntValue BLADE_DASH_DOUBLE_TAP_TICKS;
         public IntValue JOB_SLOT_SIZE;
         public IntValue TIME_CAPSULE_MAX_USES;
         public IntValue TIME_CAPSULE_SHORTEN_SECONDS;
@@ -1309,7 +1309,7 @@ public final class MedalsConfig {
         public IntValue CONTRACT_OVERLORD_SPEED;
         public IntValue CONTRACT_OVERLORD_LIMIT;
         public IntValue CONTRACT_REFRESH_INTERVAL;
-        // ---- 战士终极「我有一剑！」 ----
+        // ---- 刃终极「我有一剑！」 ----
         public IntValue SWORD_CRIT_CHANCE;
         public IntValue SWORD_CRIT_DAMAGE;
         public IntValue SWORD_ATTACK_DAMAGE;
@@ -1446,55 +1446,55 @@ public final class MedalsConfig {
         S30_COOLDOWN_SECONDS = b.comment("【疾风骤雨】冷却(秒)").defineInRange("s30_cooldown", 70, 0, 36000);
         b.pop();
 
-        // ---------------------------------- 战士 ----------------------------------
-        b.comment("战士勋章 Lv.1 及每级成长(整数百分比)").push("warrior");
-        WARRIOR_EXP_DAMAGE = pctDef(b, "exp_damage", 10, "近战伤害转化为熟练度的百分比");
-        WARRIOR_EXP_KILL_HP = pctDef(b, "exp_kill_hp", 10, "击杀时按目标最大生命值转化的百分比");
+        // ---------------------------------- 刃 ----------------------------------
+        b.comment("刃勋章 Lv.1 及每级成长(整数百分比)").push("blade");
+        BLADE_EXP_DAMAGE = pctDef(b, "exp_damage", 10, "近战伤害转化为熟练度的百分比");
+        BLADE_EXP_KILL_HP = pctDef(b, "exp_kill_hp", 10, "击杀时按目标最大生命值转化的百分比");
 
-        WARRIOR_L1_DAMAGE = pctDef(b, "lv1_damage", 5, "Lv.1 伤害加成");
-        WARRIOR_L1_ATTACK_SPEED = pctDef(b, "lv1_attack_speed", 5, "Lv.1 攻速加成");
-        WARRIOR_L1_CRIT_CHANCE = pctDef(b, "lv1_crit_chance", 5, "Lv.1 暴击率加成");
-        WARRIOR_L1_CRIT_DAMAGE = pctDef(b, "lv1_crit_damage", 5, "Lv.1 暴击伤害加成");
+        BLADE_L1_DAMAGE = pctDef(b, "lv1_damage", 5, "Lv.1 伤害加成");
+        BLADE_L1_ATTACK_SPEED = pctDef(b, "lv1_attack_speed", 5, "Lv.1 攻速加成");
+        BLADE_L1_CRIT_CHANCE = pctDef(b, "lv1_crit_chance", 5, "Lv.1 暴击率加成");
+        BLADE_L1_CRIT_DAMAGE = pctDef(b, "lv1_crit_damage", 5, "Lv.1 暴击伤害加成");
 
-        WARRIOR_PER_DAMAGE = pctDDef(b, "per_level_damage", 0.75D, "1~29 级每级伤害加成");
-        WARRIOR_PER_ATTACK_SPEED = pctDDef(b, "per_level_attack_speed", 0.5D, "1~29 级每级攻速加成");
-        WARRIOR_PER_CRIT_CHANCE = pctDDef(b, "per_level_crit_chance", 0.5D, "1~29 级每级暴击率加成");
-        WARRIOR_PER_CRIT_DAMAGE = pctDDef(b, "per_level_crit_damage", 1.0D, "1~29 级每级暴击伤害加成");
+        BLADE_PER_DAMAGE = pctDDef(b, "per_level_damage", 0.75D, "1~29 级每级伤害加成");
+        BLADE_PER_ATTACK_SPEED = pctDDef(b, "per_level_attack_speed", 0.5D, "1~29 级每级攻速加成");
+        BLADE_PER_CRIT_CHANCE = pctDDef(b, "per_level_crit_chance", 0.5D, "1~29 级每级暴击率加成");
+        BLADE_PER_CRIT_DAMAGE = pctDDef(b, "per_level_crit_damage", 1.0D, "1~29 级每级暴击伤害加成");
         b.pop();
 
-        b.push("warrior_skills");
-        W5_BLEED_CHANCE = pctDef(b, "w5_bleed_chance", 20, "【撕裂】施加流血概率");
-        W5_BLEED_SECONDS = b.comment("【撕裂】流血持续(秒)").defineInRange("w5_bleed_seconds", 5, 1, 3600);
-        W5_BLEED_ARMOR_PIERCE = b.comment("【撕裂】攻击流血目标时的护甲穿透").defineInRange("w5_armor_pierce", 4, 0, 1000);
-        W5_BLEED_CRIT_CHANCE = pctDef(b, "w5_crit_chance", 10, "【撕裂】攻击流血目标时的暴击率加成");
+        b.push("blade_skills");
+        B5_BLEED_CHANCE = pctDef(b, "b5_bleed_chance", 20, "【撕裂】施加流血概率");
+        B5_BLEED_SECONDS = b.comment("【撕裂】流血持续(秒)").defineInRange("b5_bleed_seconds", 5, 1, 3600);
+        B5_BLEED_ARMOR_PIERCE = b.comment("【撕裂】攻击流血目标时的护甲穿透").defineInRange("b5_armor_pierce", 4, 0, 1000);
+        B5_BLEED_CRIT_CHANCE = pctDef(b, "b5_crit_chance", 10, "【撕裂】攻击流血目标时的暴击率加成");
 
-        W10_HP_THRESHOLD = pctDef(b, "w10_hp_threshold", 60, "【愈战愈勇】触发血量阈值");
-        W10_ARMOR_PIERCE_PER_STEP = b.comment("【愈战愈勇】每损失 10% 最大生命值获得的护甲穿透")
-                .defineInRange("w10_armor_pierce_per_step", 2, 0, 1000);
-        W10_LIFESTEAL_PER_STEP = pctDef(b, "w10_lifesteal_per_step", 3, "【愈战愈勇】每损失 10% 最大生命值获得的生命偷取");
+        B10_HP_THRESHOLD = pctDef(b, "b10_hp_threshold", 60, "【愈战愈勇】触发血量阈值");
+        B10_ARMOR_PIERCE_PER_STEP = b.comment("【愈战愈勇】每损失 10% 最大生命值获得的护甲穿透")
+                .defineInRange("b10_armor_pierce_per_step", 2, 0, 1000);
+        B10_LIFESTEAL_PER_STEP = pctDef(b, "b10_lifesteal_per_step", 3, "【愈战愈勇】每损失 10% 最大生命值获得的生命偷取");
 
-        W15_DURATION_SECONDS = b.comment("【燃烧自我】持续(秒)").defineInRange("w15_duration", 12, 1, 3600);
-        W15_HP_COST_PER_SECOND = pctDef(b, "w15_hp_cost", 4, "【燃烧自我】每秒扣除最大生命值百分比(无视火焰免疫)");
-        W15_FIRE_DAMAGE = b.comment("【燃烧自我】附加火焰伤害").defineInRange("w15_fire_damage", 5, 0, 1000);
-        W15_TARGET_FIRE_SECONDS = b.comment("【燃烧自我】使目标着火时长(秒)").defineInRange("w15_target_fire_seconds", 10, 0, 3600);
-        W15_ATTACK_DAMAGE = pctDef(b, "w15_attack_damage", 10, "【燃烧自我】攻击伤害加成");
-        W15_MOVE_SPEED = pctDef(b, "w15_move_speed", 15, "【燃烧自我】移速加成");
+        B15_DURATION_SECONDS = b.comment("【燃烧自我】持续(秒)").defineInRange("b15_duration", 12, 1, 3600);
+        B15_HP_COST_PER_SECOND = pctDef(b, "b15_hp_cost", 4, "【燃烧自我】每秒扣除最大生命值百分比(无视火焰免疫)");
+        B15_FIRE_DAMAGE = b.comment("【燃烧自我】附加火焰伤害").defineInRange("b15_fire_damage", 5, 0, 1000);
+        B15_TARGET_FIRE_SECONDS = b.comment("【燃烧自我】使目标着火时长(秒)").defineInRange("b15_target_fire_seconds", 10, 0, 3600);
+        B15_ATTACK_DAMAGE = pctDef(b, "b15_attack_damage", 10, "【燃烧自我】攻击伤害加成");
+        B15_MOVE_SPEED = pctDef(b, "b15_move_speed", 15, "【燃烧自我】移速加成");
 
-        W20_COLD_DAMAGE = b.comment("【寒霜之刃】冰霜伤害").defineInRange("w20_cold_damage", 5, 0, 1000);
-        W20_FREEZE_CHANCE = pctDef(b, "w20_freeze_chance", 10, "【寒霜之刃】冰冻概率");
-        W20_FREEZE_SECONDS = b.comment("【寒霜之刃】冰冻持续(秒)").defineInRange("w20_freeze_seconds", 3, 1, 3600);
+        B20_COLD_DAMAGE = b.comment("【寒霜之刃】冰霜伤害").defineInRange("b20_cold_damage", 5, 0, 1000);
+        B20_FREEZE_CHANCE = pctDef(b, "b20_freeze_chance", 10, "【寒霜之刃】冰冻概率");
+        B20_FREEZE_SECONDS = b.comment("【寒霜之刃】冰冻持续(秒)").defineInRange("b20_freeze_seconds", 3, 1, 3600);
 
-        W25_DURATION_SECONDS = b.comment("【战迹血淋】持续(秒)").defineInRange("w25_duration", 10, 1, 3600);
-        W25_ATTACK_RANGE = b.comment("【战迹血淋】攻击距离加成(格)").defineInRange("w25_attack_range", 1, 0, 16);
-        W25_ATTACK_SPEED = pctDef(b, "w25_attack_speed", 50, "【战迹血淋】攻速加成");
-        W25_MOVE_SPEED = pctDef(b, "w25_move_speed", 10, "【战迹血淋】移速加成");
-        W25_LIFESTEAL = pctDef(b, "w25_lifesteal", 20, "【战迹血淋】生命偷取加成");
-        W25_COOLDOWN_SECONDS = b.comment("【战迹血淋】冷却(秒)").defineInRange("w25_cooldown", 70, 0, 36000);
+        B25_DURATION_SECONDS = b.comment("【战迹血淋】持续(秒)").defineInRange("b25_duration", 10, 1, 3600);
+        B25_ATTACK_RANGE = b.comment("【战迹血淋】攻击距离加成(格)").defineInRange("b25_attack_range", 1, 0, 16);
+        B25_ATTACK_SPEED = pctDef(b, "b25_attack_speed", 50, "【战迹血淋】攻速加成");
+        B25_MOVE_SPEED = pctDef(b, "b25_move_speed", 10, "【战迹血淋】移速加成");
+        B25_LIFESTEAL = pctDef(b, "b25_lifesteal", 20, "【战迹血淋】生命偷取加成");
+        B25_COOLDOWN_SECONDS = b.comment("【战迹血淋】冷却(秒)").defineInRange("b25_cooldown", 70, 0, 36000);
 
-        W30_LOST_HP_DAMAGE = pctDef(b, "w30_lost_hp_damage", 20, "【血意】暴击附带已损生命值伤害比例");
-        W30_LOST_HP_DAMAGE_LOW = pctDef(b, "w30_lost_hp_damage_low", 40, "【血意】低血量时的已损生命值伤害比例");
-        W30_LOW_HP_THRESHOLD = pctDef(b, "w30_low_hp_threshold", 50, "【血意】判定低血量的阈值");
-        W30_LOW_HP_CRIT_CHANCE = pctDef(b, "w30_low_hp_crit_chance", 10, "【血意】低血量时额外暴击率");
+        B30_LOST_HP_DAMAGE = pctDef(b, "b30_lost_hp_damage", 20, "【血意】暴击附带已损生命值伤害比例");
+        B30_LOST_HP_DAMAGE_LOW = pctDef(b, "b30_lost_hp_damage_low", 40, "【血意】低血量时的已损生命值伤害比例");
+        B30_LOW_HP_THRESHOLD = pctDef(b, "b30_low_hp_threshold", 50, "【血意】判定低血量的阈值");
+        B30_LOW_HP_CRIT_CHANCE = pctDef(b, "b30_low_hp_crit_chance", 10, "【血意】低血量时额外暴击率");
         b.pop();
 
         // ---------------------------------- 坦克 ----------------------------------
@@ -1652,7 +1652,7 @@ public final class MedalsConfig {
         CONTRACT_OVERLORD_LIMIT = b.comment("【王者之主】仆从召唤上限增加").defineInRange("overlord_limit", 100, 0, 10000);
         b.pop();
 
-        // ==================== 战士终极:「我有一剑！」 ====================
+        // ==================== 刃终极:「我有一剑！」 ====================
         // 这是一把剑,不是饰品 —— 常驻属性直接挂在物品的 MAINHAND 修饰符上,
         // 主动技是 Shift + 右键蓄力 10 秒后斩出的一道巨型剑气。
         b.comment("------------------------------ 我有一剑！ ------------------------------").push("i_have_a_sword");
@@ -1896,40 +1896,40 @@ public final class MedalsConfig {
                 .define("star_block_drops", false);
         b.pop();
 
-        // ---------- 「刃」类战士饰品(dv49) ----------
-        b.comment("「刃」类战士饰品 —— 只能放进「武器」槽(该槽位由战士勋章撑开)。").push("warrior_charms");
+        // ---------- 「刃」类刃饰品(dv49) ----------
+        b.comment("「刃」类刃饰品 —— 只能放进「武器」槽(该槽位由刃勋章撑开)。").push("blade_charms");
 
-        WARRIOR_SWEEP_RADIUS = b.comment("横扫之刃:横扫范围(格,原版约 3 格)",
+        BLADE_SWEEP_RADIUS = b.comment("横扫之刃:横扫范围(格,原版约 3 格)",
                 "佩戴后疾跑时同样能触发横扫。")
                 .defineInRange("sweep_radius", 4.5D, 1.0D, 12.0D);
 
-        WARRIOR_DUAL_DAMAGE = pctDef(b, "dual_damage", 10, "双持之刃:主副手都有武器时的伤害加成");
-        WARRIOR_DUAL_ATTACK_SPEED = pctDef(b, "dual_attack_speed", 10, "双持之刃:主副手都有武器时的攻速加成");
+        BLADE_DUAL_DAMAGE = pctDef(b, "dual_damage", 10, "双持之刃:主副手都有武器时的伤害加成");
+        BLADE_DUAL_ATTACK_SPEED = pctDef(b, "dual_attack_speed", 10, "双持之刃:主副手都有武器时的攻速加成");
 
-        WARRIOR_CRIT_CHANCE = pctDef(b, "crit_chance", 10, "暴击之刃:暴击率加成");
-        WARRIOR_CRIT_DAMAGE = pctDef(b, "crit_damage", 20, "暴击之刃:暴击伤害加成");
+        BLADE_CRIT_CHANCE = pctDef(b, "crit_chance", 10, "暴击之刃:暴击率加成");
+        BLADE_CRIT_DAMAGE = pctDef(b, "crit_damage", 20, "暴击之刃:暴击伤害加成");
 
-        WARRIOR_BACKSTAB_BONUS = pctDef(b, "backstab_bonus", 15, "背刺之刃:从背后攻击时的伤害加成");
+        BLADE_BACKSTAB_BONUS = pctDef(b, "backstab_bonus", 15, "背刺之刃:从背后攻击时的伤害加成");
 
-        WARRIOR_DISARM_CHANCE = pctDef(b, "disarm_chance", 15, "缴械之刃:触发缴械的概率");
-        WARRIOR_DISARM_SECONDS = b.comment("缴械之刃:缴械持续时间(秒),期间目标无法造成伤害")
+        BLADE_DISARM_CHANCE = pctDef(b, "disarm_chance", 15, "缴械之刃:触发缴械的概率");
+        BLADE_DISARM_SECONDS = b.comment("缴械之刃:缴械持续时间(秒),期间目标无法造成伤害")
                 .defineInRange("disarm_seconds", 2, 1, 30);
-        WARRIOR_DISARM_COOLDOWN = b.comment("缴械之刃:同一个目标两次被缴械之间的最短间隔(秒)")
+        BLADE_DISARM_COOLDOWN = b.comment("缴械之刃:同一个目标两次被缴械之间的最短间隔(秒)")
                 .defineInRange("disarm_cooldown", 8, 0, 300);
 
-        WARRIOR_LUCK_RANGE = pctDef(b, "luck_range", 20, "运气之刃:单次攻击的伤害浮动幅度(上下各该值)");
-        WARRIOR_LUCK_PER_POINT = pctDef(b, "luck_per_point", 4,
+        BLADE_LUCK_RANGE = pctDef(b, "luck_range", 20, "运气之刃:单次攻击的伤害浮动幅度(上下各该值)");
+        BLADE_LUCK_PER_POINT = pctDef(b, "luck_per_point", 4,
                 "运气之刃:每 1 点幸运值抬升「最低伤害」的比例");
-        WARRIOR_LUCK_FLOOR_CAP = pctDef(b, "luck_floor_cap", 20,
+        BLADE_LUCK_FLOOR_CAP = pctDef(b, "luck_floor_cap", 20,
                 "运气之刃:最低伤害最多能抬升多少(到达此值后伤害只会正收益)");
 
-        WARRIOR_TOUGHNESS_PER_HIT = pctDef(b, "toughness_per_hit", 5,
+        BLADE_TOUGHNESS_PER_HIT = pctDef(b, "toughness_per_hit", 5,
                 "坚韧之刃:同一个敌人每再命中你一次,该次伤害额外降低的比例");
-        WARRIOR_TOUGHNESS_BASE_CAP = pctDef(b, "toughness_base_cap", 15,
+        BLADE_TOUGHNESS_BASE_CAP = pctDef(b, "toughness_base_cap", 15,
                 "坚韧之刃:满血时的减伤上限");
-        WARRIOR_TOUGHNESS_CAP_PER_STEP = pctDef(b, "toughness_cap_per_step", 5,
+        BLADE_TOUGHNESS_CAP_PER_STEP = pctDef(b, "toughness_cap_per_step", 5,
                 "坚韧之刃:每损失 25% 生命,减伤上限额外提高的比例");
-        WARRIOR_TOUGHNESS_WINDOW_SECONDS = b.comment("坚韧之刃:多久没再挨同一个敌人的打就重新计数(秒)")
+        BLADE_TOUGHNESS_WINDOW_SECONDS = b.comment("坚韧之刃:多久没再挨同一个敌人的打就重新计数(秒)")
                 .defineInRange("toughness_window_seconds", 5, 1, 60);
 
         // ---------- 「盾」类坦克饰品 ----------
@@ -1969,19 +1969,19 @@ public final class MedalsConfig {
         b.pop();
 
 
-        WARRIOR_CHARGE_PER_SECOND = pctDef(b, "charge_per_second", 5, "蓄能之刃:每停手 1 秒积攒的伤害加成");
-        WARRIOR_CHARGE_MAX = pctDef(b, "charge_max", 25, "蓄能之刃:积攒上限");
+        BLADE_CHARGE_PER_SECOND = pctDef(b, "charge_per_second", 5, "蓄能之刃:每停手 1 秒积攒的伤害加成");
+        BLADE_CHARGE_MAX = pctDef(b, "charge_max", 25, "蓄能之刃:积攒上限");
 
-        WARRIOR_DASH_SPEED_THRESHOLD = b.comment("突进之刃:触发所需的武器攻速下限(武器本身的攻速,不含加成)")
+        BLADE_DASH_SPEED_THRESHOLD = b.comment("突进之刃:触发所需的武器攻速下限(武器本身的攻速,不含加成)")
                 .defineInRange("dash_speed_threshold", 1.6D, 0.1D, 10.0D);
-        WARRIOR_DASH_DISTANCE = b.comment("突进之刃:突进距离(格,撞墙即停)")
+        BLADE_DASH_DISTANCE = b.comment("突进之刃:突进距离(格,撞墙即停)")
                 .defineInRange("dash_distance", 4.0D, 1.0D, 16.0D);
-        WARRIOR_DASH_DAMAGE = pctDef(b, "dash_damage", 150, "突进之刃:路径上目标承受的武器伤害比例");
-        WARRIOR_DASH_COOLDOWN = b.comment("突进之刃:冷却(秒)")
+        BLADE_DASH_DAMAGE = pctDef(b, "dash_damage", 150, "突进之刃:路径上目标承受的武器伤害比例");
+        BLADE_DASH_COOLDOWN = b.comment("突进之刃:冷却(秒)")
                 .defineInRange("dash_cooldown", 5, 0, 300);
-        WARRIOR_DASH_HUNGER = b.comment("突进之刃:每次消耗的饥饿值(以消耗度计,4 点消耗度约等于 1 格饥饿)")
+        BLADE_DASH_HUNGER = b.comment("突进之刃:每次消耗的饥饿值(以消耗度计,4 点消耗度约等于 1 格饥饿)")
                 .defineInRange("dash_hunger", 0.5D, 0.0D, 20.0D);
-        WARRIOR_DASH_DOUBLE_TAP_TICKS = b.comment("突进之刃:判定「双击」的时间窗口(tick)")
+        BLADE_DASH_DOUBLE_TAP_TICKS = b.comment("突进之刃:判定「双击」的时间窗口(tick)")
                 .defineInRange("dash_double_tap_ticks", 15, 2, 100);
         b.pop();
 
@@ -2017,7 +2017,7 @@ public final class MedalsConfig {
 
         b.comment("职业专属饰品槽 —— 佩戴对应勋章才会解锁,摘下立刻收回。",
                 "槽位默认 0 格,靠勋章上的 SlotAttribute 修饰符临时加上去。").push("job_slots");
-        JOB_SLOT_SIZE = b.comment("每个职业专属槽位的数量(射手=箭 / 战士=武器 / 坦克=盾牌 / 法师=聚晶)")
+        JOB_SLOT_SIZE = b.comment("每个职业专属槽位的数量(射手=箭 / 刃=武器 / 坦克=盾牌 / 法师=聚晶)")
                 .defineInRange("size", 3, 1, 9);
         b.pop();
 
@@ -2140,13 +2140,13 @@ public final class MedalsConfig {
      *
      * <h2>为什么必须存在这一版</h2>
      * 勋章的「每级成长」有很多是 0.75% / 0.5% 这类小数
-     * （战士每级 +0.75% 伤害、坦克每级 +0.5% 减免…）。
+     * （刃每级 +0.75% 伤害、坦克每级 +0.5% 减免…）。
      * 早期这些项误用了 {@link #pctDef}（整数版）——
      * 「0.75」写不进 {@code defineInRange(int)}，于是默认值只能填 0，
      * <b>整个成长项被静默吞掉</b>：徽章升到满级，这几条加成都还停在 Lv.2 的值。
      *
      * <p>症状极具迷惑性 —— 日志里没有任何报错，只是"升级不加属性"。
-     * 实战反馈就是："满级战士徽章只有暴击伤害涨了，其它三项还是 +5%"。
+     * 实战反馈就是："满级刃徽章只有暴击伤害涨了，其它三项还是 +5%"。
      * （暴击伤害的成长恰好是整数 1%，是全组里唯一活下来的那个。）
      *
      * <p>凡是「每级成长」都应当用本方法，不要用 {@link #pctDef}。
@@ -2214,7 +2214,7 @@ public final class MedalsConfig {
         }
         DoubleValue[] targets = {
                 ARCHER_PER_ARROW_DMG, ARCHER_PER_DRAW_SPEED, ARCHER_PER_MOVE_SPEED, ARCHER_PER_DODGE,
-                WARRIOR_PER_DAMAGE, WARRIOR_PER_ATTACK_SPEED, WARRIOR_PER_CRIT_CHANCE, WARRIOR_PER_CRIT_DAMAGE,
+                BLADE_PER_DAMAGE, BLADE_PER_ATTACK_SPEED, BLADE_PER_CRIT_CHANCE, BLADE_PER_CRIT_DAMAGE,
                 TANK_PER_ARMOR, TANK_PER_MAX_HEALTH, TANK_PER_OVERHEAL, TANK_PER_DAMAGE_REDUCTION,
         };
         // 与定义处一一对应（顺序必须一致）
@@ -2303,6 +2303,6 @@ public final class MedalsConfig {
     }
 
     public static List<String> medalIds() {
-        return List.of("archer", "warrior", "tank", "mage");
+        return List.of("archer", "blade", "tank", "mage");
     }
 }

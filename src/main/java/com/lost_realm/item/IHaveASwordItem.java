@@ -35,7 +35,7 @@ import com.lost_realm.event.SlashHandler;
 import com.lost_realm.util.ModifierIds;
 
 /**
- * 战士终极：<b>「我有一剑！」</b>
+ * 刃终极：<b>「我有一剑！」</b>
  *
  * <h2>三部分</h2>
  * <ol>

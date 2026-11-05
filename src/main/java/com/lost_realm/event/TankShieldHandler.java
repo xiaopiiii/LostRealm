@@ -68,7 +68,7 @@ import top.theillusivec4.curios.api.CuriosApi;
  * </ul>
  *
  * <h2>为什么减伤挂在 LivingDamageEvent</h2>
- * 与战士的坚韧之刃同理：{@code LivingHurtEvent} 拿到的还是护甲结算<b>之前</b>的伤害，
+ * 与刃的坚韧之刃同理：{@code LivingHurtEvent} 拿到的还是护甲结算<b>之前</b>的伤害，
  * 在那里乘系数会被护甲再稀释一遍。{@code LivingDamageEvent} 是最终值，
  * 减多少就是多少。
  */
@@ -214,7 +214,7 @@ public final class TankShieldHandler {
     /**
      * 适应盾：同一种伤害类型连着挨，后面每一下都轻一点。
      *
-     * <p>与战士「坚韧之刃」的差别就在这个<b>计数键</b>：
+     * <p>与刃「坚韧之刃」的差别就在这个<b>计数键</b>：
      * 坚韧按「哪个敌人」记，被三个僵尸围时各自从零开始；
      * 适应按「伤害类型」记，三只僵尸都算"mob"这一种，所以叠得快得多。
      *

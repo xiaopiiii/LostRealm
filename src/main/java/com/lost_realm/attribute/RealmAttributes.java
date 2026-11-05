@@ -87,7 +87,7 @@ public final class RealmAttributes {
     /**
      * 经验获取倍率，1.0 = 原样。
      *
-     * <p>战士终极「我有一剑！」的 +1000% 用 {@code MULTIPLY_TOTAL +10.0} 表达，
+     * <p>刃终极「我有一剑！」的 +1000% 用 {@code MULTIPLY_TOTAL +10.0} 表达，
      * 即最终 11.0 倍。
      */
     public static final RegistryObject<Attribute> EXPERIENCE_GAINED =

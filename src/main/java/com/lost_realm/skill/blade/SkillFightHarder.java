@@ -1,4 +1,4 @@
-package com.lost_realm.skill.warrior;
+package com.lost_realm.skill.blade;
 
 import java.util.List;
 
@@ -23,11 +23,11 @@ import com.lost_realm.util.ModifierIds;
  */
 public class SkillFightHarder implements Skill {
 
-    public static final String ID = "w10_fight_harder";
+    public static final String ID = "b10_fight_harder";
 
     @Override
     public MedalType medal() {
-        return MedalType.WARRIOR;
+        return MedalType.BLADE;
     }
 
     @Override
@@ -42,15 +42,15 @@ public class SkillFightHarder implements Skill {
 
     @Override
     public Component displayName() {
-        return Component.translatable("skill.lost_realm.w10_fight_harder");
+        return Component.translatable("skill.lost_realm.b10_fight_harder");
     }
 
     @Override
     public List<Component> description() {
-        return List.of(Component.translatable("skill.lost_realm.w10_fight_harder.desc",
-                MedalsConfig.W10_HP_THRESHOLD.get(),
-                MedalsConfig.W10_ARMOR_PIERCE_PER_STEP.get(),
-                MedalsConfig.W10_LIFESTEAL_PER_STEP.get()));
+        return List.of(Component.translatable("skill.lost_realm.b10_fight_harder.desc",
+                MedalsConfig.B10_HP_THRESHOLD.get(),
+                MedalsConfig.B10_ARMOR_PIERCE_PER_STEP.get(),
+                MedalsConfig.B10_LIFESTEAL_PER_STEP.get()));
     }
 
     @Override
@@ -58,12 +58,12 @@ public class SkillFightHarder implements Skill {
         double maxHp = player.getMaxHealth();
         double hp = player.getHealth();
         double ratio = maxHp <= 0 ? 1.0D : hp / maxHp;
-        double threshold = MedalsConfig.pct(MedalsConfig.W10_HP_THRESHOLD);
+        double threshold = MedalsConfig.pct(MedalsConfig.B10_HP_THRESHOLD);
 
         if (ratio >= threshold) {
             // 未触发:清除
-            AttributeGuard.remove(player, RealmAttributes.armorPierce(), ModifierIds.WARRIOR_W10_ARMOR_PIERCE);
-            AttributeGuard.remove(player, RealmAttributes.lifeSteal(), ModifierIds.WARRIOR_W10_LIFESTEAL);
+            AttributeGuard.remove(player, RealmAttributes.armorPierce(), ModifierIds.BLADE_W10_ARMOR_PIERCE);
+            AttributeGuard.remove(player, RealmAttributes.lifeSteal(), ModifierIds.BLADE_W10_LIFESTEAL);
             return;
         }
 
@@ -74,15 +74,15 @@ public class SkillFightHarder implements Skill {
             return;
         }
 
-        double pierce = steps * MedalsConfig.W10_ARMOR_PIERCE_PER_STEP.get();
-        double lifesteal = steps * MedalsConfig.pct(MedalsConfig.W10_LIFESTEAL_PER_STEP);
+        double pierce = steps * MedalsConfig.B10_ARMOR_PIERCE_PER_STEP.get();
+        double lifesteal = steps * MedalsConfig.pct(MedalsConfig.B10_LIFESTEAL_PER_STEP);
 
         AttributeGuard.apply(player, RealmAttributes.armorPierce(),
-                ModifierIds.WARRIOR_W10_ARMOR_PIERCE, "warrior_w10_armor_pierce",
+                ModifierIds.BLADE_W10_ARMOR_PIERCE, "blade_w10_armor_pierce",
                 pierce, AttributeModifier.Operation.ADDITION);
 
         AttributeGuard.apply(player, RealmAttributes.lifeSteal(),
-                ModifierIds.WARRIOR_W10_LIFESTEAL, "warrior_w10_lifesteal",
+                ModifierIds.BLADE_W10_LIFESTEAL, "blade_w10_lifesteal",
                 lifesteal, AttributeModifier.Operation.ADDITION);
     }
 }

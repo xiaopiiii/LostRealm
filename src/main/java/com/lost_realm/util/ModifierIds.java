@@ -35,26 +35,26 @@ public final class ModifierIds {
     public static final UUID ARCHER_S30_ARROW_DAMAGE    = id("archer_s30_arrow_damage");
     public static final UUID ARCHER_S15_CRIT_DAMAGE     = id("archer_s15_crit_damage");
 
-    // ============================ 战士勋章 基础成长 ============================
-    public static final UUID WARRIOR_DAMAGE         = id("warrior_damage");
-    public static final UUID WARRIOR_ATTACK_SPEED   = id("warrior_attack_speed");
-    public static final UUID WARRIOR_CRIT_CHANCE    = id("warrior_crit_chance");
-    public static final UUID WARRIOR_CRIT_DAMAGE    = id("warrior_crit_damage");
+    // ============================ 刃勋章 基础成长 ============================
+    public static final UUID BLADE_DAMAGE         = id("blade_damage");
+    public static final UUID BLADE_ATTACK_SPEED   = id("blade_attack_speed");
+    public static final UUID BLADE_CRIT_CHANCE    = id("blade_crit_chance");
+    public static final UUID BLADE_CRIT_DAMAGE    = id("blade_crit_damage");
 
-    // ============================ 战士勋章 节点技能 ============================
-    public static final UUID WARRIOR_W5_BLEED_ARMOR_PIERCE = id("warrior_w5_armor_pierce");
-    public static final UUID WARRIOR_W5_BLEED_CRIT_CHANCE  = id("warrior_w5_crit_chance");
-    public static final UUID WARRIOR_W10_ARMOR_PIERCE      = id("warrior_w10_armor_pierce");
-    public static final UUID WARRIOR_W10_LIFESTEAL         = id("warrior_w10_lifesteal");
-    public static final UUID WARRIOR_W15_FIRE_DAMAGE       = id("warrior_w15_fire_damage");
-    public static final UUID WARRIOR_W15_ATTACK_DAMAGE     = id("warrior_w15_attack_damage");
-    public static final UUID WARRIOR_W15_MOVE_SPEED        = id("warrior_w15_move_speed");
-    public static final UUID WARRIOR_W20_COLD_DAMAGE       = id("warrior_w20_cold_damage");
-    public static final UUID WARRIOR_W25_ATTACK_RANGE      = id("warrior_w25_attack_range");
-    public static final UUID WARRIOR_W25_ATTACK_SPEED      = id("warrior_w25_attack_speed");
-    public static final UUID WARRIOR_W25_MOVE_SPEED        = id("warrior_w25_move_speed");
-    public static final UUID WARRIOR_W25_LIFESTEAL         = id("warrior_w25_lifesteal");
-    public static final UUID WARRIOR_W30_CRIT_CHANCE       = id("warrior_w30_crit_chance");
+    // ============================ 刃勋章 节点技能 ============================
+    public static final UUID BLADE_W5_BLEED_ARMOR_PIERCE = id("blade_w5_armor_pierce");
+    public static final UUID BLADE_W5_BLEED_CRIT_CHANCE  = id("blade_w5_crit_chance");
+    public static final UUID BLADE_W10_ARMOR_PIERCE      = id("blade_w10_armor_pierce");
+    public static final UUID BLADE_W10_LIFESTEAL         = id("blade_w10_lifesteal");
+    public static final UUID BLADE_W15_FIRE_DAMAGE       = id("blade_w15_fire_damage");
+    public static final UUID BLADE_W15_ATTACK_DAMAGE     = id("blade_w15_attack_damage");
+    public static final UUID BLADE_W15_MOVE_SPEED        = id("blade_w15_move_speed");
+    public static final UUID BLADE_W20_COLD_DAMAGE       = id("blade_w20_cold_damage");
+    public static final UUID BLADE_W25_ATTACK_RANGE      = id("blade_w25_attack_range");
+    public static final UUID BLADE_W25_ATTACK_SPEED      = id("blade_w25_attack_speed");
+    public static final UUID BLADE_W25_MOVE_SPEED        = id("blade_w25_move_speed");
+    public static final UUID BLADE_W25_LIFESTEAL         = id("blade_w25_lifesteal");
+    public static final UUID BLADE_W30_CRIT_CHANCE       = id("blade_w30_crit_chance");
 
     // ============================ 「晶石」类法师饰品 ============================
     public static final UUID MAGE_CRYSTAL_CIRCLE_SPEED   = id("mage_crystal_circle_speed");
@@ -80,11 +80,11 @@ public final class ModifierIds {
     public static final UUID TANK_SHIELD_ETERNAL_BULWARK_ARMOR = id("tank_shield_eternal_bulwark_armor");
     public static final UUID TANK_SHIELD_ETERNAL_BULWARK_DR    = id("tank_shield_eternal_bulwark_dr");
 
-    // ============================ 「刃」类战士饰品(dv49) ============================
-    public static final UUID WARRIOR_CHARM_DUAL_DAMAGE       = id("warrior_charm_dual_damage");
-    public static final UUID WARRIOR_CHARM_DUAL_ATTACK_SPEED = id("warrior_charm_dual_attack_speed");
-    public static final UUID WARRIOR_CHARM_CRIT_CHANCE       = id("warrior_charm_crit_chance");
-    public static final UUID WARRIOR_CHARM_CRIT_DAMAGE       = id("warrior_charm_crit_damage");
+    // ============================ 「刃」类刃饰品(dv49) ============================
+    public static final UUID BLADE_CHARM_DUAL_DAMAGE       = id("blade_charm_dual_damage");
+    public static final UUID BLADE_CHARM_DUAL_ATTACK_SPEED = id("blade_charm_dual_attack_speed");
+    public static final UUID BLADE_CHARM_CRIT_CHANCE       = id("blade_charm_crit_chance");
+    public static final UUID BLADE_CHARM_CRIT_DAMAGE       = id("blade_charm_crit_damage");
 
     // ============================ 坦克勋章 基础成长 ============================
     public static final UUID TANK_ARMOR             = id("tank_armor");
@@ -185,7 +185,7 @@ public final class ModifierIds {
     /** 裂变之契:复制出来的仆从「血量只有一半」的负向修饰符 */
     public static final UUID SUMMONER_C_FISSION_HP       = id("summoner_c_fission_hp");
 
-    // ==================== 战士终极「我有一剑！」====================
+    // ==================== 刃终极「我有一剑！」====================
     // 这四条挂在**物品自己**的默认属性修饰符里(MAINHAND),随装备自动生效/失效,
     // 因此不需要像徽章属性那样由技能每 tick 刷新 —— 但 UUID 仍必须固定。
     /** 暴击率 +100% */

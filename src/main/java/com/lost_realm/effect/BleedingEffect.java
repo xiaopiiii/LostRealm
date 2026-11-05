@@ -16,7 +16,7 @@ import net.minecraft.world.level.Level;
 import com.lost_realm.Medals;
 
 /**
- * <b>流血</b> —— 撕裂（战士 Lv.10）施加的持续伤害。
+ * <b>流血</b> —— 撕裂（刃 Lv.10）施加的持续伤害。
  *
  * <h2>为什么自建</h2>
  * beta29 及以前直接挂的是 Apothic Attributes 的 {@code attributeslib:bleeding}。

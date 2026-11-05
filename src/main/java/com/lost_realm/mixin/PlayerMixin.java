@@ -54,7 +54,7 @@ public abstract class PlayerMixin {
     @Inject(method = "attack(Lnet/minecraft/world/entity/Entity;)V", at = @At("RETURN"))
     private void medals$afterAttack(Entity target, CallbackInfo ci) {
         Player self = (Player) (Object) this;
-        com.lost_realm.event.WarriorSweep.onAttackFinished(self, target, this.medals$sprintingAtAttack);
+        com.lost_realm.event.BladeSweep.onAttackFinished(self, target, this.medals$sprintingAtAttack);
     }
 
     // ==================== D10 满腹进食 ====================

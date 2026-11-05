@@ -105,7 +105,7 @@ public final class AttributeGuard {
      *
      * <p>勋章卸下时 {@link #clearOwned} 是按「{@code lost_realm:} 前缀」清整条属性的，
      * 而难度的攻/甲修饰符正好也是同前缀、同属性（{@code ATTACK_DAMAGE} / {@code ARMOR}）。
-     * 不加这层排除的话，卸一枚战士勋章会把「深渊」的 -15% 攻击一起删掉 ——
+     * 不加这层排除的话，卸一枚刃勋章会把「深渊」的 -15% 攻击一起删掉 ——
      * 虽然 40 tick 后会被 {@code DifficultyManager#refreshPlayer} 补回来，
      * 但那两秒里玩家是无惩罚状态。
      */

@@ -328,31 +328,31 @@ public final class ConfigCatalog {
                 MedalsConfig.S30_COOLDOWN_SECONDS, 0, 36000, 70, S);
 
         // ============================================================
-        // 原作数值 · 战士
+        // 原作数值 · 刃
         // ============================================================
 
-        step("w5_bleed_seconds", ConfigCategory.WARRIOR,
-                MedalsConfig.W5_BLEED_SECONDS, 1, 3600, 5, S);
-        step("w5_armor_pierce", ConfigCategory.WARRIOR,
-                MedalsConfig.W5_BLEED_ARMOR_PIERCE, 0, 1000, 4, S);
-        step("w10_armor_pierce_per_step", ConfigCategory.WARRIOR,
-                MedalsConfig.W10_ARMOR_PIERCE_PER_STEP, 0, 1000, 2, S);
-        step("w15_duration", ConfigCategory.WARRIOR,
-                MedalsConfig.W15_DURATION_SECONDS, 1, 3600, 12, S);
-        step("w15_fire_damage", ConfigCategory.WARRIOR,
-                MedalsConfig.W15_FIRE_DAMAGE, 0, 1000, 5, S);
-        step("w15_target_fire_seconds", ConfigCategory.WARRIOR,
-                MedalsConfig.W15_TARGET_FIRE_SECONDS, 0, 3600, 10, S);
-        step("w20_cold_damage", ConfigCategory.WARRIOR,
-                MedalsConfig.W20_COLD_DAMAGE, 0, 1000, 5, S);
-        step("w20_freeze_seconds", ConfigCategory.WARRIOR,
-                MedalsConfig.W20_FREEZE_SECONDS, 1, 3600, 3, S);
-        step("w25_duration", ConfigCategory.WARRIOR,
-                MedalsConfig.W25_DURATION_SECONDS, 1, 3600, 10, S);
-        step("w25_attack_range", ConfigCategory.WARRIOR,
-                MedalsConfig.W25_ATTACK_RANGE, 0, 16, 1, S);
-        step("w25_cooldown", ConfigCategory.WARRIOR,
-                MedalsConfig.W25_COOLDOWN_SECONDS, 0, 36000, 70, S);
+        step("b5_bleed_seconds", ConfigCategory.BLADE,
+                MedalsConfig.B5_BLEED_SECONDS, 1, 3600, 5, S);
+        step("b5_armor_pierce", ConfigCategory.BLADE,
+                MedalsConfig.B5_BLEED_ARMOR_PIERCE, 0, 1000, 4, S);
+        step("b10_armor_pierce_per_step", ConfigCategory.BLADE,
+                MedalsConfig.B10_ARMOR_PIERCE_PER_STEP, 0, 1000, 2, S);
+        step("b15_duration", ConfigCategory.BLADE,
+                MedalsConfig.B15_DURATION_SECONDS, 1, 3600, 12, S);
+        step("b15_fire_damage", ConfigCategory.BLADE,
+                MedalsConfig.B15_FIRE_DAMAGE, 0, 1000, 5, S);
+        step("b15_target_fire_seconds", ConfigCategory.BLADE,
+                MedalsConfig.B15_TARGET_FIRE_SECONDS, 0, 3600, 10, S);
+        step("b20_cold_damage", ConfigCategory.BLADE,
+                MedalsConfig.B20_COLD_DAMAGE, 0, 1000, 5, S);
+        step("b20_freeze_seconds", ConfigCategory.BLADE,
+                MedalsConfig.B20_FREEZE_SECONDS, 1, 3600, 3, S);
+        step("b25_duration", ConfigCategory.BLADE,
+                MedalsConfig.B25_DURATION_SECONDS, 1, 3600, 10, S);
+        step("b25_attack_range", ConfigCategory.BLADE,
+                MedalsConfig.B25_ATTACK_RANGE, 0, 16, 1, S);
+        step("b25_cooldown", ConfigCategory.BLADE,
+                MedalsConfig.B25_COOLDOWN_SECONDS, 0, 36000, 70, S);
 
         // ============================================================
         // 原作数值 · 坦克
@@ -538,7 +538,7 @@ public final class ConfigCatalog {
                 MedalsConfig.CONTRACT_OVERLORD_LIMIT, 0, 10000, 100, S);
 
         // ============================================================
-        // 战士终极「我有一剑！」
+        // 刃终极「我有一剑！」
         // ------------------------------------------------------------
         // 前四项是常驻属性(百分比),后九项是那道剑气本身的形状与威力。
         // reach / width / height 用 stepD —— 它们是格数,允许小数。
@@ -644,56 +644,56 @@ public final class ConfigCatalog {
         toggle("arrow_star_block_drops", ConfigCategory.ARROWS,
                 MedalsConfig.ARROW_STAR_BLOCK_DROPS, false, S);
 
-        // ---------- 「刃」类战士饰品(dv49) ----------
-        stepD("warrior_sweep_radius", ConfigCategory.WARRIOR_CHARMS,
-                MedalsConfig.WARRIOR_SWEEP_RADIUS, 1.0, 12.0, 4.5, S);
-        step("warrior_dual_damage", ConfigCategory.WARRIOR_CHARMS,
-                MedalsConfig.WARRIOR_DUAL_DAMAGE, 0, 500, 10, S);
-        step("warrior_dual_attack_speed", ConfigCategory.WARRIOR_CHARMS,
-                MedalsConfig.WARRIOR_DUAL_ATTACK_SPEED, 0, 500, 10, S);
-        step("warrior_crit_chance", ConfigCategory.WARRIOR_CHARMS,
-                MedalsConfig.WARRIOR_CRIT_CHANCE, 0, 100, 10, S);
-        step("warrior_crit_damage", ConfigCategory.WARRIOR_CHARMS,
-                MedalsConfig.WARRIOR_CRIT_DAMAGE, 0, 1000, 20, S);
-        step("warrior_backstab_bonus", ConfigCategory.WARRIOR_CHARMS,
-                MedalsConfig.WARRIOR_BACKSTAB_BONUS, 0, 1000, 15, S);
-        step("warrior_disarm_chance", ConfigCategory.WARRIOR_CHARMS,
-                MedalsConfig.WARRIOR_DISARM_CHANCE, 1, 100, 15, S);
-        step("warrior_disarm_seconds", ConfigCategory.WARRIOR_CHARMS,
-                MedalsConfig.WARRIOR_DISARM_SECONDS, 1, 30, 2, S);
-        step("warrior_disarm_cooldown", ConfigCategory.WARRIOR_CHARMS,
-                MedalsConfig.WARRIOR_DISARM_COOLDOWN, 0, 300, 8, S);
-        step("warrior_luck_range", ConfigCategory.WARRIOR_CHARMS,
-                MedalsConfig.WARRIOR_LUCK_RANGE, 0, 500, 20, S);
-        step("warrior_luck_per_point", ConfigCategory.WARRIOR_CHARMS,
-                MedalsConfig.WARRIOR_LUCK_PER_POINT, 0, 100, 4, S);
-        step("warrior_luck_floor_cap", ConfigCategory.WARRIOR_CHARMS,
-                MedalsConfig.WARRIOR_LUCK_FLOOR_CAP, 0, 500, 20, S);
-        step("warrior_charge_per_second", ConfigCategory.WARRIOR_CHARMS,
-                MedalsConfig.WARRIOR_CHARGE_PER_SECOND, 1, 100, 5, S);
-        step("warrior_charge_max", ConfigCategory.WARRIOR_CHARMS,
-                MedalsConfig.WARRIOR_CHARGE_MAX, 1, 1000, 25, S);
-        stepD("warrior_dash_speed_threshold", ConfigCategory.WARRIOR_CHARMS,
-                MedalsConfig.WARRIOR_DASH_SPEED_THRESHOLD, 0.1, 10.0, 1.6, S);
-        stepD("warrior_dash_distance", ConfigCategory.WARRIOR_CHARMS,
-                MedalsConfig.WARRIOR_DASH_DISTANCE, 1.0, 16.0, 4.0, S);
-        step("warrior_dash_damage", ConfigCategory.WARRIOR_CHARMS,
-                MedalsConfig.WARRIOR_DASH_DAMAGE, 0, 2000, 150, S);
-        step("warrior_dash_cooldown", ConfigCategory.WARRIOR_CHARMS,
-                MedalsConfig.WARRIOR_DASH_COOLDOWN, 0, 300, 5, S);
-        stepD("warrior_dash_hunger", ConfigCategory.WARRIOR_CHARMS,
-                MedalsConfig.WARRIOR_DASH_HUNGER, 0.0, 20.0, 0.5, S);
-        step("warrior_dash_double_tap_ticks", ConfigCategory.WARRIOR_CHARMS,
-                MedalsConfig.WARRIOR_DASH_DOUBLE_TAP_TICKS, 2, 100, 15, S);
+        // ---------- 「刃」类刃饰品(dv49) ----------
+        stepD("blade_sweep_radius", ConfigCategory.BLADE_CHARMS,
+                MedalsConfig.BLADE_SWEEP_RADIUS, 1.0, 12.0, 4.5, S);
+        step("blade_dual_damage", ConfigCategory.BLADE_CHARMS,
+                MedalsConfig.BLADE_DUAL_DAMAGE, 0, 500, 10, S);
+        step("blade_dual_attack_speed", ConfigCategory.BLADE_CHARMS,
+                MedalsConfig.BLADE_DUAL_ATTACK_SPEED, 0, 500, 10, S);
+        step("blade_crit_chance", ConfigCategory.BLADE_CHARMS,
+                MedalsConfig.BLADE_CRIT_CHANCE, 0, 100, 10, S);
+        step("blade_crit_damage", ConfigCategory.BLADE_CHARMS,
+                MedalsConfig.BLADE_CRIT_DAMAGE, 0, 1000, 20, S);
+        step("blade_backstab_bonus", ConfigCategory.BLADE_CHARMS,
+                MedalsConfig.BLADE_BACKSTAB_BONUS, 0, 1000, 15, S);
+        step("blade_disarm_chance", ConfigCategory.BLADE_CHARMS,
+                MedalsConfig.BLADE_DISARM_CHANCE, 1, 100, 15, S);
+        step("blade_disarm_seconds", ConfigCategory.BLADE_CHARMS,
+                MedalsConfig.BLADE_DISARM_SECONDS, 1, 30, 2, S);
+        step("blade_disarm_cooldown", ConfigCategory.BLADE_CHARMS,
+                MedalsConfig.BLADE_DISARM_COOLDOWN, 0, 300, 8, S);
+        step("blade_luck_range", ConfigCategory.BLADE_CHARMS,
+                MedalsConfig.BLADE_LUCK_RANGE, 0, 500, 20, S);
+        step("blade_luck_per_point", ConfigCategory.BLADE_CHARMS,
+                MedalsConfig.BLADE_LUCK_PER_POINT, 0, 100, 4, S);
+        step("blade_luck_floor_cap", ConfigCategory.BLADE_CHARMS,
+                MedalsConfig.BLADE_LUCK_FLOOR_CAP, 0, 500, 20, S);
+        step("blade_charge_per_second", ConfigCategory.BLADE_CHARMS,
+                MedalsConfig.BLADE_CHARGE_PER_SECOND, 1, 100, 5, S);
+        step("blade_charge_max", ConfigCategory.BLADE_CHARMS,
+                MedalsConfig.BLADE_CHARGE_MAX, 1, 1000, 25, S);
+        stepD("blade_dash_speed_threshold", ConfigCategory.BLADE_CHARMS,
+                MedalsConfig.BLADE_DASH_SPEED_THRESHOLD, 0.1, 10.0, 1.6, S);
+        stepD("blade_dash_distance", ConfigCategory.BLADE_CHARMS,
+                MedalsConfig.BLADE_DASH_DISTANCE, 1.0, 16.0, 4.0, S);
+        step("blade_dash_damage", ConfigCategory.BLADE_CHARMS,
+                MedalsConfig.BLADE_DASH_DAMAGE, 0, 2000, 150, S);
+        step("blade_dash_cooldown", ConfigCategory.BLADE_CHARMS,
+                MedalsConfig.BLADE_DASH_COOLDOWN, 0, 300, 5, S);
+        stepD("blade_dash_hunger", ConfigCategory.BLADE_CHARMS,
+                MedalsConfig.BLADE_DASH_HUNGER, 0.0, 20.0, 0.5, S);
+        step("blade_dash_double_tap_ticks", ConfigCategory.BLADE_CHARMS,
+                MedalsConfig.BLADE_DASH_DOUBLE_TAP_TICKS, 2, 100, 15, S);
 
-        step("warrior_toughness_per_hit", ConfigCategory.WARRIOR_CHARMS,
-                MedalsConfig.WARRIOR_TOUGHNESS_PER_HIT, 0, 100, 5, S);
-        step("warrior_toughness_base_cap", ConfigCategory.WARRIOR_CHARMS,
-                MedalsConfig.WARRIOR_TOUGHNESS_BASE_CAP, 0, 100, 15, S);
-        step("warrior_toughness_cap_per_step", ConfigCategory.WARRIOR_CHARMS,
-                MedalsConfig.WARRIOR_TOUGHNESS_CAP_PER_STEP, 0, 100, 5, S);
-        step("warrior_toughness_window_seconds", ConfigCategory.WARRIOR_CHARMS,
-                MedalsConfig.WARRIOR_TOUGHNESS_WINDOW_SECONDS, 1, 60, 5, S);
+        step("blade_toughness_per_hit", ConfigCategory.BLADE_CHARMS,
+                MedalsConfig.BLADE_TOUGHNESS_PER_HIT, 0, 100, 5, S);
+        step("blade_toughness_base_cap", ConfigCategory.BLADE_CHARMS,
+                MedalsConfig.BLADE_TOUGHNESS_BASE_CAP, 0, 100, 15, S);
+        step("blade_toughness_cap_per_step", ConfigCategory.BLADE_CHARMS,
+                MedalsConfig.BLADE_TOUGHNESS_CAP_PER_STEP, 0, 100, 5, S);
+        step("blade_toughness_window_seconds", ConfigCategory.BLADE_CHARMS,
+                MedalsConfig.BLADE_TOUGHNESS_WINDOW_SECONDS, 1, 60, 5, S);
 
         // ---------- 「盾」类坦克饰品 ----------
         step("thorns_reflect", ConfigCategory.SHIELDS, MedalsConfig.SHIELD_THORNS_REFLECT, 0, 500, 20, S);
@@ -785,7 +785,7 @@ public final class ConfigCatalog {
         // 补齐:此前只在配置文件里存在、界面上看不到的选项(beta39)
         // ------------------------------------------------------------
         // 共 97 项,全部是代码里确实在读的数值(没有死配置)。
-        // 分类沿用字段前缀:ARCHER_/S* → 射手,W*/WARRIOR_ → 战士,
+        // 分类沿用字段前缀:ARCHER_/S* → 射手,W*/BLADE_ → 刃,
         // T*/TANK_ → 坦克,M*/MAGE_ → 法师,VX_ → 熟练度与经验。
         // ============================================================
 
@@ -812,32 +812,32 @@ public final class ConfigCatalog {
         step("s30_move_speed_mounted", ConfigCategory.ARCHER, MedalsConfig.S30_MOVE_SPEED_MOUNTED, 0, 1000, 30, S);
         step("s5_immune_chance", ConfigCategory.ARCHER, MedalsConfig.S5_DODGE_IMMUNE_CHANCE, 0, 1000, 60, S);
 
-        // ---- 原作数值 · 战士(补齐) ----
-        step("w10_hp_threshold", ConfigCategory.WARRIOR, MedalsConfig.W10_HP_THRESHOLD, 0, 1000, 60, S);
-        step("w10_lifesteal_per_step", ConfigCategory.WARRIOR, MedalsConfig.W10_LIFESTEAL_PER_STEP, 0, 1000, 3, S);
-        step("w15_attack_damage", ConfigCategory.WARRIOR, MedalsConfig.W15_ATTACK_DAMAGE, 0, 1000, 10, S);
-        step("w15_hp_cost", ConfigCategory.WARRIOR, MedalsConfig.W15_HP_COST_PER_SECOND, 0, 1000, 4, S);
-        step("w15_move_speed", ConfigCategory.WARRIOR, MedalsConfig.W15_MOVE_SPEED, 0, 1000, 15, S);
-        step("w20_freeze_chance", ConfigCategory.WARRIOR, MedalsConfig.W20_FREEZE_CHANCE, 0, 1000, 10, S);
-        step("w25_attack_speed", ConfigCategory.WARRIOR, MedalsConfig.W25_ATTACK_SPEED, 0, 1000, 50, S);
-        step("w25_lifesteal", ConfigCategory.WARRIOR, MedalsConfig.W25_LIFESTEAL, 0, 1000, 20, S);
-        step("w25_move_speed", ConfigCategory.WARRIOR, MedalsConfig.W25_MOVE_SPEED, 0, 1000, 10, S);
-        step("w30_lost_hp_damage", ConfigCategory.WARRIOR, MedalsConfig.W30_LOST_HP_DAMAGE, 0, 1000, 20, S);
-        step("w30_lost_hp_damage_low", ConfigCategory.WARRIOR, MedalsConfig.W30_LOST_HP_DAMAGE_LOW, 0, 1000, 40, S);
-        step("w30_low_hp_crit_chance", ConfigCategory.WARRIOR, MedalsConfig.W30_LOW_HP_CRIT_CHANCE, 0, 1000, 10, S);
-        step("w30_low_hp_threshold", ConfigCategory.WARRIOR, MedalsConfig.W30_LOW_HP_THRESHOLD, 0, 1000, 50, S);
-        step("w5_bleed_chance", ConfigCategory.WARRIOR, MedalsConfig.W5_BLEED_CHANCE, 0, 1000, 20, S);
-        step("w5_crit_chance", ConfigCategory.WARRIOR, MedalsConfig.W5_BLEED_CRIT_CHANCE, 0, 1000, 10, S);
-        step("warrior_exp_damage", ConfigCategory.WARRIOR, MedalsConfig.WARRIOR_EXP_DAMAGE, 0, 1000, 10, S);
-        step("warrior_exp_kill_hp", ConfigCategory.WARRIOR, MedalsConfig.WARRIOR_EXP_KILL_HP, 0, 1000, 10, S);
-        step("warrior_lv1_attack_speed", ConfigCategory.WARRIOR, MedalsConfig.WARRIOR_L1_ATTACK_SPEED, 0, 1000, 5, S);
-        step("warrior_lv1_crit_chance", ConfigCategory.WARRIOR, MedalsConfig.WARRIOR_L1_CRIT_CHANCE, 0, 1000, 5, S);
-        step("warrior_lv1_crit_damage", ConfigCategory.WARRIOR, MedalsConfig.WARRIOR_L1_CRIT_DAMAGE, 0, 1000, 5, S);
-        step("warrior_lv1_damage", ConfigCategory.WARRIOR, MedalsConfig.WARRIOR_L1_DAMAGE, 0, 1000, 5, S);
-        stepD("warrior_per_level_attack_speed", ConfigCategory.WARRIOR, MedalsConfig.WARRIOR_PER_ATTACK_SPEED, 0, 1000, 0.5, S);
-        stepD("warrior_per_level_crit_chance", ConfigCategory.WARRIOR, MedalsConfig.WARRIOR_PER_CRIT_CHANCE, 0, 1000, 0.5, S);
-        stepD("warrior_per_level_crit_damage", ConfigCategory.WARRIOR, MedalsConfig.WARRIOR_PER_CRIT_DAMAGE, 0, 1000, 1.0, S);
-        stepD("warrior_per_level_damage", ConfigCategory.WARRIOR, MedalsConfig.WARRIOR_PER_DAMAGE, 0, 1000, 0.75, S);
+        // ---- 原作数值 · 刃(补齐) ----
+        step("b10_hp_threshold", ConfigCategory.BLADE, MedalsConfig.B10_HP_THRESHOLD, 0, 1000, 60, S);
+        step("b10_lifesteal_per_step", ConfigCategory.BLADE, MedalsConfig.B10_LIFESTEAL_PER_STEP, 0, 1000, 3, S);
+        step("b15_attack_damage", ConfigCategory.BLADE, MedalsConfig.B15_ATTACK_DAMAGE, 0, 1000, 10, S);
+        step("b15_hp_cost", ConfigCategory.BLADE, MedalsConfig.B15_HP_COST_PER_SECOND, 0, 1000, 4, S);
+        step("b15_move_speed", ConfigCategory.BLADE, MedalsConfig.B15_MOVE_SPEED, 0, 1000, 15, S);
+        step("b20_freeze_chance", ConfigCategory.BLADE, MedalsConfig.B20_FREEZE_CHANCE, 0, 1000, 10, S);
+        step("b25_attack_speed", ConfigCategory.BLADE, MedalsConfig.B25_ATTACK_SPEED, 0, 1000, 50, S);
+        step("b25_lifesteal", ConfigCategory.BLADE, MedalsConfig.B25_LIFESTEAL, 0, 1000, 20, S);
+        step("b25_move_speed", ConfigCategory.BLADE, MedalsConfig.B25_MOVE_SPEED, 0, 1000, 10, S);
+        step("b30_lost_hp_damage", ConfigCategory.BLADE, MedalsConfig.B30_LOST_HP_DAMAGE, 0, 1000, 20, S);
+        step("b30_lost_hp_damage_low", ConfigCategory.BLADE, MedalsConfig.B30_LOST_HP_DAMAGE_LOW, 0, 1000, 40, S);
+        step("b30_low_hp_crit_chance", ConfigCategory.BLADE, MedalsConfig.B30_LOW_HP_CRIT_CHANCE, 0, 1000, 10, S);
+        step("b30_low_hp_threshold", ConfigCategory.BLADE, MedalsConfig.B30_LOW_HP_THRESHOLD, 0, 1000, 50, S);
+        step("b5_bleed_chance", ConfigCategory.BLADE, MedalsConfig.B5_BLEED_CHANCE, 0, 1000, 20, S);
+        step("b5_crit_chance", ConfigCategory.BLADE, MedalsConfig.B5_BLEED_CRIT_CHANCE, 0, 1000, 10, S);
+        step("blade_exp_damage", ConfigCategory.BLADE, MedalsConfig.BLADE_EXP_DAMAGE, 0, 1000, 10, S);
+        step("blade_exp_kill_hp", ConfigCategory.BLADE, MedalsConfig.BLADE_EXP_KILL_HP, 0, 1000, 10, S);
+        step("blade_lv1_attack_speed", ConfigCategory.BLADE, MedalsConfig.BLADE_L1_ATTACK_SPEED, 0, 1000, 5, S);
+        step("blade_lv1_crit_chance", ConfigCategory.BLADE, MedalsConfig.BLADE_L1_CRIT_CHANCE, 0, 1000, 5, S);
+        step("blade_lv1_crit_damage", ConfigCategory.BLADE, MedalsConfig.BLADE_L1_CRIT_DAMAGE, 0, 1000, 5, S);
+        step("blade_lv1_damage", ConfigCategory.BLADE, MedalsConfig.BLADE_L1_DAMAGE, 0, 1000, 5, S);
+        stepD("blade_per_level_attack_speed", ConfigCategory.BLADE, MedalsConfig.BLADE_PER_ATTACK_SPEED, 0, 1000, 0.5, S);
+        stepD("blade_per_level_crit_chance", ConfigCategory.BLADE, MedalsConfig.BLADE_PER_CRIT_CHANCE, 0, 1000, 0.5, S);
+        stepD("blade_per_level_crit_damage", ConfigCategory.BLADE, MedalsConfig.BLADE_PER_CRIT_DAMAGE, 0, 1000, 1.0, S);
+        stepD("blade_per_level_damage", ConfigCategory.BLADE, MedalsConfig.BLADE_PER_DAMAGE, 0, 1000, 0.75, S);
 
         // ---- 原作数值 · 坦克(补齐) ----
         step("t10_absorb_chance", ConfigCategory.TANK, MedalsConfig.T10_ABSORB_CHANCE, 0, 1000, 35, S);

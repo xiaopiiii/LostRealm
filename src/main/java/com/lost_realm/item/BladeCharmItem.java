@@ -16,23 +16,23 @@ import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.type.capability.ICurioItem;
 
 /**
- * 「刃」类战士饰品（横扫 / 双持 / 暴击 / 背刺 / 缴械 / 幽匿 / 蓄能 / 突进）。
+ * 「刃」类刃饰品（横扫 / 双持 / 暴击 / 背刺 / 缴械 / 幽匿 / 蓄能 / 突进）。
  *
- * <p>纯被动饰品：效果全部在 {@code event/WarriorCharmHandler} 或对应 Mixin 里按需判定，
+ * <p>纯被动饰品：效果全部在 {@code event/BladeCharmHandler} 或对应 Mixin 里按需判定，
  * 物品本身不施加任何属性修饰符，所以这里不重写 {@code onEquip} / {@code curioTick}。
  *
  * <p>唯一自己管的是 {@link #canEquip}：同一种刃只能戴一枚。
  */
-public class WarriorCharmItem extends Item implements ICurioItem {
+public class BladeCharmItem extends Item implements ICurioItem {
 
-    private final WarriorCharmType type;
+    private final BladeCharmType type;
 
-    public WarriorCharmItem(WarriorCharmType type, Properties properties) {
+    public BladeCharmItem(BladeCharmType type, Properties properties) {
         super(properties);
         this.type = type;
     }
 
-    public WarriorCharmType charmType() {
+    public BladeCharmType charmType() {
         return type;
     }
 
@@ -48,7 +48,7 @@ public class WarriorCharmItem extends Item implements ICurioItem {
             return true;
         }
         return CuriosApi.getCuriosInventory(living).map(handler ->
-                handler.findCurios(s -> s.getItem() instanceof WarriorCharmItem charm
+                handler.findCurios(s -> s.getItem() instanceof BladeCharmItem charm
                                 && charm.charmType() == type)
                         .stream()
                         .allMatch(found -> found.stack() == stack
@@ -59,7 +59,7 @@ public class WarriorCharmItem extends Item implements ICurioItem {
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level,
                                 List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.translatable("tooltip.lost_realm.charm.require_warrior")
+        tooltip.add(Component.translatable("tooltip.lost_realm.charm.require_blade")
                 .withStyle(ChatFormatting.DARK_GRAY));
         tooltip.add(Component.translatable("item.lost_realm." + type.id() + ".tip", type.tipArgs())
                 .withStyle(ChatFormatting.GRAY));

@@ -12,15 +12,15 @@ import com.lost_realm.config.MedalsConfig;
 import top.theillusivec4.curios.api.CuriosApi;
 
 /**
- * 九枚「刃」类战士饰品的类型。
+ * 九枚「刃」类刃饰品的类型。
  *
- * <h2>为什么不需要检查「有没有戴战士勋章」</h2>
+ * <h2>为什么不需要检查「有没有戴刃勋章」</h2>
  * 它们只能待在 {@code weapon} 槽里，而那个槽位的基础容量是 <b>0</b> ——
- * 只有佩戴战士勋章时才会被 {@code SlotAttribute} 撑开（见 {@code ItemMedal}）。
- * 换句话说：能把这枚饰品放进槽里，就说明此刻正戴着战士勋章；
+ * 只有佩戴刃勋章时才会被 {@code SlotAttribute} 撑开（见 {@code ItemMedal}）。
+ * 换句话说：能把这枚饰品放进槽里，就说明此刻正戴着刃勋章；
  * 摘下勋章的瞬间槽位连同饰品一起被收回。判定天然成立，不必重复检查。
  */
-public enum WarriorCharmType {
+public enum BladeCharmType {
 
     /** 横扫之刃：横扫范围更大，且疾跑时也能触发横扫。 */
     SWEEPING("sweeping_blade"),
@@ -38,13 +38,13 @@ public enum WarriorCharmType {
     CHARGING("charging_blade"),
     /** 突进之刃：双击攻击键朝面朝方向突进，路径上的目标受到伤害。 */
     DASH("dash_blade"),
-    /** 坚韧之刃：同一个敌人连续命中时伤害递减，血越少上限越高（战士唯一的防御手段）。 */
+    /** 坚韧之刃：同一个敌人连续命中时伤害递减，血越少上限越高（刃唯一的防御手段）。 */
     TOUGHNESS("toughness_blade");
 
     private final String id;
     private RegistryObject<Item> item;
 
-    WarriorCharmType(String id) {
+    BladeCharmType(String id) {
         this.id = id;
     }
 
@@ -73,28 +73,28 @@ public enum WarriorCharmType {
      */
     public Object[] tipArgs() {
         return switch (this) {
-            case SWEEPING -> new Object[] { MedalsConfig.WARRIOR_SWEEP_RADIUS.get() };
-            case DUAL -> new Object[] { MedalsConfig.WARRIOR_DUAL_DAMAGE.get(),
-                    MedalsConfig.WARRIOR_DUAL_ATTACK_SPEED.get() };
-            case CRIT -> new Object[] { MedalsConfig.WARRIOR_CRIT_CHANCE.get(),
-                    MedalsConfig.WARRIOR_CRIT_DAMAGE.get() };
-            case BACKSTAB -> new Object[] { MedalsConfig.WARRIOR_BACKSTAB_BONUS.get() };
-            case DISARM -> new Object[] { MedalsConfig.WARRIOR_DISARM_CHANCE.get(),
-                    MedalsConfig.WARRIOR_DISARM_SECONDS.get(),
-                    MedalsConfig.WARRIOR_DISARM_COOLDOWN.get() };
-            case LUCK -> new Object[] { MedalsConfig.WARRIOR_LUCK_RANGE.get(),
-                    MedalsConfig.WARRIOR_LUCK_PER_POINT.get(),
-                    MedalsConfig.WARRIOR_LUCK_FLOOR_CAP.get() };
-            case CHARGING -> new Object[] { MedalsConfig.WARRIOR_CHARGE_PER_SECOND.get(),
-                    MedalsConfig.WARRIOR_CHARGE_MAX.get() };
-            case TOUGHNESS -> new Object[] { MedalsConfig.WARRIOR_TOUGHNESS_PER_HIT.get(),
-                    MedalsConfig.WARRIOR_TOUGHNESS_BASE_CAP.get(),
-                    MedalsConfig.WARRIOR_TOUGHNESS_CAP_PER_STEP.get(),
-                    MedalsConfig.WARRIOR_TOUGHNESS_WINDOW_SECONDS.get() };
-            case DASH -> new Object[] { MedalsConfig.WARRIOR_DASH_SPEED_THRESHOLD.get(),
-                    MedalsConfig.WARRIOR_DASH_DISTANCE.get(),
-                    MedalsConfig.WARRIOR_DASH_DAMAGE.get(),
-                    MedalsConfig.WARRIOR_DASH_COOLDOWN.get() };
+            case SWEEPING -> new Object[] { MedalsConfig.BLADE_SWEEP_RADIUS.get() };
+            case DUAL -> new Object[] { MedalsConfig.BLADE_DUAL_DAMAGE.get(),
+                    MedalsConfig.BLADE_DUAL_ATTACK_SPEED.get() };
+            case CRIT -> new Object[] { MedalsConfig.BLADE_CRIT_CHANCE.get(),
+                    MedalsConfig.BLADE_CRIT_DAMAGE.get() };
+            case BACKSTAB -> new Object[] { MedalsConfig.BLADE_BACKSTAB_BONUS.get() };
+            case DISARM -> new Object[] { MedalsConfig.BLADE_DISARM_CHANCE.get(),
+                    MedalsConfig.BLADE_DISARM_SECONDS.get(),
+                    MedalsConfig.BLADE_DISARM_COOLDOWN.get() };
+            case LUCK -> new Object[] { MedalsConfig.BLADE_LUCK_RANGE.get(),
+                    MedalsConfig.BLADE_LUCK_PER_POINT.get(),
+                    MedalsConfig.BLADE_LUCK_FLOOR_CAP.get() };
+            case CHARGING -> new Object[] { MedalsConfig.BLADE_CHARGE_PER_SECOND.get(),
+                    MedalsConfig.BLADE_CHARGE_MAX.get() };
+            case TOUGHNESS -> new Object[] { MedalsConfig.BLADE_TOUGHNESS_PER_HIT.get(),
+                    MedalsConfig.BLADE_TOUGHNESS_BASE_CAP.get(),
+                    MedalsConfig.BLADE_TOUGHNESS_CAP_PER_STEP.get(),
+                    MedalsConfig.BLADE_TOUGHNESS_WINDOW_SECONDS.get() };
+            case DASH -> new Object[] { MedalsConfig.BLADE_DASH_SPEED_THRESHOLD.get(),
+                    MedalsConfig.BLADE_DASH_DISTANCE.get(),
+                    MedalsConfig.BLADE_DASH_DAMAGE.get(),
+                    MedalsConfig.BLADE_DASH_COOLDOWN.get() };
         };
     }
 
@@ -103,14 +103,14 @@ public enum WarriorCharmType {
         return activeSet(entity).contains(this);
     }
 
-    /** 一次查询取回该实体此刻全部在槽的战士饰品。 */
-    public static Set<WarriorCharmType> activeSet(LivingEntity entity) {
+    /** 一次查询取回该实体此刻全部在槽的刃饰品。 */
+    public static Set<BladeCharmType> activeSet(LivingEntity entity) {
         if (entity == null) {
             return Set.of();
         }
         return CuriosApi.getCuriosInventory(entity).map(handler ->
-                handler.findCurios(s -> s.getItem() instanceof WarriorCharmItem).stream()
-                        .map(result -> ((WarriorCharmItem) result.stack().getItem()).charmType())
+                handler.findCurios(s -> s.getItem() instanceof BladeCharmItem).stream()
+                        .map(result -> ((BladeCharmItem) result.stack().getItem()).charmType())
                         .collect(Collectors.toSet())
         ).orElse(Set.of());
     }
