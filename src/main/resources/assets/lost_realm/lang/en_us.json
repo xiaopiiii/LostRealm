@@ -1359,5 +1359,13 @@
   "config.lost_realm.opt.udunos_reduction_cap": "Damage Reduction Cap",
   "config.lost_realm.opt.udunos_reduction_cap.unit": "%",
   "config.lost_realm.opt.udunos_leash": "Leash Range",
-  "config.lost_realm.opt.udunos_leash.unit": "blocks"
+  "config.lost_realm.opt.udunos_leash.unit": "blocks",
+  "block.lost_realm.chunk_loader": "Chunk Loader",
+  "block.lost_realm.anti_spawn_torch": "Warding Torch",
+  "gui.lost_realm.chunk_loader.title": "Chunk Loader",
+  "gui.lost_realm.chunk_loader.pos": "at %s, %s, %s",
+  "gui.lost_realm.chunk_loader.size": "%s × %s chunks",
+  "gui.lost_realm.chunk_loader.state_on": "Force-loading: ON",
+  "gui.lost_realm.chunk_loader.state_off": "Force-loading: OFF",
+  "gui.lost_realm.chunk_loader.idle_hint": "Disabled — no chunks are held"
 }

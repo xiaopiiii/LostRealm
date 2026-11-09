@@ -1359,5 +1359,13 @@
   "config.lost_realm.opt.udunos_reduction_cap": "减伤上限",
   "config.lost_realm.opt.udunos_reduction_cap.unit": "%",
   "config.lost_realm.opt.udunos_leash": "拴绳距离",
-  "config.lost_realm.opt.udunos_leash.unit": "格"
+  "config.lost_realm.opt.udunos_leash.unit": "格",
+  "block.lost_realm.chunk_loader": "区块加载器",
+  "block.lost_realm.anti_spawn_torch": "镇魔火把",
+  "gui.lost_realm.chunk_loader.title": "区块加载器",
+  "gui.lost_realm.chunk_loader.pos": "坐标 %s, %s, %s",
+  "gui.lost_realm.chunk_loader.size": "%s × %s 区块",
+  "gui.lost_realm.chunk_loader.state_on": "强加载：开启",
+  "gui.lost_realm.chunk_loader.state_off": "强加载：关闭",
+  "gui.lost_realm.chunk_loader.idle_hint": "已关闭，不占用加载资源"
 }

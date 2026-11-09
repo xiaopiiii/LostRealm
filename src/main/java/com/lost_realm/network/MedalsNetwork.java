@@ -73,6 +73,18 @@ public final class MedalsNetwork {
                 PacketDifficultySet::encode,
                 PacketDifficultySet::new,
                 PacketDifficultySet::handle);
+
+        // ---- 区块加载器(beta53) ----
+        // 打开界面时 S2C 带一次当前设置;之后每次改都走 C2S,不设"确认"步骤。
+        CHANNEL.registerMessage(id++, PacketChunkLoaderOpen.class,
+                PacketChunkLoaderOpen::encode,
+                PacketChunkLoaderOpen::new,
+                PacketChunkLoaderOpen::handle);
+
+        CHANNEL.registerMessage(id++, PacketChunkLoaderSet.class,
+                PacketChunkLoaderSet::encode,
+                PacketChunkLoaderSet::new,
+                PacketChunkLoaderSet::handle);
     }
 
     public static void sendToPlayer(ServerPlayer player, Object packet) {

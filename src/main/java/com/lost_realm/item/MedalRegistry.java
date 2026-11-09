@@ -86,6 +86,10 @@ public final class MedalRegistry {
                 // ---------- 破枷印记（章节进度道具）----------
                 output.accept(MEDAL_SHACKLE.get());
 
+                // ---------- 实用方块（beta53）----------
+                output.accept(com.lost_realm.machine.MachineBlocks.CHUNK_LOADER_ITEM.get());
+                output.accept(com.lost_realm.machine.MachineBlocks.ANTI_SPAWN_TORCH_ITEM.get());
+
                 // ---------- 遗落之主:门钥匙 ----------
                 output.accept(com.lost_realm.boss.BossItems.REALM_KEY.get());
 

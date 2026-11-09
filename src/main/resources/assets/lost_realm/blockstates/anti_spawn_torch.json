@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "lost_realm:block/anti_spawn_torch"
+    }
+  }
+}

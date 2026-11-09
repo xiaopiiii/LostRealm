@@ -125,6 +125,9 @@ public class Medals {
         // 自定义声音（Boss 战 BGM）—— 全模组目前唯一一个自定义音效
         com.lost_realm.sound.ModSounds.init(modBus);
 
+        // 实用方块(beta53)：区块加载器 / 镇魔火把
+        com.lost_realm.machine.MachineBlocks.init(modBus);
+
         // 客户端初始化(配置屏幕、HUD)
         com.lost_realm.client.ClientBootstrap.bootstrap();
 
