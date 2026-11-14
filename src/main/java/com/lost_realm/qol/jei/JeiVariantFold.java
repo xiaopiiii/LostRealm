@@ -112,6 +112,10 @@ public final class JeiVariantFold {
     /** 渲染出过一次异常就永久停手 —— 边框是装饰，不能为了它每帧刷日志、拖慢游戏。 */
     private static boolean renderBroken;
 
+    /** 上一次重排的输入/输出。JEI 会缓存列表实例，命中就直接返回，避免每帧重排上万条。 */
+    private static List<IElement<?>> lastIn;
+    private static List<IElement<?>> lastOut;
+
     private JeiVariantFold() {}
 
     /** 由 {@code LostRealmJeiPlugin} 在 JEI 就绪时调用。 */
@@ -163,6 +167,8 @@ public final class JeiVariantFold {
         GROUPS.clear();
         ITEM_GROUP.clear();
         EXPANDED.clear();
+        lastIn = null;
+        lastOut = null;
 
         var manager = runtime.getIngredientManager();
         if (manager == null) {
@@ -324,7 +330,114 @@ public final class JeiVariantFold {
         ITEM_GROUP.clear();
         EXPANDED.clear();
         MARKERS.clear();
+        lastIn = null;
+        lastOut = null;
         ready = false;
+    }
+
+    // ================================================================
+    // 列表重排（由 mixin 在 IngredientFilter.getElements 返回前调用）
+    // ================================================================
+
+    /**
+     * 把每个折叠组的成员挪到代表格<b>紧后面</b>。
+     *
+     * <p>折叠靠"摘掉 / 加回去"实现，而 JEI 加回去的物品会按自己的排序落位，
+     * 于是展开后成员散落各处。JEI 最终用的顺序就是这份列表，在返回前重排
+     * 一遍即可，分页 / 点击 / 拖拽 / 搜索都跟着这份顺序走。
+     *
+     * <p>结果按输入列表实例缓存：JEI 会缓存 {@code ingredientListCached}，
+     * 同一实例反复传入时直接返回上次的结果，避免每帧重排上万条。
+     */
+    public static List<IElement<?>> reorderForFold(List<IElement<?>> in) {
+        if (in == null || in.size() < 2 || GROUPS.isEmpty() || !enabled()) {
+            return in;
+        }
+        if (in == lastIn) {
+            return lastOut;
+        }
+        List<IElement<?>> out;
+        try {
+            out = reorder0(in);
+        } catch (Throwable t) {
+            Medals.LOGGER.warn("[Lost Realm] JEI 列表重排失败，已跳过（不影响折叠）", t);
+            out = in;
+        }
+        lastIn = in;
+        lastOut = out;
+        return out;
+    }
+
+    private static List<IElement<?>> reorder0(List<IElement<?>> in) {
+        int n = in.size();
+        String[] keys = new String[n];
+        // 组键 → 该组元素在列表里的下标（保持原有先后）
+        Map<String, List<Integer>> index = new LinkedHashMap<>();
+        for (int i = 0; i < n; i++) {
+            String k = keyOf(in.get(i));
+            keys[i] = k;
+            if (k != null) {
+                index.computeIfAbsent(k, x -> new ArrayList<>(4)).add(i);
+            }
+        }
+        if (index.isEmpty()) {
+            return in;
+        }
+
+        List<IElement<?>> out = new ArrayList<>(n);
+        Set<String> emitted = new HashSet<>();
+        for (int i = 0; i < n; i++) {
+            String k = keys[i];
+            if (k == null) {
+                out.add(in.get(i));
+                continue;
+            }
+            if (!emitted.add(k)) {
+                continue;                      // 这一组的成员已经在代表格后面排过了
+            }
+            List<Integer> slots = index.get(k);
+            // 代表元素排最前，其余按原顺序跟上
+            int rep = -1;
+            Group g = GROUPS.get(k);
+            if (g != null) {
+                ItemStack want = g.members().get(0);
+                for (int j : slots) {
+                    Optional<ItemStack> s = stackOf(in.get(j));
+                    if (s.isPresent() && ItemStack.isSameItemSameTags(want, s.get())) {
+                        rep = j;
+                        break;
+                    }
+                }
+            }
+            if (rep >= 0) {
+                out.add(in.get(rep));
+            }
+            for (int j : slots) {
+                if (j != rep) {
+                    out.add(in.get(j));
+                }
+            }
+        }
+        return out;
+    }
+
+    private static String keyOf(IElement<?> element) {
+        Optional<ItemStack> s = stackOf(element);
+        if (s.isEmpty()) {
+            return null;
+        }
+        return ITEM_GROUP.get(s.get().getItem());
+    }
+
+    private static Optional<ItemStack> stackOf(IElement<?> element) {
+        if (element == null) {
+            return Optional.empty();
+        }
+        ITypedIngredient<?> typed = element.getTypedIngredient();
+        if (typed == null) {
+            return Optional.empty();
+        }
+        return typed.getItemStack();
     }
 
     // ================================================================
@@ -494,6 +607,10 @@ public final class JeiVariantFold {
         try {
             GuiGraphics g = event.getGuiGraphics();
             var font = Minecraft.getInstance().font;
+            // 抬高 z：JEI 的物品是批量绘制的，单靠"事件更靠后"不保证压得住它们的
+            // 深度排序，把这一层整体往前推，角标才稳定压在图标之上。
+            g.pose().pushPose();
+            g.pose().translate(0.0F, 0.0F, 400.0F);
             for (Marker m : MARKERS) {
                 // 实心黑底 + 1px 彩边：半透明底压在亮色图标上读不出来
                 g.fill(m.x0(), m.y0(), m.x1(), m.y1(), 0xFF000000);
@@ -503,6 +620,7 @@ public final class JeiVariantFold {
                 g.fill(m.x1() - 1, m.y0(), m.x1(), m.y1(), m.border());
                 g.drawString(font, m.text(), m.textX(), m.textY(), 0xFFFFFFFF, true);
             }
+            g.pose().popPose();
         } catch (Throwable t) {
             renderBroken = true;
             Medals.LOGGER.warn("[Lost Realm] JEI 变体折叠角标绘制失败，已停用", t);

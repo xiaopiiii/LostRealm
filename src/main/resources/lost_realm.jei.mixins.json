@@ -5,7 +5,8 @@
   "minVersion": "0.8",
   "refmap": "lost_realm.refmap.json",
   "client": [
-    "IngredientListRendererMixin"
+    "IngredientListRendererMixin",
+    "IngredientFilterMixin"
   ],
   "injectors": {
     "defaultRequire": 0
