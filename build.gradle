@@ -71,6 +71,10 @@ mixin {
     // "required": false + 内部 @Pseudo/require=0,缺失时安静跳过,
     // 不会因为它而让整个模组在没装 Goety 的整合包里加载失败。
     config "${mod_id}.goety.mixins.json"
+    // JEI 相关的 Mixin 同理:JEI 是可选依赖,这份配置 required: false,
+    // 目标类包名在 15.20 → 15.74 之间改过(overlay → overlay.ingredients),
+    // 所以编译期依赖也必须钉在 15.74,见本文件 181 行附近的说明。
+    config "${mod_id}.jei.mixins.json"
 }
 
 repositories {
@@ -178,7 +182,12 @@ dependencies {
     // 运行时完全可选:没装 JEI 时没人扫描 @JeiPlugin,插件类不会被加载。
     // 只做 compileOnly,不打包、不要求玩家安装。
     // 坐标来自 https://maven.blamejared.com/mezz/jei/jei-1.20.1-forge/
-    compileOnly fg.deobf("mezz.jei:jei-1.20.1-forge:15.20.0.106")
+    // ⚠️ 必须与运行时版本一致:mixin 的目标类包名在 15.20 → 15.74 之间改过
+    //    (mezz.jei.gui.overlay.IngredientListRenderer
+    //     → mezz.jei.gui.overlay.ingredients.IngredientListRenderer)。
+    //    编译期用旧版本会写出指向不存在类名的 mixin,启动即崩。
+    //    离线环境取不到新 maven 包,所以直接把运行时 jar 放进 libs/ 编译。
+    compileOnly fg.deobf(files('libs/jei-1.20.1-forge-15.74.0.233.jar'))
 
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
