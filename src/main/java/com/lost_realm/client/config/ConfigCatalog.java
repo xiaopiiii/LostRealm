@@ -143,8 +143,6 @@ public final class ConfigCatalog {
                 MedalsConfig.QOL_TOTEM_BACKPACK, true, S);
         toggle("stack_totem", ConfigCategory.QOL,
                 MedalsConfig.QOL_STACK_TOTEM, true, S);
-        toggle("jei_fold_variants", ConfigCategory.QOL,
-                MedalsConfig.QOL_JEI_FOLD_VARIANTS, true, S);
 
         toggle("elytra_armor", ConfigCategory.QOL,
                 MedalsConfig.QOL_ELYTRA_ARMOR, true, S);

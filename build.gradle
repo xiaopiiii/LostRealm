@@ -71,10 +71,6 @@ mixin {
     // "required": false + 内部 @Pseudo/require=0,缺失时安静跳过,
     // 不会因为它而让整个模组在没装 Goety 的整合包里加载失败。
     config "${mod_id}.goety.mixins.json"
-    // JEI 相关的 Mixin 同理:JEI 是可选依赖,这份配置 required: false,
-    // 目标类包名在 15.20 → 15.74 之间改过(overlay → overlay.ingredients),
-    // 所以编译期依赖也必须钉在 15.74,见本文件 181 行附近的说明。
-    config "${mod_id}.jei.mixins.json"
 }
 
 repositories {

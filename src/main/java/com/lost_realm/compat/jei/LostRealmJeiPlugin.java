@@ -58,10 +58,6 @@ public final class LostRealmJeiPlugin implements IModPlugin {
 
     @Override
     public void onRuntimeAvailable(IJeiRuntime runtime) {
-        // 把 runtime 交给变体折叠器 —— 它需要 ingredient manager 做增删、
-        // 需要 ingredient list overlay 做点击命中判定。null 检查在那边做。
-        com.lost_realm.qol.jei.JeiVariantFold.onRuntimeAvailable(runtime);
-
         List<ResourceLocation> ids = HiddenItems.recipeIds();
         if (ids.isEmpty()) {
             return;

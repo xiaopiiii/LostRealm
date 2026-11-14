@@ -369,10 +369,6 @@ public final class MedalsConfig {
     /** G24 无限附魔的弓缺箭亦可射击总开关。 */
     public static BooleanValue QOL_INFINITE_BOW_NO_ARROW;
 
-    // ---- 体验改进 · JEI(H 组) ----
-    /** H25 JEI 变体折叠:同一物品的不同 NBT 变体收成一格,点击展开。 */
-    public static BooleanValue QOL_JEI_FOLD_VARIANTS;
-
     // ================================================================
     // 终末之影(Boss)—— 静态引用
     // ================================================================
@@ -839,7 +835,6 @@ public final class MedalsConfig {
         QOL_STACK_TOTEM = c.QOL_STACK_TOTEM;
         QOL_STACK_ENDER_PEARL = c.QOL_STACK_ENDER_PEARL;
         QOL_INFINITE_BOW_NO_ARROW = c.QOL_INFINITE_BOW_NO_ARROW;
-        QOL_JEI_FOLD_VARIANTS = c.QOL_JEI_FOLD_VARIANTS;
 
         // ---- 终末之影 ----
         ARROW_POTION_CHANCE = c.ARROW_POTION_CHANCE;
@@ -1373,8 +1368,6 @@ public final class MedalsConfig {
         public BooleanValue QOL_STACK_ENDER_PEARL;
         public BooleanValue QOL_INFINITE_BOW_NO_ARROW;
 
-        public BooleanValue QOL_JEI_FOLD_VARIANTS;
-
         // ---- 终末之影(Boss)----
 
         // ---- dv5:遗落之主新流程 ----
@@ -1814,14 +1807,6 @@ public final class MedalsConfig {
         b.comment("G24 无限附魔的弓无需箭矢:背包内没有箭也能拉弓射击,",
                 "射出的箭为创造模式箭(落地即消失,不可捡回)。").push("infinite_bow_no_arrow");
         QOL_INFINITE_BOW_NO_ARROW = b.comment("总开关").define("enabled", true);
-        b.pop();
-
-        b.comment("H25 JEI 变体折叠:把同一个物品的不同变体(不同附魔的附魔书、",
-                "不同效果的药水、不同染色的皮革甲)收成一个格子,格子上有彩色边框和数量角标。",
-                "点击该格展开全部变体,再点一次收起。",
-                "只对 JEI 的物品列表生效;未安装 JEI 时本项无作用。")
-                .push("jei_fold_variants");
-        QOL_JEI_FOLD_VARIANTS = b.comment("总开关").define("enabled", true);
         b.pop();
 
         b.pop();
