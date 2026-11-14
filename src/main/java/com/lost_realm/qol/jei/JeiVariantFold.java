@@ -43,22 +43,28 @@ import com.lost_realm.config.MedalsConfig;
 /**
  * <b>JEI 变体折叠</b> —— 把同一类东西收成一个格子。
  *
- * <h2>折叠规则（只有一条）</h2>
- * 取物品注册名<b>最后一个下划线之后的部分</b>当分类依据，同一命名空间内
- * 同后缀的成员 ≥ {@value #MIN_GROUP} 个就折成一组：
+ * <h2>折叠条件（三条同时满足才折）</h2>
+ * <ol>
+ *   <li><b>数量</b>：同类成员 ≥ {@value #MIN_GROUP} 个。</li>
+ *   <li><b>标签</b>：共享同一个物品标签（子标签归并到父标签，如
+ *       {@code forge:ingots/iron} → {@code forge:ingots}）。
+ *       标签是作者声明的分类，是这里唯一有语义的判据。</li>
+ *   <li><b>名字</b>：显示名的结尾字有 80% 一致。标签可能过宽，名字再确认一次：
+ *       铁锭/金锭/铜锭 都以「锭」结尾 → 通过；
+ *       末地烛/钓鱼竿/烈焰棒 结尾各不相同 → 否掉。</li>
+ * </ol>
+ * 三条是<b>与</b>的关系，不是三选一 —— 误并的概率相乘，才能既不漏也不乱。
  *
- * <pre>
- * iron_ingot / gold_ingot / copper_ingot    → ingot    → 一组
- * iron_dust  / gold_dust  / iron_small_dust → dust     → 一组
- * white_wool / red_wool   / black_wool      → wool     → 一组
- * white_concrete / red_concrete             → concrete → 一组
- * </pre>
+ * <p>另一条独立通道：<b>同一物品的不同 NBT 变体</b>（不同附魔的附魔书、
+ * 不同效果的药水）。同一物品天然满足第 2、3 条，所以不再做名字校验。
  *
- * 这样羊毛、陶瓦、混凝土、染料、格雷的锭/粉/小粉/齿轮/板/粒全部由这一条规则覆盖，
- * 不需要为任何具体类型再写特判。没有下划线的物品（stone、dirt）不参与。
- *
- * <p>另有一条独立的分组：<b>同一物品的不同 NBT 变体</b>（不同附魔的附魔书、
- * 不同效果的药水）。这类物品先被 NBT 组认领，不再进后缀组。
+ * <p>曾经试过、被否掉的做法：
+ * <ul>
+ *   <li><b>按注册名后缀</b>：{@code end_rod} / {@code fishing_rod} / {@code blaze_rod}
+ *       会被并成一组 —— 后缀是命名习惯，不是语义。</li>
+ *   <li><b>单独按显示名后缀</b>：中文能分开，但显示名是本地化的，英文下又都是
+ *       "Rod"；只能作为上面第 3 条的一部分（与标签"与"起来），不能单独当判据。</li>
+ * </ul>
  *
  * <h2>代表格是哪一个</h2>
  * 成员<b>按 JEI 给的顺序</b>原样保留，不排序。所以收起时显示的就是 JEI 列表里
@@ -276,9 +282,15 @@ public final class JeiVariantFold {
             }
             members.computeIfAbsent(tag, k -> new ArrayList<>()).add(e.getValue().get(0));
         }
+        int rejectedByName = 0;
         for (Map.Entry<TagKey<Item>, List<ItemStack>> e : members.entrySet()) {
             List<ItemStack> ms = e.getValue();
+            // 三条同时满足才折叠：① 成员 >= MIN_GROUP ② 共享同一个标签 ③ 显示名有共同后缀
             if (ms.size() < MIN_GROUP) {
+                continue;
+            }
+            if (!namesLookAlike(ms)) {
+                rejectedByName++;
                 continue;
             }
             String key = "tag|" + e.getKey().location();
@@ -289,6 +301,8 @@ public final class JeiVariantFold {
             }
         }
 
+        Medals.LOGGER.info("[Lost Realm] JEI 折叠：标签候选 {} 组，其中 {} 组因「显示名没有共同后缀」被否掉",
+                members.size(), rejectedByName);
         if (pick.isEmpty()) {
             Medals.LOGGER.warn("[Lost Realm] 物品标签没有凑出任何折叠组（候选标签 {} 个）——"
                     + "可能是标签还没同步到客户端，或全部被排除表挡掉了", byTag.size());
@@ -299,6 +313,43 @@ public final class JeiVariantFold {
     /** 单色：同一个组键永远同一个颜色。 */
     private static int[] single(String key) {
         return new int[]{FRAME_COLORS[Math.floorMod(key.hashCode(), FRAME_COLORS.length)]};
+    }
+
+    /**
+     * 条件三：显示名要"看着像同一类"。
+     *
+     * <p>标签给语义，但标签可能过宽（比如某个 mod 把所有机械零件塞进一个标签）。
+     * 加一层名字校验能挡掉貌合神离的组合：
+     * 铁锭 / 金锭 / 铜锭 结尾都是「锭」→ 通过；
+     * 末地烛 / 钓鱼竿 / 烈焰棒 结尾各不相同 → 否掉。
+     *
+     * <p>用"多数派"而不是"全体一致"：一个组里偶尔混进一个名字奇怪的成员
+     * （比如带状态后缀的），不应该把整组否掉。要求 80% 的成员结尾字相同。
+     */
+    private static boolean namesLookAlike(List<ItemStack> members) {
+        Map<Character, Integer> last = new HashMap<>();
+        int named = 0;
+        for (ItemStack s : members) {
+            String name;
+            try {
+                name = s.getHoverName().getString();
+            } catch (Throwable t) {
+                continue;
+            }
+            if (name.length() < 2) {
+                continue;                     // 只有一个字的名字没有"类型字"可言
+            }
+            last.merge(name.charAt(name.length() - 1), 1, Integer::sum);
+            named++;
+        }
+        if (named < MIN_GROUP) {
+            return false;
+        }
+        int best = 0;
+        for (int n : last.values()) {
+            best = Math.max(best, n);
+        }
+        return best * 5 >= named * 4;          // >= 80%
     }
 
     /**
