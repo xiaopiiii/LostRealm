@@ -1,5 +1,8 @@
 package com.lost_realm.qol.jei;
 
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,6 +24,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.loading.FMLPaths;
 
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.ingredients.ITypedIngredient;
@@ -90,14 +94,16 @@ public final class JeiVariantFold {
     /** 成员数达到这个值才画彩色环，否则单色 —— 三四个的小组画彩虹太吵。 */
     private static final int RING_MIN = 6;
 
+    /** 排除表：这些后缀不参与折叠。用户在 config/lost_realm/jei_fold_exclude.txt 里自己加。 */
+    private static final Set<String> EXCLUDED = new HashSet<>();
+
     private record Group(List<ItemStack> members, int[] ring) {}
 
     /**
      * 画出来的角标，同时也是唯一的点击热区（{@code x0..x1, y0..y1}）。
      * 每帧重新收集；不做每帧清空之外的回收，因为它要在两帧之间的点击事件里用。
      */
-    private record Marker(int x0, int y0, int x1, int y1, int textX, int textY,
-                          String text, int border, String key) {}
+    private record Marker(int x0, int y0, int x1, int y1, String key) {}
 
     private static IJeiRuntime runtime;
 
@@ -169,6 +175,7 @@ public final class JeiVariantFold {
         EXPANDED.clear();
         lastIn = null;
         lastOut = null;
+        loadExclusions();
 
         var manager = runtime.getIngredientManager();
         if (manager == null) {
@@ -221,7 +228,7 @@ public final class JeiVariantFold {
                 continue;                      // 没有下划线，或下划线在末尾
             }
             String suffix = path.substring(cut + 1);
-            if (suffix.length() < 2) {
+            if (suffix.length() < 2 || EXCLUDED.contains(suffix)) {
                 continue;
             }
             String key = id.getNamespace() + "|" + suffix;
@@ -248,6 +255,42 @@ public final class JeiVariantFold {
         return new int[]{FRAME_COLORS[Math.floorMod(key.hashCode(), FRAME_COLORS.length)]};
     }
 
+    /**
+     * 读排除表 {@code config/lost_realm/jei_fold_exclude.txt}，没有就生成一份带说明的。
+     *
+     * <p>后缀规则是"一刀切"的：{@code copper_wire} 和 {@code fine_copper_wire} 都以后缀
+     * {@code wire} 结尾，会被并成一组，但它们的语义并不一样（一个是导线、一个是细导线）。
+     * 这类"看起来同后缀、其实不同东西"的情况没法靠规则自动分辨，所以留给用户一份表，
+     * 想排除哪个后缀就加一行，不必改代码。
+     */
+    private static void loadExclusions() {
+        EXCLUDED.clear();
+        try {
+            Path dir = FMLPaths.CONFIGDIR.get().resolve("lost_realm");
+            Files.createDirectories(dir);
+            Path file = dir.resolve("jei_fold_exclude.txt");
+            if (!Files.exists(file)) {
+                Files.write(file, List.of(
+                        "# JEI 折叠排除表：每行一个后缀，命中就不折叠。",
+                        "# 后缀 = 注册名最后一个下划线之后的部分。",
+                        "# 例：wire 会让 copper_wire / fine_copper_wire 都不参与折叠；",
+                        "#     想恢复折叠就把那一行删掉或在前面加 #。",
+                        "# 改完重新进入世界（或重开游戏）生效。",
+                        "wire"
+                ), StandardCharsets.UTF_8);
+            }
+            for (String raw : Files.readAllLines(file, StandardCharsets.UTF_8)) {
+                String line = raw.trim();
+                if (line.isEmpty() || line.startsWith("#")) {
+                    continue;
+                }
+                EXCLUDED.add(line.toLowerCase());
+            }
+        } catch (Throwable t) {
+            Medals.LOGGER.warn("[Lost Realm] 读取 JEI 折叠排除表失败，本次按不排除处理", t);
+        }
+    }
+
     private static void logSummary() {
         int token = 0;
         int nbt = 0;
@@ -268,8 +311,8 @@ public final class JeiVariantFold {
             sb.append(' ').append(big.get(i).getKey().substring(4))
                     .append('(').append(big.get(i).getValue().members().size()).append(')');
         }
-        Medals.LOGGER.info("[Lost Realm] JEI 折叠：{} 组（后缀 {} / NBT {}），收起 {} 项；最大的组:{}",
-                GROUPS.size(), token, nbt, hidden, sb);
+        Medals.LOGGER.info("[Lost Realm] JEI 折叠：{} 组（后缀 {} / NBT {}），收起 {} 项，排除后缀 {}；最大的组:{}",
+                GROUPS.size(), token, nbt, hidden, EXCLUDED, sb);
     }
 
     /** 默认状态：全部收起，每个组只留代表格（= JEI 顺序里的第一个）。 */
@@ -554,8 +597,17 @@ public final class JeiVariantFold {
                 int w = font.width(text);
                 int tx = area.getX() + area.getWidth() - w;
                 int ty = area.getY() + area.getHeight() - 8;
-                MARKERS.add(new Marker(tx - 1, ty - 1, tx + w + 1, ty + 8,
-                        tx, ty, text, group.ring()[0], key));
+                // 和原版堆叠数字一个做法：只写字、带阴影，不铺黑底。
+                // 铺底会变成一个 8x10 的方块，压在 16px 的图标上太大了。
+                // z 抬 400：JEI 的物品是批量绘制的，靠事件顺序压不住深度排序；
+                // 这里画在图标之前、但深度更靠前，所以能压住图标；
+                // 提示框是之后画的、z 同样是 400，会正常盖住这个数字。
+                g.pose().pushPose();
+                g.pose().translate(0.0F, 0.0F, 400.0F);
+                g.drawString(font, text, tx, ty, 0xFFFFFFFF, true);
+                g.pose().popPose();
+
+                MARKERS.add(new Marker(tx - 1, ty - 1, tx + w + 1, ty + 8, key));
             }
         }
     }
@@ -593,39 +645,4 @@ public final class JeiVariantFold {
         }
     }
 
-    /**
-     * 这一帧画完后再补角标。
-     *
-     * <p>用 {@link EventPriority#LOWEST} 排在 JEI 自己的 {@code Render.Post}
-     * （NORMAL 优先级）之后，才画得到图标上面。
-     */
-    @SubscribeEvent(priority = EventPriority.LOWEST)
-    public static void onRenderPost(ScreenEvent.Render.Post event) {
-        if (MARKERS.isEmpty()) {
-            return;
-        }
-        try {
-            GuiGraphics g = event.getGuiGraphics();
-            var font = Minecraft.getInstance().font;
-            // 抬高 z：JEI 的物品是批量绘制的，单靠"事件更靠后"不保证压得住它们的
-            // 深度排序，把这一层整体往前推，角标才稳定压在图标之上。
-            g.pose().pushPose();
-            g.pose().translate(0.0F, 0.0F, 400.0F);
-            for (Marker m : MARKERS) {
-                // 实心黑底 + 1px 彩边：半透明底压在亮色图标上读不出来
-                g.fill(m.x0(), m.y0(), m.x1(), m.y1(), 0xFF000000);
-                g.fill(m.x0(), m.y0(), m.x1(), m.y0() + 1, m.border());
-                g.fill(m.x0(), m.y1() - 1, m.x1(), m.y1(), m.border());
-                g.fill(m.x0(), m.y0(), m.x0() + 1, m.y1(), m.border());
-                g.fill(m.x1() - 1, m.y0(), m.x1(), m.y1(), m.border());
-                g.drawString(font, m.text(), m.textX(), m.textY(), 0xFFFFFFFF, true);
-            }
-            g.pose().popPose();
-        } catch (Throwable t) {
-            renderBroken = true;
-            Medals.LOGGER.warn("[Lost Realm] JEI 变体折叠角标绘制失败，已停用", t);
-        }
-        // 注意：这里不清 MARKERS —— 点击处理要拿它做热区判定，
-        // 它会在下一帧 captureAndDraw 开头重建。
-    }
 }
