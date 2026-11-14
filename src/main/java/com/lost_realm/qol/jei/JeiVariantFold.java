@@ -16,6 +16,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
@@ -214,39 +216,83 @@ public final class JeiVariantFold {
             claimed.add(item);
         }
 
-        // ② 同后缀（唯一的一条通用规则）
-        Map<String, List<ItemStack>> bySuffix = new LinkedHashMap<>();
+        // ② 物品标签（tag）—— 标签本身就是"同一类别"的权威定义
+        //
+        // 为什么不再用注册名后缀：end_rod / fishing_rod / blaze_rod 后缀都是 rod，
+        // 但它们毫无关系；copper_wire / fine_copper_wire 也不该并在一起。
+        // 后缀只是命名习惯，不是语义。标签是数据包 / 模组作者显式声明过的分类
+        // （minecraft:wool、forge:ingots、forge:dusts、forge:gears、forge:concrete…），
+        // 用它当折叠依据才是真正的"同一种东西"。
+        // 子标签（forge:ingots/iron）归并到父标签（forge:ingots）：
+        // 很多模组只在子标签里登记，父标签靠约定继承，只看父标签可能一个都收不到。
+        Map<TagKey<Item>, List<ItemStack>> byTag = new LinkedHashMap<>();
         for (Map.Entry<Item, List<ItemStack>> e : byItem.entrySet()) {
-            Item item = e.getKey();
-            if (claimed.contains(item)) {
+            if (claimed.contains(e.getKey())) {
                 continue;
             }
-            ResourceLocation id = BuiltInRegistries.ITEM.getKey(item);
-            String path = id.getPath();
-            int cut = path.lastIndexOf('_');
-            if (cut <= 0 || cut >= path.length() - 1) {
-                continue;                      // 没有下划线，或下划线在末尾
+            ItemStack probe = e.getValue().get(0);
+            Set<ResourceLocation> normalized = new HashSet<>();
+            probe.getTags().forEach(tag -> {
+                ResourceLocation id = tag.location();
+                if (id == null) {
+                    return;
+                }
+                String path = id.getPath();
+                int slash = path.indexOf('/');
+                normalized.add(slash > 0
+                        ? new ResourceLocation(id.getNamespace(), path.substring(0, slash))
+                        : id);
+            });
+            for (ResourceLocation id : normalized) {
+                if (EXCLUDED.contains(id.toString())) {
+                    continue;
+                }
+                TagKey<Item> ntag = TagKey.create(Registries.ITEM, id);
+                byTag.computeIfAbsent(ntag, k -> new ArrayList<>()).add(probe);
             }
-            String suffix = path.substring(cut + 1);
-            if (suffix.length() < 2 || EXCLUDED.contains(suffix)) {
-                continue;
-            }
-            String key = id.getNamespace() + "|" + suffix;
-            bySuffix.computeIfAbsent(key, k -> new ArrayList<>()).add(e.getValue().get(0));
         }
-        for (Map.Entry<String, List<ItemStack>> e : bySuffix.entrySet()) {
-            List<ItemStack> members = e.getValue();
-            if (members.size() < MIN_GROUP) {
+
+        // 一个物品通常挂着十几个标签，取"成员最少、且够 MIN_GROUP 个"的那个 —— 最具体
+        Map<Item, TagKey<Item>> pick = new HashMap<>();
+        for (Map.Entry<TagKey<Item>, List<ItemStack>> e : byTag.entrySet()) {
+            int size = e.getValue().size();
+            if (size < MIN_GROUP) {
                 continue;
             }
-            String key = "tok|" + e.getKey();
-            int[] ring = members.size() >= RING_MIN ? RING : single(key);
-            GROUPS.put(key, new Group(List.copyOf(members), ring));
-            for (ItemStack s : members) {
+            for (ItemStack s : e.getValue()) {
+                TagKey<Item> cur = pick.get(s.getItem());
+                if (cur == null || byTag.get(cur).size() > size) {
+                    pick.put(s.getItem(), e.getKey());
+                }
+            }
+        }
+
+        // 按 JEI 顺序成组，保证代表格就是列表里第一个
+        Map<TagKey<Item>, List<ItemStack>> members = new LinkedHashMap<>();
+        for (Map.Entry<Item, List<ItemStack>> e : byItem.entrySet()) {
+            TagKey<Item> tag = pick.get(e.getKey());
+            if (tag == null) {
+                continue;
+            }
+            members.computeIfAbsent(tag, k -> new ArrayList<>()).add(e.getValue().get(0));
+        }
+        for (Map.Entry<TagKey<Item>, List<ItemStack>> e : members.entrySet()) {
+            List<ItemStack> ms = e.getValue();
+            if (ms.size() < MIN_GROUP) {
+                continue;
+            }
+            String key = "tag|" + e.getKey().location();
+            int[] ring = ms.size() >= RING_MIN ? RING : single(key);
+            GROUPS.put(key, new Group(List.copyOf(ms), ring));
+            for (ItemStack s : ms) {
                 ITEM_GROUP.put(s.getItem(), key);
             }
         }
 
+        if (pick.isEmpty()) {
+            Medals.LOGGER.warn("[Lost Realm] 物品标签没有凑出任何折叠组（候选标签 {} 个）——"
+                    + "可能是标签还没同步到客户端，或全部被排除表挡掉了", byTag.size());
+        }
         logSummary();
     }
 
@@ -256,27 +302,29 @@ public final class JeiVariantFold {
     }
 
     /**
-     * 读排除表 {@code config/lost_realm/jei_fold_exclude.txt}，没有就生成一份带说明的。
+     * 读排除表 {@code config/lost_realm/jei_fold_exclude_tags.txt}，没有就生成一份带说明的。
      *
-     * <p>后缀规则是"一刀切"的：{@code copper_wire} 和 {@code fine_copper_wire} 都以后缀
-     * {@code wire} 结尾，会被并成一组，但它们的语义并不一样（一个是导线、一个是细导线）。
-     * 这类"看起来同后缀、其实不同东西"的情况没法靠规则自动分辨，所以留给用户一份表，
-     * 想排除哪个后缀就加一行，不必改代码。
+     * <p>折叠按<b>物品标签</b>分组，所以这张表里写的是标签 id，例如
+     * {@code forge:tools}、{@code minecraft:planks}。有些标签本身太宽
+     * （"所有工具"这种），折起来会把不相关的东西混在一起，就写进来关掉。
      */
     private static void loadExclusions() {
         EXCLUDED.clear();
         try {
             Path dir = FMLPaths.CONFIGDIR.get().resolve("lost_realm");
             Files.createDirectories(dir);
-            Path file = dir.resolve("jei_fold_exclude.txt");
+            Path file = dir.resolve("jei_fold_exclude_tags.txt");
             if (!Files.exists(file)) {
                 Files.write(file, List.of(
-                        "# JEI 折叠排除表：每行一个后缀，命中就不折叠。",
-                        "# 后缀 = 注册名最后一个下划线之后的部分。",
-                        "# 例：wire 会让 copper_wire / fine_copper_wire 都不参与折叠；",
-                        "#     想恢复折叠就把那一行删掉或在前面加 #。",
+                        "# JEI 折叠排除表：每行一个物品标签 id，命中则该标签不折叠。",
+                        "# 折叠按标签分组，标签就是「同一类别」的权威定义。",
+                        "# 例：minecraft:planks 会让所有木板不再折叠；",
+                        "#     想恢复就把那一行删掉或在前面加 #。",
                         "# 改完重新进入世界（或重开游戏）生效。",
-                        "wire"
+                        "#",
+                        "# 下面两个是通用大类，折起来会把不相关的混在一起，默认关掉：",
+                        "forge:tools",
+                        "forge:armors"
                 ), StandardCharsets.UTF_8);
             }
             for (String raw : Files.readAllLines(file, StandardCharsets.UTF_8)) {
@@ -292,13 +340,13 @@ public final class JeiVariantFold {
     }
 
     private static void logSummary() {
-        int token = 0;
+        int tagGroups = 0;
         int nbt = 0;
         int hidden = 0;
         List<Map.Entry<String, Group>> big = new ArrayList<>();
         for (Map.Entry<String, Group> e : GROUPS.entrySet()) {
-            if (e.getKey().startsWith("tok|")) {
-                token++;
+            if (e.getKey().startsWith("tag|")) {
+                tagGroups++;
                 big.add(e);
             } else {
                 nbt++;
@@ -311,8 +359,8 @@ public final class JeiVariantFold {
             sb.append(' ').append(big.get(i).getKey().substring(4))
                     .append('(').append(big.get(i).getValue().members().size()).append(')');
         }
-        Medals.LOGGER.info("[Lost Realm] JEI 折叠：{} 组（后缀 {} / NBT {}），收起 {} 项，排除后缀 {}；最大的组:{}",
-                GROUPS.size(), token, nbt, hidden, EXCLUDED, sb);
+        Medals.LOGGER.info("[Lost Realm] JEI 折叠：{} 组（标签 {} / NBT {}），收起 {} 项，排除标签 {}；最大的组:{}",
+                GROUPS.size(), tagGroups, nbt, hidden, EXCLUDED, sb);
     }
 
     /** 默认状态：全部收起，每个组只留代表格（= JEI 顺序里的第一个）。 */
@@ -603,7 +651,7 @@ public final class JeiVariantFold {
                 // 这里画在图标之前、但深度更靠前，所以能压住图标；
                 // 提示框是之后画的、z 同样是 400，会正常盖住这个数字。
                 g.pose().pushPose();
-                g.pose().translate(0.0F, 0.0F, 400.0F);
+                g.pose().translate(0.0F, 0.0F, 200.0F);
                 g.drawString(font, text, tx, ty, 0xFFFFFFFF, true);
                 g.pose().popPose();
 
