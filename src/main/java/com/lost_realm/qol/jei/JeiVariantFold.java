@@ -329,7 +329,13 @@ public final class JeiVariantFold {
         }
         var font = Minecraft.getInstance().font;
         for (IngredientListSlot slot : slots) {
-            IElement<?> element = slot.getElement();
+            // 用 getOptionalElement 而不是 getElement：空槽（翻页后未填充的槽位）
+            // 上 getElement 会抛异常，一旦抛了就被 renderBroken 永久关掉边框
+            var elementOpt = slot.getOptionalElement();
+            if (elementOpt.isEmpty()) {
+                continue;
+            }
+            IElement<?> element = elementOpt.get();
             if (element == null) {
                 continue;
             }
