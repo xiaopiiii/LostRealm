@@ -289,65 +289,6 @@ public final class JeiVariantFold {
             }
         }
 
-        // ③ 兜底：既没进 NBT 组、也没拿到合格标签的物品，按"显示名的共同后缀"聚类
-        //
-        // 为什么可以用显示名：中文命名很规整（铁锭/金锭、铁粉/金粉、小撮粉、齿轮），
-        // 末地烛 / 钓鱼竿 / 烈焰棒 的收尾字不同，一眼就分得开。
-        // 为什么只做兜底：显示名是本地化的 —— 切到英文这三个又都是 "... Rod"，
-        // 分组结果会随语言变化；标签则是作者声明、与语言无关，所以标签优先。
-        Map<Item, String> nameOf = new HashMap<>();
-        for (Map.Entry<Item, List<ItemStack>> e : byItem.entrySet()) {
-            if (claimed.contains(e.getKey()) || pick.containsKey(e.getKey())) {
-                continue;
-            }
-            try {
-                nameOf.put(e.getKey(), e.getValue().get(0).getHoverName().getString());
-            } catch (Throwable ignored) {
-                // 拿不到显示名的（极少数）就不参与
-            }
-        }
-        Map<String, List<Item>> byNameSuffix = new LinkedHashMap<>();
-        for (Map.Entry<Item, String> e : nameOf.entrySet()) {
-            String name = e.getValue();
-            int max = Math.min(6, name.length() - 1);   // 至少留 1 个字给"前半个名字"
-            for (int len = 1; len <= max; len++) {
-                byNameSuffix.computeIfAbsent(name.substring(name.length() - len), k -> new ArrayList<>())
-                        .add(e.getKey());
-            }
-        }
-        Map<Item, String> namePick = new HashMap<>();
-        for (Map.Entry<String, List<Item>> e : byNameSuffix.entrySet()) {
-            if (e.getValue().size() < MIN_GROUP) {
-                continue;
-            }
-            for (Item it : e.getValue()) {
-                String cur = namePick.get(it);
-                if (cur == null || cur.length() < e.getKey().length()) {
-                    namePick.put(it, e.getKey());       // 后缀越长越具体
-                }
-            }
-        }
-        Map<String, List<ItemStack>> nameGroups = new LinkedHashMap<>();
-        for (Map.Entry<Item, List<ItemStack>> e : byItem.entrySet()) {
-            String suf = namePick.get(e.getKey());
-            if (suf == null) {
-                continue;
-            }
-            nameGroups.computeIfAbsent(suf, k -> new ArrayList<>()).add(e.getValue().get(0));
-        }
-        for (Map.Entry<String, List<ItemStack>> e : nameGroups.entrySet()) {
-            List<ItemStack> ms = e.getValue();
-            if (ms.size() < MIN_GROUP) {
-                continue;
-            }
-            String key = "name|" + e.getKey();
-            int[] ring = ms.size() >= RING_MIN ? RING : single(key);
-            GROUPS.put(key, new Group(List.copyOf(ms), ring));
-            for (ItemStack st : ms) {
-                ITEM_GROUP.putIfAbsent(st.getItem(), key);
-            }
-        }
-
         if (pick.isEmpty()) {
             Medals.LOGGER.warn("[Lost Realm] 物品标签没有凑出任何折叠组（候选标签 {} 个）——"
                     + "可能是标签还没同步到客户端，或全部被排除表挡掉了", byTag.size());
@@ -400,16 +341,12 @@ public final class JeiVariantFold {
 
     private static void logSummary() {
         int tagGroups = 0;
-        int nameGroups = 0;
         int nbt = 0;
         int hidden = 0;
         List<Map.Entry<String, Group>> big = new ArrayList<>();
         for (Map.Entry<String, Group> e : GROUPS.entrySet()) {
             if (e.getKey().startsWith("tag|")) {
                 tagGroups++;
-                big.add(e);
-            } else if (e.getKey().startsWith("name|")) {
-                nameGroups++;
                 big.add(e);
             } else {
                 nbt++;
@@ -422,9 +359,8 @@ public final class JeiVariantFold {
             sb.append(' ').append(big.get(i).getKey().substring(4))
                     .append('(').append(big.get(i).getValue().members().size()).append(')');
         }
-        Medals.LOGGER.info("[Lost Realm] JEI 折叠：{} 组（标签 {} / 显示名 {} / NBT {}），收起 {} 项，"
-                        + "排除标签 {}；最大的组:{}",
-                GROUPS.size(), tagGroups, nameGroups, nbt, hidden, EXCLUDED, sb);
+        Medals.LOGGER.info("[Lost Realm] JEI 折叠：{} 组（标签 {} / NBT {}），收起 {} 项，排除标签 {}；最大的组:{}",
+                GROUPS.size(), tagGroups, nbt, hidden, EXCLUDED, sb);
     }
 
     /** 默认状态：全部收起，每个组只留代表格（= JEI 顺序里的第一个）。 */
