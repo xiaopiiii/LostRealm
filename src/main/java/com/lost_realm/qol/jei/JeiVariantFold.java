@@ -13,7 +13,9 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -50,7 +52,8 @@ import com.lost_realm.config.MedalsConfig;
  * <h2>点击冲突怎么处理</h2>
  * 点击折叠组的格子会切换展开状态，代价是那一格不能直接点开配方。
  * 这是需求本身决定的（"点击展开、再点收起"必然占用点击）。
- * 仍然可以选中后用 R / U 键看用途和配方，所以功能没有真正丢失。
+ * 实现上是在 {@code ScreenEvent.MouseButtonPressed.Pre} 里取消这次点击，
+ * 这样 JEI 不会同时弹出配方界面。仍然可以选中后用 R / U 键看用途和配方。
  *
  * <p>只认"组内第一个"作为切换手柄 —— 展开后满屏都是变体，
  * 如果每一个都能点收起，用户点到第二个就收起会很困惑。
@@ -73,7 +76,9 @@ public final class JeiVariantFold {
     private static final Set<Item> EXPANDED = new HashSet<>();
 
     private static boolean ready;
-    private static boolean mouseDown;
+
+    /** 渲染出过一次异常就永久停手 —— 边框是装饰，不能为了它每帧刷日志、拖慢游戏。 */
+    private static boolean renderBroken;
 
     private JeiVariantFold() {}
 
@@ -108,14 +113,6 @@ public final class JeiVariantFold {
             buildGroups();
             ready = true;
             collapseAll();
-            return;
-        }
-        boolean down = mc.mouseHandler.isLeftPressed();
-        if (down && !mouseDown) {
-            mouseDown = true;
-            handleClick();
-        } else if (!down) {
-            mouseDown = false;
         }
     }
 
@@ -223,39 +220,109 @@ public final class JeiVariantFold {
     // 点击
     // ================================================================
 
-    private static void handleClick() {
-        IIngredientListOverlay overlay = runtime.getIngredientListOverlay();
-        if (overlay == null || !overlay.isListDisplayed()) {
+    /**
+     * 点击折叠组的代表槽 = 切换展开 / 收起。
+     *
+     * <h2>为什么挂在 {@code MouseButtonPressed.Pre} 并且要取消</h2>
+     * JEI 自己也是在这个事件里处理"点一下看配方"的
+     * （{@code mezz.jei.forge.startup.EventRegistration#registerClientInputHandler}，
+     * 注册时 {@code receiveCanceled = false}）。所以：
+     * <ul>
+     *   <li>用 {@link EventPriority#HIGHEST} 保证我们比 JEI 先跑；</li>
+     *   <li>处理完立刻 {@code setCanceled(true)} —— JEI 因为不接收已取消事件，
+     *       就看不到这次点击，不会同时弹出配方界面。</li>
+     * </ul>
+     * 如果只是轮询鼠标按键（之前那版的做法），取消不了 JEI 的处理，
+     * 点一下会"既收起又打开配方"，看起来像坏了。
+     *
+     * <p>代价是这一格不能再直接点开配方 —— 这是需求本身决定的
+     * （"点击展开、再点收起"必然占用点击）。选中后按 R / U 仍然可用。
+     */
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void onMousePressed(ScreenEvent.MouseButtonPressed.Pre event) {
+        if (event.getButton() != 0) {
             return;
         }
-        Optional<ITypedIngredient<?>> under = overlay.getIngredientUnderMouse();
-        if (under.isEmpty()) {
+        Item item = anchorUnderMouse();
+        if (item == null) {
             return;
         }
-        Optional<ItemStack> stackOpt = under.get().getItemStack();
-        if (stackOpt.isEmpty()) {
-            return;
+        event.setCanceled(true);
+        try {
+            toggle(item);
+        } catch (Throwable t) {
+            Medals.LOGGER.warn("[Lost Realm] JEI 变体折叠切换失败", t);
         }
-        ItemStack stack = stackOpt.get();
-        List<ItemStack> variants = GROUPS.get(stack.getItem());
-        if (variants == null || variants.size() < 2) {
-            return;
+    }
+
+    /** 鼠标下的那个物品，若它是某个折叠组的代表格，就返回该物品。 */
+    private static Item anchorUnderMouse() {
+        if (runtime == null || !enabled() || GROUPS.isEmpty()) {
+            return null;
         }
-        // 只有"代表"那一格能切换，否则展开后满屏变体每格都能点，很容易误收
-        if (!ItemStack.isSameItemSameTags(variants.get(0), stack)) {
-            return;
+        try {
+            IIngredientListOverlay overlay = runtime.getIngredientListOverlay();
+            if (overlay == null || !overlay.isListDisplayed()) {
+                return null;
+            }
+            Optional<ITypedIngredient<?>> under = overlay.getIngredientUnderMouse();
+            if (under.isEmpty()) {
+                return null;
+            }
+            Optional<ItemStack> stackOpt = under.get().getItemStack();
+            if (stackOpt.isEmpty()) {
+                return null;
+            }
+            ItemStack stack = stackOpt.get();
+            List<ItemStack> variants = GROUPS.get(stack.getItem());
+            if (variants == null || variants.size() < 2) {
+                return null;
+            }
+            // 只有"代表"那一格能切换，否则展开后满屏变体每格都能点，很容易误收
+            if (!ItemStack.isSameItemSameTags(variants.get(0), stack)) {
+                return null;
+            }
+            return stack.getItem();
+        } catch (Throwable t) {
+            return null;
         }
-        toggle(stack.getItem());
     }
 
     // ================================================================
     // 渲染（由 mixin 在 IngredientListRenderer.render 末尾调用）
     // ================================================================
 
-    public static void renderFrames(GuiGraphics g, IngredientListRenderer renderer) {
-        if (runtime == null || !enabled() || GROUPS.isEmpty()) {
+    /** 需要叠在图标之上的角标，等 JEI 画完这一帧再补。 */
+    private record Badge(int x, int y, int w, String text) {}
+
+    private static final List<Badge> BADGES = new ArrayList<>();
+
+    /**
+     * 由 mixin 在 {@code IngredientListRenderer.render} 开头调用。
+     *
+     * <p>此时 JEI 已经铺好每个槽位的底色、还没画图标（顺序见
+     * {@code IngredientGrid.drawContents}：先 slot 贴图，再 renderer.render）。
+     * 所以边框画在这里恰好压在槽底上、图标之下，不会被图标盖掉。
+     *
+     * <p>数量角标比图标小不了多少，压在这层一定会被图标盖住，
+     * 所以只把它的位置记下来，等这一帧全部画完再补 —— 见 {@link #onRenderPost}。
+     */
+    public static void captureAndDraw(GuiGraphics g, IngredientListRenderer renderer) {
+        BADGES.clear();
+        if (renderBroken || runtime == null || !enabled() || GROUPS.isEmpty()) {
             return;
         }
+        try {
+            captureAndDraw0(g, renderer);
+        } catch (Throwable t) {
+            // 画边框只是装饰。出一次错就把自己关掉，绝不能让它每帧抛异常把游戏拖死。
+            renderBroken = true;
+            BADGES.clear();
+            Medals.LOGGER.warn("[Lost Realm] JEI 变体折叠边框绘制失败，已停用边框（折叠本身不受影响）", t);
+        }
+    }
+
+    private static void captureAndDraw0(GuiGraphics g, IngredientListRenderer renderer) {
         List<IngredientListSlot> slots = renderer.getAllSlots();
         if (slots == null || slots.isEmpty()) {
             return;
@@ -283,21 +350,45 @@ public final class JeiVariantFold {
             // 展开后每格都是组员，只有代表那格画"可收起"的框，其余画细框
             boolean anchor = ItemStack.isSameItemSameTags(variants.get(0), stackOpt.get());
             ImmutableRect2i area = slot.getArea();
-            drawFrame(g, area, colorFor(item), anchor, open ? 2 : 1);
+            drawFrame(g, area, colorFor(item), anchor ? 2 : 1);
 
             if (anchor) {
-                String badge = open ? "−" : String.valueOf(variants.size());
-                int bx = area.getX() + area.getWidth() - font.width(badge) - 1;
+                String badge = open ? "-" : String.valueOf(variants.size());
+                int w = font.width(badge);
+                int bx = area.getX() + area.getWidth() - w - 1;
                 int by = area.getY() + area.getHeight() - 9;
-                g.fill(bx - 1, by - 1,
-                        area.getX() + area.getWidth(), area.getY() + area.getHeight(), 0xC0000000);
-                g.drawString(font, badge, bx, by, 0xFFFFFFFF, true);
+                BADGES.add(new Badge(bx, by, w, badge));
             }
         }
     }
 
-    private static void drawFrame(GuiGraphics g, ImmutableRect2i area, int color,
-                                  boolean thick, int weight) {
+    /**
+     * 这一帧画完后再补数量角标。
+     *
+     * <p>用 {@link EventPriority#LOWEST} 排在 JEI 自己的 {@code Render.Post}
+     * （NORMAL 优先级）之后，才画得到图标上面。
+     */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onRenderPost(ScreenEvent.Render.Post event) {
+        if (BADGES.isEmpty()) {
+            return;
+        }
+        try {
+            GuiGraphics g = event.getGuiGraphics();
+            var font = Minecraft.getInstance().font;
+            for (Badge b : BADGES) {
+                g.fill(b.x() - 1, b.y() - 1, b.x() + b.w() + 1, b.y() + 9, 0xC0000000);
+                g.drawString(font, b.text(), b.x(), b.y(), 0xFFFFFFFF, true);
+            }
+        } catch (Throwable t) {
+            renderBroken = true;
+            Medals.LOGGER.warn("[Lost Realm] JEI 变体折叠角标绘制失败，已停用边框", t);
+        } finally {
+            BADGES.clear();
+        }
+    }
+
+    private static void drawFrame(GuiGraphics g, ImmutableRect2i area, int color, int weight) {
         int x0 = area.getX();
         int y0 = area.getY();
         int x1 = x0 + area.getWidth();
