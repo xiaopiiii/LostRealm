@@ -443,53 +443,33 @@ public final class EmiFold {
      * 往里 10px 起</b>：18×18 格的图标中心在 (9,9)，从 10 起就永远碰不到中心，
      * 点物品本体不会被当成"展开/收起"。
      */
+    private static final float BADGE_SCALE = 0.5F;
     private static final int BADGE_H = 5;
     private static final int BADGE_HIT = 10;
-    /** 收起/展开的小箭头宽度。像素太小，自己画比用字形干净。 */
-    private static final int ARROW_W = 3;
 
     /**
-     * 3×5 点阵数字。<b>不是字体</b>，自己画 —— 原因有两个：
-     * <ul>
-     *   <li>MC 字体缩到 0.5 时是"像素抽样"，笔画会掉点、糊成一团，看着比实际更大更脏；</li>
-     *   <li>3×5 正好塞进 16px 图标右下角，还能缩：一位数只占 7px 宽、5px 高。</li>
-     * </ul>
-     * 每行 3 bit，从高位到低位是左到右。这就是"贴图逻辑"：一个像素一个像素地放。
-     */
-    private static final int[][] DIGIT = {
-            {0b111, 0b101, 0b101, 0b101, 0b111},   // 0
-            {0b010, 0b110, 0b010, 0b010, 0b111},   // 1
-            {0b111, 0b001, 0b111, 0b100, 0b111},   // 2
-            {0b111, 0b001, 0b111, 0b001, 0b111},   // 3
-            {0b101, 0b101, 0b111, 0b001, 0b001},   // 4
-            {0b111, 0b100, 0b111, 0b001, 0b111},   // 5
-            {0b111, 0b100, 0b111, 0b101, 0b111},   // 6
-            {0b111, 0b001, 0b010, 0b010, 0b010},   // 7
-            {0b111, 0b101, 0b111, 0b101, 0b111},   // 8
-            {0b111, 0b101, 0b111, 0b001, 0b111},   // 9
-    };
-
-    /** 点阵数字串的宽度（每位 3px + 1px 间隔）。 */
-    private static int digitsWidth(int count) {
-        int n = digitsOf(count);
-        return n * 4 - 1;
-    }
-
-    private static int digitsOf(int count) {
-        String s = String.valueOf(Math.max(count, 0));
-        return s.length();
-    }
-
-    /**
-     * 角标的尺寸。宽度跟数字位数走：{@code 位数*4-1 + 1 + 3(箭头)}。
-     * 一位数 7px、两位数 11px、三位数 15px，高度固定 5px。
+     * 角标上写什么：数字 + 一个方向符 —— 收起 {@code <}，展开 {@code >}。
      *
-     * <p>返回 {@code {画, 画, 宽, 高, 热区x, 热区y, 热区w, 热区h}}。
+     * <p>直接当字符串写，让 MC 字体去排版：字距、笔画粗细都是原版的，
+     * 三位数也不会像点阵那样一格一格撑开。
      */
-    private static int[] badgeRect(int cellX, int cellY, int count) {
-        int bw = digitsWidth(count) + 1 + ARROW_W;
-        int bx = cellX + CELL - 2 - bw;          // 右对齐到图标右边缘
-        int by = cellY + CELL - 2 - BADGE_H;     // 下对齐到图标下边缘
+    private static String badgeText(String group, int count) {
+        return Math.max(count, 0) + (EXPANDED.contains(group) ? ">" : "<");
+    }
+
+    /**
+     * 角标的位置。整串按 {@link #BADGE_SCALE} 缩放后<b>右端贴着图标右缘、
+     * 底边贴着图标下缘</b>，能塞多靠角就多靠角。
+     *
+     * <p>返回 {@code {bx, by, bw, bh, 热区x, 热区y, 热区w, 热区h}}。
+     * 热区比字大一丁点，但仍然<b>从格子右下角往里 10px 起</b>：18×18 格的
+     * 图标中心在 (9,9)，从 10 起就永远碰不到中心，点物品本体不会被当成展开/收起。
+     */
+    private static int[] badgeRect(int cellX, int cellY, String group, int count) {
+        var font = Minecraft.getInstance().font;
+        int bw = Math.max(2, Math.round(font.width(badgeText(group, count)) * BADGE_SCALE));
+        int bx = cellX + CELL - 1 - bw;                 // 右端 = 图标右缘 x+17
+        int by = cellY + CELL - 2 - (BADGE_H - 1);      // 底边 = 图标下缘 y+16
         int hx = Math.min(bx, cellX + BADGE_HIT);
         int hy = Math.min(by, cellY + BADGE_HIT);
         int hw = Math.max(bx + bw, cellX + CELL) - hx;
@@ -545,7 +525,7 @@ public final class EmiFold {
             boolean anchor = isAnchorAt(list, i, group);
             if (anchor) {
                 int count = sizeOf(group);
-                int[] r = badgeRect(x, y, count);
+                int[] r = badgeRect(x, y, group, count);
                 return new Cell(x, y, st, group, true, r[4], r[5], r[6], r[7]);
             }
             return new Cell(x, y, st, group, false, 0, 0, 0, 0);
@@ -1348,73 +1328,29 @@ public final class EmiFold {
     }
 
     /**
-     * 右下角的角标：<b>点阵数字 + 一个小箭头</b>，没有边框、没有底色。
+     * 右下角的角标：<b>数字 + 方向符</b>，没有边框、没有底色、也不画影子。
      *
-     * <p>为什么把边框去掉：这块地方只有 16px 见方，1px 的框一圈就要吃掉
-     * 两行两列像素，框本身还自带"厚度感"，怎么缩都显得大。
-     * 去掉框以后，画的每一个像素都是信息本身。
-     *
-     * <p>数字用 {@link #DIGIT} 的 3×5 点阵逐像素画（不是 MC 字体缩半），
-     * 所以笔画不会掉、也不会糊；右下各补 1px 深色影子，压在亮色图标上也看得清。
+     * <p>一路缩下来的结论：
+     * <ul>
+     *   <li>边框最先去掉 —— 16px 见方里 1px 的框一圈就吃掉两行两列，框本身还自带厚度感；</li>
+     *   <li>点阵字体也去掉 —— 3×5 的笔画太粗，三位数一格一格撑开，比原版字体还占地方；</li>
+     *   <li>现在就是原版字体缩到 0.5，字距、笔画都交给它自己排，整串右端贴图标右缘、
+     *       底边贴图标下缘，能靠多角就靠多角。</li>
+     * </ul>
      */
     private static void drawBadge(GuiGraphics g, int x, int y, String group, int count) {
-        boolean open = EXPANDED.contains(group);
-        int[] r = badgeRect(x, y, count);
-        int bx = r[0];
-        int by = r[1];
+        var font = Minecraft.getInstance().font;
+        int[] r = badgeRect(x, y, group, count);
+        String text = badgeText(group, count);
 
         g.pose().pushPose();
         // 抬 z：EMI 的物品是批量绘制、最后统一 flush 的，
         // 光靠"事件更靠后"压不住，数字会钻到图标底下
         g.pose().translate(0.0F, 0.0F, 200.0F);
-
-        // 先画一遍影子（右下各 1px），再画本体 —— 原版物品数量的做法
-        drawDigits(g, bx + 1, by + 1, count, 0xC0000000);
-        drawArrow(g, bx + digitsWidth(count) + 1, by + 1, open, 0xC0000000);
-        drawDigits(g, bx, by, count, 0xFFFFFFFF);
-        drawArrow(g, bx + digitsWidth(count) + 1, by, open, 0xFFFFFFFF);
-
+        g.pose().translate(r[0], r[1], 0.0F);
+        g.pose().scale(BADGE_SCALE, BADGE_SCALE, 1.0F);
+        g.drawString(font, text, 0, 0, 0xFFFFFFFF, false);
         g.pose().popPose();
-    }
-
-    /** 逐像素画数字。 */
-    private static void drawDigits(GuiGraphics g, int x, int y, int count, int color) {
-        String s = String.valueOf(Math.max(count, 0));
-        int cx = x;
-        for (int i = 0; i < s.length(); i++) {
-            int d = s.charAt(i) - '0';
-            if (d < 0 || d > 9) {
-                cx += 4;
-                continue;
-            }
-            int[] rows = DIGIT[d];
-            for (int row = 0; row < rows.length; row++) {
-                int bits = rows[row];
-                for (int col = 0; col < 3; col++) {
-                    if ((bits & (0b100 >> col)) != 0) {
-                        g.fill(cx + col, y + row, cx + col + 1, y + row + 1, color);
-                    }
-                }
-            }
-            cx += 4;
-        }
-    }
-
-    /** 3×5 的 "&lt;" / "&gt;"。 */
-    private static void drawArrow(GuiGraphics g, int x, int y, boolean open, int color) {
-        if (open) {
-            g.fill(x, y, x + 1, y + 1, color);
-            g.fill(x + 1, y + 1, x + 2, y + 2, color);
-            g.fill(x + 2, y + 2, x + 3, y + 3, color);
-            g.fill(x + 1, y + 3, x + 2, y + 4, color);
-            g.fill(x, y + 4, x + 1, y + 5, color);
-        } else {
-            g.fill(x + 2, y, x + 3, y + 1, color);
-            g.fill(x + 1, y + 1, x + 2, y + 2, color);
-            g.fill(x, y + 2, x + 1, y + 3, color);
-            g.fill(x + 1, y + 3, x + 2, y + 4, color);
-            g.fill(x + 2, y + 4, x + 3, y + 5, color);
-        }
     }
 
     private static void drawSelection(GuiGraphics g) {
