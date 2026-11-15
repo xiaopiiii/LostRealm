@@ -7,14 +7,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.mojang.blaze3d.platform.InputConstants;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
+
+import org.lwjgl.glfw.GLFW;
 
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
@@ -37,10 +40,13 @@ import com.lost_realm.Medals;
  *
  * <h2>怎么用</h2>
  * <ul>
- *   <li><b>Ctrl + 左键拖拽</b>：在 EMI 物品列表上拉一个框，松手即成组。</li>
+ *   <li><b>右 Ctrl + 右 Shift + 左键拖拽</b>：在 EMI 物品列表上拉一个框，松手即成组。</li>
  *   <li><b>左键点折叠格</b>：展开 / 收起。展开后成员紧跟在它后面。</li>
- *   <li><b>Ctrl + 左键单击折叠格</b>：解除这一组。</li>
+ *   <li><b>右 Ctrl + 右 Shift + 左键单击折叠格</b>：解除这一组。</li>
  * </ul>
+ *
+ * <p>修饰键刻意选右 Ctrl + 右 Shift：EMI 自己占用了左 Ctrl + 左键
+ * （取整组 / 拖拽），抢那个组合会连带影响原有操作。
  *
  * <h2>折叠的是哪一份列表</h2>
  * 注入 {@code EmiSidebars.getStacks(SidebarType)} 的返回值 —— 那正是列表渲染用的
@@ -315,16 +321,39 @@ public final class EmiFold {
     // 事件
     // ================================================================
 
+    /**
+     * 框选修饰键：<b>右 Ctrl + 右 Shift</b>。
+     *
+     * <p>为什么不用左 Ctrl：EMI 自己占用了 Ctrl+左键（取整组 / 拖拽），
+     * 抢它的点击会连带影响原有操作。右 Ctrl 与右 Shift 在 EMI 里没有绑定，
+     * 而且要求两个键同时按下，平时误触的概率极低。
+     *
+     * <p>必须直接查 GLFW 的按键状态：MC 的 {@code Screen.hasControlDown()}
+     * 把左右 Control 算作同一个键，区分不出来。
+     */
+    private static boolean isModifierDown() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc == null || mc.getWindow() == null) {
+            return false;
+        }
+        long win = mc.getWindow().getWindow();
+        if (win == 0L) {
+            return false;
+        }
+        return InputConstants.isKeyDown(win, GLFW.GLFW_KEY_RIGHT_CONTROL)
+                && InputConstants.isKeyDown(win, GLFW.GLFW_KEY_RIGHT_SHIFT);
+    }
+
     /** 按下。返回 true 表示消费掉这次点击。 */
     private static boolean onPress(double mx, double my, int button) {
         if (button != 0) {
             return false;
         }
-        boolean ctrl = Screen.hasControlDown();
+        boolean mod = isModifierDown();
         Cell cell = cellAt(mx, my);
 
-        if (ctrl && inEmiPanel(mx, my)) {
-            // Ctrl+左键统一从这里起手：可能是框选，也可能是点折叠格（松手时按位移区分）
+        if (mod && inEmiPanel(mx, my)) {
+            // 右Ctrl+右Shift+左键统一从这里起手：可能是框选，也可能是点折叠格（松手时按位移区分）
             pressedAnchor = (cell != null && cell.anchor()) ? cell.group() : null;
             selecting = true;
             selX0 = mx;
@@ -375,12 +404,39 @@ public final class EmiFold {
         return true;
     }
 
+    /**
+     * 鼠标是否落在某个 EMI 面板上。
+     *
+     * <p>先问 EMI 自己的命中结果；万一那个方法在某个版本里返回 null（它算的是
+     * "悬停中的面板"，鼠标停在面板边角时偶尔不认），再退回直接比对各面板的边界。
+     * 少了这层回退，框选会表现为"按了没反应"，很难查。
+     */
     private static boolean inEmiPanel(double mx, double my) {
         try {
-            return EmiScreenManager.getHoveredPanel((int) mx, (int) my) != null;
-        } catch (Throwable t) {
-            return false;
+            if (EmiScreenManager.getHoveredPanel((int) mx, (int) my) != null) {
+                return true;
+            }
+        } catch (Throwable ignored) {
+            // 落到下面的边界比对
         }
+        for (SidebarSide side : SidebarSide.values()) {
+            if (side == SidebarSide.NONE) {
+                continue;
+            }
+            try {
+                SidebarPanel p = EmiScreenManager.getPanelFor(side);
+                if (p == null || !p.isVisible()) {
+                    continue;
+                }
+                Bounds b = p.getBounds();
+                if (b != null && b.contains((int) mx, (int) my)) {
+                    return true;
+                }
+            } catch (Throwable ignored) {
+                // 单个面板取不到就算了
+            }
+        }
+        return false;
     }
 
     // ================================================================
