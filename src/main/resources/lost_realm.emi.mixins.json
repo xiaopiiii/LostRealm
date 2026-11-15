@@ -1,0 +1,13 @@
+{
+  "required": false,
+  "package": "com.lost_realm.mixin.emi",
+  "compatibilityLevel": "JAVA_17",
+  "minVersion": "0.8",
+  "refmap": "lost_realm.refmap.json",
+  "client": [
+    "EmiSidebarsMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}
