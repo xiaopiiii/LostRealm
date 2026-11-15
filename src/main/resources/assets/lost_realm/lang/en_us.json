@@ -1369,5 +1369,7 @@
   "gui.lost_realm.chunk_loader.state_off": "Force-loading: OFF",
   "gui.lost_realm.chunk_loader.idle_hint": "Disabled — no chunks are held",
   "config.emi.lostrealm_fold_edit": "Fold editing (Lost Realm)",
-  "config.emi.tooltip.lostrealm_fold_edit": "Only affects editing. When off, selection/folding/dissolving and the bottom buttons stop; existing groups stay folded and can still be expanded."
+  "config.emi.tooltip.lostrealm_fold_edit": "Only affects editing. When off, selection/folding/dissolving and the bottom buttons stop; existing groups stay folded and can still be expanded.",
+  "config.emi.lostrealm_recipe_pages": "Show recipe category pages (Lost Realm)",
+  "config.emi.tooltip.lostrealm_recipe_pages": "When recipe category tabs do not fit, show \"page/total\" at the left end of the tab bar. Scroll over the tab bar to change pages."
 }

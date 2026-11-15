@@ -72,6 +72,12 @@ public final class EmiFoldStore {
      */
     private static boolean stickySelect;
 
+    /**
+     * 配方界面顶上一排"配方类型"标签多了会分页，开关控制要不要在标签栏左端
+     * 显示 {@code 当前页/总页数}。
+     */
+    private static boolean showRecipePages = true;
+
     private static long lastModified = -1L;
     private static boolean everLoaded;
 
@@ -116,6 +122,7 @@ public final class EmiFoldStore {
         JsonObject root = JsonParser.parseString(text).getAsJsonObject();
         editEnabled = !root.has("editEnabled") || root.get("editEnabled").getAsBoolean();
         stickySelect = root.has("stickySelect") && root.get("stickySelect").getAsBoolean();
+        showRecipePages = !root.has("showRecipePages") || root.get("showRecipePages").getAsBoolean();
         JsonElement arr = root.get("groups");
         if (arr == null || !arr.isJsonArray()) {
             return;
@@ -165,6 +172,7 @@ public final class EmiFoldStore {
         root.add("_readme", readme);
         root.addProperty("editEnabled", true);
         root.addProperty("stickySelect", false);
+        root.addProperty("showRecipePages", true);
         root.add("groups", new JsonArray());
         Files.writeString(f, new GsonBuilder().setPrettyPrinting().create().toJson(root) + "\n",
                 StandardCharsets.UTF_8);
@@ -186,6 +194,7 @@ public final class EmiFoldStore {
             root.add("_readme", readme);
             root.addProperty("editEnabled", editEnabled);
             root.addProperty("stickySelect", stickySelect);
+            root.addProperty("showRecipePages", showRecipePages);
 
             JsonArray groups = new JsonArray();
             for (Map.Entry<String, List<String>> e : GROUPS.entrySet()) {
@@ -244,6 +253,20 @@ public final class EmiFoldStore {
         editEnabled = !editEnabled;
         save();
         return editEnabled;
+    }
+
+    /** 配方类型分页的页数指示是否显示。 */
+    public static boolean isShowRecipePages() {
+        return showRecipePages;
+    }
+
+    /** 设定"显示配方类型页数"并立刻落盘。 */
+    public static void setShowRecipePages(boolean value) {
+        if (showRecipePages == value) {
+            return;
+        }
+        showRecipePages = value;
+        save();
     }
 
     /** 直接设定折叠编辑开关（EMI 配置界面的那一行用它）。 */

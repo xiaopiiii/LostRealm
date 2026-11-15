@@ -1094,6 +1094,9 @@ public final class EmiFold {
         Minecraft mc = Minecraft.getInstance();
         Screen screen = mc.screen;
 
+        // 配方界面顶上的"配方类型第几页/共几页"
+        EmiRecipeTabs.draw(g, screen);
+
         // EMI 的配置界面：别的都不画。
         // 开关本身已经作为一行正经设置挂进列表里了（见 EmiFoldConfig）；
         // 只有在那一行没挂上（EMI 内部结构变了）时才退回左下角手画的那个。

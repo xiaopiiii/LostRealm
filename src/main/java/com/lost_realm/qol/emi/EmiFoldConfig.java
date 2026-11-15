@@ -1,14 +1,15 @@
 package com.lost_realm.qol.emi;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.network.chat.Component;
 
 import dev.emi.emi.screen.ConfigScreen;
 import dev.emi.emi.screen.widget.config.BooleanWidget;
-import dev.emi.emi.screen.widget.config.ConfigEntryWidget;
 import dev.emi.emi.screen.widget.config.ConfigSearch;
 import dev.emi.emi.screen.widget.config.GroupNameWidget;
 import dev.emi.emi.screen.widget.config.ListWidget;
@@ -16,131 +17,137 @@ import dev.emi.emi.screen.widget.config.ListWidget;
 import com.lost_realm.Medals;
 
 /**
- * 把「折叠编辑」做成 EMI 配置界面里的<b>一行正经设置</b>，而不是自己画在左下角。
+ * 把本模组的几个开关做成 EMI 配置界面里的<b>正经设置行</b>。
  *
- * <h2>为什么不能只画一个</h2>
- * 左下角那个手画的小方块长得就不像配置项：位置不在列表里、不参与搜索、
- * 不跟着分组折叠、也不受"放弃变更 / 完成"那一套约束，看着就像外挂上去的。
- * 要做成原生的，就得往 EMI 自己的 {@code ConfigScreen.list} 里塞一个
- * {@link BooleanWidget}。
+ * <h2>为什么不能自己画</h2>
+ * 手画的方块不在列表里：不参与搜索、不跟着分组折叠、不受"放弃变更 / 完成"约束，
+ * 看着就像外挂上去的。要做成原生的，只能往 EMI 自己的 {@code ConfigScreen.list}
+ * 里塞 {@link BooleanWidget}。
  *
  * <h2>塞在哪儿</h2>
- * EMI 的配置项是按"分组名 + 子项"拍平的：{@code GroupNameWidget} 是分组标题，
- * 后面若干 {@code ConfigEntryWidget} 是它的子项，子项的 {@code parentGroups}
- * 指向所属分组（决定缩进、折叠时是否隐藏）。所以只要找到 id 为 {@code dev}
- * 的那个分组，把我们的行插在它最后一个子项后面，渲染出来的位置、样式、
- * 鼠标悬停就和原版那几行一模一样。
+ * EMI 的配置项是按"分组标题 {@code GroupNameWidget} + 若干 {@code ConfigEntryWidget}"
+ * 拍平的，子项的 {@code parentGroups} 指向所属分组。找到对应 id 的分组
+ * （{@code dev} = 开发，{@code general} = 基础），把行插在分组标题正下方第一项。
  *
- * <h2>为什么在渲染时插，而不是在 init 里</h2>
- * 一开始是混进 {@code addJumpButtons} 里插的，结果那一行跑到了列表最顶上
- * （那时候列表还没填完，等于插在开头），翻到「开发」当然看不见。
- * 改成每帧渲染前检查一次：这时 {@code init()} 早就跑完、列表也齐了，
- * 插入位置一定落在分组末尾。用列表对象本身去重，窗口缩放重建列表也能自动补上。
+ * <h2>两个坑（都踩过）</h2>
+ * <ol>
+ *   <li>{@code BooleanWidget} 的 {@code Supplier<String>} 参数<b>不是</b>本项关键词，
+ *       而是<b>搜索框里的查询词</b>：{@code isVisible()} 做的是
+ *       {@code 本项文本.contains(查询词)}。传错的话空搜索框下
+ *       {@code "".contains("关键词")} 恒为 false，整行永远不渲染。</li>
+ *   <li>插入时机必须在列表填完之后。放在 {@code addJumpButtons} 里插会跑到列表最顶上，
+ *       所以改成每帧渲染前检查一次、缺了哪行补哪行。</li>
+ * </ol>
  *
- * <h2>为什么要反射</h2>
- * {@code ListWidget.children} 是私有字段，而且 {@code m_6702_()} 在不同映射下
- * 名字不一样。直接读字段名 {@code children}（EMI 自己的字段名，不参与 MC 映射）最稳。
- *
- * <p>整段包在 try/catch 里：万一 EMI 改了内部结构，这里静默失败，
- * 外面会自动退回"左下角手画那个开关"的老方案，功能不会跟着一起没。
+ * <p>整段包在 try/catch 里：EMI 改内部结构就静默失败，
+ * 折叠那边会自动退回"左下角手画开关"的老方案。
  */
 public final class EmiFoldConfig {
 
-    /** 已经成功插进去的那个列表实例 —— 顺便当"插过了"的标记。 */
-    private static ListWidget lastList;
-    private static boolean installed;
+    /** 一行原生设置。 */
+    private record Row(String groupId, String labelKey, String tooltipKey, String key,
+                       Supplier<Boolean> getter, java.util.function.Consumer<Boolean> setter) {
+    }
+
+    private static final List<Row> ROWS = new ArrayList<>();
+
+    static {
+        ROWS.add(new Row("dev", "config.emi.lostrealm_fold_edit",
+                "config.emi.tooltip.lostrealm_fold_edit", "fold_edit",
+                EmiFoldStore::isEditEnabled,
+                v -> {
+                    EmiFoldStore.setEditEnabled(Boolean.TRUE.equals(v));
+                    EmiFold.editToggled();
+                }));
+        ROWS.add(new Row("general", "config.emi.lostrealm_recipe_pages",
+                "config.emi.tooltip.lostrealm_recipe_pages", "recipe_pages",
+                EmiFoldStore::isShowRecipePages,
+                v -> EmiFoldStore.setShowRecipePages(Boolean.TRUE.equals(v))));
+    }
+
+    private static boolean foldRowPresent;
 
     private EmiFoldConfig() {}
 
-    /** 当前列表里已经有我们那一行了吗（没有就画左下角兜底开关）。 */
+    /** 折叠编辑那一行在位吗（不在就画左下角兜底开关）。 */
     public static boolean installed() {
-        return installed;
+        return foldRowPresent;
     }
 
-    /**
-     * 每帧调用一次，保证配置列表里有我们那一行。
-     *
-     * <p>不是靠一个"插过了"的布尔值就收工：EMI 在搜索框有内容时会重建条目列表
-     * （同一个 ListWidget，children 换一批），那种情况下标记会骗人。
-     * 每帧扫一眼列表里还有没有那一行最实在，代价是几十次 instanceof。
-     */
+    /** 每帧调用一次，缺哪行补哪行。 */
     public static void ensure(ConfigScreen screen) {
         if (screen == null) {
             return;
         }
-        ListWidget list = listOf(screen);
-        if (list == null) {
-            return;
-        }
-        List<Object> entries = entriesOf(list);
-        if (entries == null) {
-            return;
-        }
-        for (Object o : entries) {
-            if (o instanceof FoldEditEntry) {
-                lastList = list;
-                installed = true;
+        try {
+            ListWidget list = listOf(screen);
+            if (list == null) {
                 return;
             }
+            List<Object> entries = entriesOf(list);
+            if (entries == null) {
+                return;
+            }
+            for (Row row : ROWS) {
+                if (!containsKey(entries, row.key())) {
+                    install(screen, entries, row);
+                }
+            }
+            foldRowPresent = containsKey(entries, "fold_edit");
+        } catch (Throwable t) {
+            Medals.LOGGER.debug("[Lost Realm] 刷新 EMI 配置行失败", t);
         }
-        lastList = list;
-        installed = false;
-        install(screen, list, entries);
     }
 
-    private static void install(ConfigScreen screen, ListWidget list, List<Object> entries) {
+    private static boolean containsKey(List<Object> entries, String key) {
+        for (Object o : entries) {
+            if (o instanceof RowEntry e && key.equals(e.key)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void install(ConfigScreen screen, List<Object> entries, Row row) {
         try {
-            GroupNameWidget dev = null;
+            GroupNameWidget group = null;
             for (Object o : entries) {
-                if (o instanceof GroupNameWidget g && "dev".equals(g.id)) {
-                    dev = g;
+                if (o instanceof GroupNameWidget g && row.groupId().equals(g.id)) {
+                    group = g;
                     break;
                 }
             }
-            if (dev == null) {
+            if (group == null) {
                 return;
             }
-
-            FoldEditEntry entry = new FoldEditEntry(screen);
-            entry.parentGroups = List.of(dev);
-            entry.endGroup = false;
-
-            // 放在「开发」分组的第一项：跟在分组标题正下方，一眼就能看到。
-            // 挂到组尾的话，这一行会落在列表最底部（开发是最后一组），
-            // 不进到最底下一行是看不见的 —— 上一次就是这么"消失"的。
-            int at = entries.indexOf(dev);
+            RowEntry entry = new RowEntry(screen, row);
+            entry.parentGroups = List.of(group);
+            int at = entries.indexOf(group);
             at = at < 0 ? entries.size() : at + 1;
             try {
-                dev.children.add(0, entry);
+                group.children.add(0, entry);
             } catch (Throwable ignored) {
                 // 分组列表不可写也不能让整行消失 —— 下面照样插进 list
             }
             try {
                 entries.add(at, entry);
-                entry.parentList = list;
             } catch (Throwable t) {
-                list.addEntry(entry);
+                Medals.LOGGER.debug("[Lost Realm] 直接插入配置行失败", t);
             }
-            installed = true;
-            Medals.LOGGER.info("[Lost Realm] 折叠编辑已挂进 EMI 配置界面（开发分组第 {} 项，共 {} 项）",
-                    at, entries.size());
+            Medals.LOGGER.info("[Lost Realm] 配置行「{}」已挂进 EMI 配置界面（{} 分组第 {} 项）",
+                    row.key(), row.groupId(), at);
         } catch (Throwable t) {
-            Medals.LOGGER.warn("[Lost Realm] 往 EMI 配置界面加设置行失败，退回左下角开关", t);
+            Medals.LOGGER.warn("[Lost Realm] 往 EMI 配置界面加设置行失败", t);
         }
     }
 
     /**
      * 配置界面搜索框的当前内容。
      *
-     * <p>这个参数<b>不是</b>"这一项的搜索关键词"，而是<b>查询词本身</b>：
-     * {@code ConfigEntryWidget.isVisible()} 干的是
-     * {@code 本项可搜文本.contains(查询词)}，查询词为空就算可见。
-     * 一开始我把自己那串关键词传了进去，于是空搜索框时
-     * {@code "".contains("遗落境 折叠编辑")} 恒为 false —— 整行直接被判为不可见，
-     * 插是插进去了，永远不渲染。这就是"配置菜单里看不到"的真正原因。
+     * <p>见类注释第 1 个坑：这个 Supplier 必须返回<b>查询词</b>，不是本项关键词。
      */
-    private static java.util.function.Supplier<String> queryOf(ConfigScreen screen) {
-        return new java.util.function.Supplier<>() {
+    private static Supplier<String> queryOf(ConfigScreen screen) {
+        return new Supplier<>() {
             private ConfigSearch box;
             private boolean resolved;
 
@@ -200,32 +207,34 @@ public final class EmiFoldConfig {
         return null;
     }
 
-    /** 就是 EMI 原生的那个"开/关"按钮行，只是读写我们自己的开关。 */
-    private static final class FoldEditEntry extends BooleanWidget {
+    /** EMI 原生的"开/关"按钮行，只是读写我们自己的开关。 */
+    private static final class RowEntry extends BooleanWidget {
 
-        FoldEditEntry(ConfigScreen screen) {
-            super(Component.translatable("config.emi.lostrealm_fold_edit"),
-                    tooltip(),
+        /** 用来认领：列表重建后判断这一行还在不在。 */
+        private final String key;
+
+        RowEntry(ConfigScreen screen, Row row) {
+            super(Component.translatable(row.labelKey()),
+                    tooltip(row.tooltipKey()),
                     queryOf(screen),
                     screen.new Mutator<Boolean>() {
                         @Override
                         protected Boolean getValue() {
-                            return EmiFoldStore.isEditEnabled();
+                            return row.getter().get();
                         }
 
                         @Override
                         protected void setValue(Boolean value) {
-                            EmiFoldStore.setEditEnabled(Boolean.TRUE.equals(value));
-                            EmiFold.editToggled();
+                            row.setter().accept(value);
                         }
                     });
+            this.key = row.key();
         }
 
-        private static List<ClientTooltipComponent> tooltip() {
+        private static List<ClientTooltipComponent> tooltip(String key) {
             try {
                 return List.of(ClientTooltipComponent.create(
-                        Component.translatable("config.emi.tooltip.lostrealm_fold_edit")
-                                .getVisualOrderText()));
+                        Component.translatable(key).getVisualOrderText()));
             } catch (Throwable t) {
                 return List.of();
             }

@@ -1369,5 +1369,7 @@
   "gui.lost_realm.chunk_loader.state_off": "强加载：关闭",
   "gui.lost_realm.chunk_loader.idle_hint": "已关闭，不占用加载资源",
   "config.emi.lostrealm_fold_edit": "折叠编辑（遗落境）",
-  "config.emi.tooltip.lostrealm_fold_edit": "只影响改分组：关掉之后框选、成组、拆组、底部按钮全部停用，已经折好的组照旧折叠、照旧点角标展开。"
+  "config.emi.tooltip.lostrealm_fold_edit": "只影响改分组：关掉之后框选、成组、拆组、底部按钮全部停用，已经折好的组照旧折叠、照旧点角标展开。",
+  "config.emi.lostrealm_recipe_pages": "显示配方类型页数（遗落境）",
+  "config.emi.tooltip.lostrealm_recipe_pages": "配方类型标签一屏放不下时，在标签栏左端显示「当前页/总页数」，比如 2/5。鼠标滚轮在标签栏上滚动可翻页。"
 }
