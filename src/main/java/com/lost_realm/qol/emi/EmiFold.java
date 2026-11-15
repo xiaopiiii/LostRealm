@@ -13,6 +13,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ScreenEvent;
@@ -27,6 +28,8 @@ import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.Bounds;
 import dev.emi.emi.config.SidebarSide;
 import dev.emi.emi.config.SidebarType;
+import dev.emi.emi.registry.EmiStackList;
+import dev.emi.emi.screen.EmiScreenBase;
 import dev.emi.emi.screen.EmiScreenManager;
 import dev.emi.emi.screen.EmiScreenManager.ScreenSpace;
 import dev.emi.emi.screen.EmiScreenManager.SidebarPanel;
@@ -99,6 +102,13 @@ public final class EmiFold {
 
     /** 折叠生效日志只打一次，避免刷屏。 */
     private static boolean loggedFold;
+
+    /** 每个组首次展开时打一条诊断，避免刷屏。 */
+    private static final Set<String> loggedExpand = new HashSet<>();
+
+    /** 全量索引缓存：当前页找不到成员时用它捞。 */
+    private static List<EmiStack> globalSrc;
+    private static Map<String, EmiStack> globalIndex;
 
     /** 最近一次点击（展开/收起）过的组，供"拆开"按钮使用。 */
     private static String lastClickedGroup;
@@ -213,13 +223,22 @@ public final class EmiFold {
                     continue;
                 }
                 EmiStack m = byId.get(mid);
+                if (m == null) {
+                    // 当前页没有（可能被搜索过滤了），再去全量索引里捞一次。
+                    // 少了这一步，跨版本存活下来的组会"展开后什么都不显示"。
+                    m = findGlobal(mid);
+                }
                 if (m == null || !emittedId.add(mid)) {
-                    continue;              // 不在当前列表里（被过滤掉了）
+                    continue;
                 }
                 out.add(m);
                 n++;
             }
             COUNT.put(group, n);
+            if (loggedExpand.add(group)) {
+                Medals.LOGGER.info("[Lost Realm] 展开组「{}」：定义 {} 个成员，实际铺开 {} 个",
+                        group, EmiFoldStore.membersOf(group).size(), n);
+            }
         }
 
         cacheIn = in;
@@ -231,6 +250,38 @@ public final class EmiFold {
                     in.size(), out.size(), ANCHOR.size());
         }
         return out;
+    }
+
+    /**
+     * 从全量索引里找一个堆栈。
+     *
+     * <p>折叠列表是"当前页/当前搜索"的子集，组里某些成员可能不在其中。
+     * 用全量索引兜底，展开时就不会缺件。
+     */
+    private static EmiStack findGlobal(String id) {
+        try {
+            List<EmiStack> src = EmiStackList.stacks;
+            if (src == null) {
+                return null;
+            }
+            if (src != globalSrc) {
+                globalSrc = src;
+                globalIndex = null;
+            }
+            if (globalIndex == null) {
+                Map<String, EmiStack> m = new HashMap<>();
+                for (EmiStack st : src) {
+                    String k = EmiFoldStore.idOf(st);
+                    if (k != null) {
+                        m.putIfAbsent(k, st);
+                    }
+                }
+                globalIndex = m;
+            }
+            return globalIndex.get(id);
+        } catch (Throwable t) {
+            return null;
+        }
     }
 
     /** 展开/收起/改组之后调用，让 EMI 重排列表。 */
@@ -662,12 +713,14 @@ public final class EmiFold {
             return;
         }
         final int bw = 66;
-        final int bh = 18;
+        final int bh = 14;
         final int gap = 6;
         int count = (hasPending ? 2 : 0) + (hasGroup ? 1 : 0);
         int total = count * bw + (count - 1) * gap;
         int x = (mc.screen.width - total) / 2;
-        int y = mc.screen.height - 46;
+        // 贴屏幕最底边：EMI 的列表一直铺到接近底部，
+        // 之前放在 height-46 正好压在列表上，点物品会误触按钮
+        int y = mc.screen.height - bh - 1;
 
         if (hasPending) {
             BUTTONS.add(new Btn(x, y, bw, bh, "折叠 " + PENDING.size(),
@@ -858,10 +911,24 @@ public final class EmiFold {
         }
         CONFIG_BTN = null;
 
-        // 不在 EMI 面板上就彻底收手。
-        // Render.Post 是全局事件 —— 不判断这一下，边框会画到主菜单、
-        // 聊天框、以及所有别的 GUI 上。
-        if (allPanels().isEmpty()) {
+        // 不在 EMI 的渲染上下文里就彻底收手。
+        //
+        // Render.Post 是全局事件，每个界面每帧都会触发。只判断"面板列表非空"
+        // 还不够 —— EmiScreenManager 的面板是静态持有的，界面关掉之后仍然能取到，
+        // 于是主菜单、聊天框上照旧把边框和数字画出来。
+        // EmiScreenBase.getCurrent() 才是"当前有没有界面在让 EMI 渲染"的权威判断。
+        // 只认容器类界面（背包 / 创造物品栏 / 箱子…）。
+        // EmiScreenBase 对任何 Screen 都可能给出非空结果，单靠它挡不住主菜单。
+        boolean rendering = screen instanceof AbstractContainerScreen;
+        if (rendering) {
+            try {
+                EmiScreenBase base = EmiScreenBase.getCurrent();
+                rendering = base != null && !base.isEmpty();
+            } catch (Throwable t) {
+                rendering = false;
+            }
+        }
+        if (!rendering) {
             BUTTONS.clear();
             return;
         }
@@ -963,7 +1030,7 @@ public final class EmiFold {
         var font = mc.font;
         int w = font.width(tip);
         int x = (mc.screen.width - w) / 2;
-        int y = mc.screen.height - 66;
+        int y = mc.screen.height - 34;
         g.fill(x - 5, y - 4, x + w + 5, y + 10, 0xC8000000);
         g.drawString(font, tip, x, y, 0xFFFFE066, true);
     }
@@ -1014,8 +1081,10 @@ public final class EmiFold {
                             drawBadge(g, x, y, group);
                         }
                     } else if (EXPANDED.contains(group)) {
+                        // 带上索引：画框时按"索引连续段"分组，
+                        // 否则一个矩形会把这一行里夹在中间的别的物品也框进去
                         spread.computeIfAbsent(group, k -> new ArrayList<>())
-                                .add(new int[]{space.getRawX(i), space.getRawY(i)});
+                                .add(new int[]{i, space.getRawX(i), space.getRawY(i)});
                     }
                 }
                 for (Map.Entry<String, List<int[]>> e : spread.entrySet()) {
@@ -1026,34 +1095,45 @@ public final class EmiFold {
     }
 
     /**
-     * 展开出来的那一坨成员，用一个整体大框围起来。
+     * 展开出来的成员：按"索引连续段"分别画框。
      *
-     * <p>不含代表格 —— 代表格自己有小框和数字，套进大框反而看不清楚。
-     * 用了 2px，比代表格那圈 1px 稍重，视觉上明确"这是一整块"。
+     * <p>不能简单算一个包围矩形 —— 成员如果只占半行，矩形会把这行里
+     * 夹在中间的、根本不属于这组的物品一起框住（截图里就是这个现象）。
+     * 按列出顺序的连续段切开，每段各画一个框，就只框住自己人。
+     *
+     * <p>线宽 1px，和代表格那圈一致；2px 在小格子上太重。
      */
     private static void drawSpreadBox(GuiGraphics g, List<int[]> cells, int color) {
         if (cells == null || cells.isEmpty()) {
             return;
         }
-        int x0 = Integer.MAX_VALUE;
-        int y0 = Integer.MAX_VALUE;
-        int x1 = Integer.MIN_VALUE;
-        int y1 = Integer.MIN_VALUE;
-        for (int[] c : cells) {
-            x0 = Math.min(x0, c[0]);
-            y0 = Math.min(y0, c[1]);
-            x1 = Math.max(x1, c[0] + CELL);
-            y1 = Math.max(y1, c[1] + CELL);
-        }
-        x0 += 1;
-        y0 += 1;
-        x1 -= 1;
-        y1 -= 1;
-        for (int t = 0; t < 2; t++) {
-            g.fill(x0 + t, y0 + t, x1 - t, y0 + t + 1, color);
-            g.fill(x0 + t, y1 - t - 1, x1 - t, y1 - t, color);
-            g.fill(x0 + t, y0 + t, x0 + t + 1, y1 - t, color);
-            g.fill(x1 - t - 1, y0 + t, x1 - t, y1 - t, color);
+        cells.sort((a, b) -> Integer.compare(a[0], b[0]));
+        int segStart = 0;
+        for (int i = 1; i <= cells.size(); i++) {
+            boolean brk = i == cells.size() || cells.get(i)[0] != cells.get(i - 1)[0] + 1;
+            if (!brk) {
+                continue;
+            }
+            int x0 = Integer.MAX_VALUE;
+            int y0 = Integer.MAX_VALUE;
+            int x1 = Integer.MIN_VALUE;
+            int y1 = Integer.MIN_VALUE;
+            for (int k = segStart; k < i; k++) {
+                int[] c = cells.get(k);
+                x0 = Math.min(x0, c[1]);
+                y0 = Math.min(y0, c[2]);
+                x1 = Math.max(x1, c[1] + CELL);
+                y1 = Math.max(y1, c[2] + CELL);
+            }
+            x0 += 1;
+            y0 += 1;
+            x1 -= 1;
+            y1 -= 1;
+            g.fill(x0, y0, x1, y0 + 1, color);
+            g.fill(x0, y1 - 1, x1, y1, color);
+            g.fill(x0, y0, x0 + 1, y1, color);
+            g.fill(x1 - 1, y0, x1, y1, color);
+            segStart = i;
         }
     }
 
@@ -1069,7 +1149,6 @@ public final class EmiFold {
         g.fill(x1 - 1, y0, x1, y1, color);
     }
 
-    /** 右下角数量。只写字带阴影，不加底色 —— 16px 的图标经不起一个方块压上去。 */
     /**
      * 右下角的数字，带一个小方框。
      *
