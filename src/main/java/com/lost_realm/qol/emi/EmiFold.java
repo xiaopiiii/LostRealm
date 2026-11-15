@@ -46,9 +46,11 @@ import com.lost_realm.Medals;
  *
  * <h2>怎么用</h2>
  * <ul>
- *   <li><b>右 Ctrl + 右 Shift + 左键拖拽</b>：在 EMI 物品列表上拉一个框，松手即成组。</li>
- *   <li><b>左键点折叠格</b>：展开 / 收起。展开后成员紧跟在它后面。</li>
- *   <li><b>右 Ctrl + 右 Shift + 左键单击折叠格</b>：解除这一组。</li>
+ *   <li><b>Ctrl + Shift + 左键拖拽</b>（F6 可切成常开）：在 EMI 列表上拉框，松手累积选中；
+ *       F7 成组，F8 清空。</li>
+ *   <li><b>左键点折叠格右下角的角标</b>：展开 / 收起。角标上的 {@code <} 表示收起、
+ *       {@code >} 表示已展开，展开后成员紧跟在代表格后面，整组连成一条外框。</li>
+ *   <li><b>Ctrl + Shift + 左键单击折叠格</b>：解除这一组。</li>
  * </ul>
  *
  * <p>修饰键刻意选右 Ctrl + 右 Shift：EMI 自己占用了左 Ctrl + 左键
@@ -70,13 +72,12 @@ public final class EmiFold {
 
     /** 组名 → 展开状态。 */
     private static final Set<String> EXPANDED = new HashSet<>();
-    /** 组名 → 收起/展开时充当代表的那一格对应的成员 id。 */
-    private static final Map<String, String> ANCHOR = new HashMap<>();
-    /** 组名 → 当前实际显示的成员数（可能少于组定义，因为有些被搜索过滤掉了）。 */
-    private static final Map<String, Integer> COUNT = new HashMap<>();
 
     /** 展开状态或组定义变化时自增，用来让折叠缓存失效。 */
     private static long stateVersion;
+
+    /** 有待结算的重排（见 {@link #flushPendingRefresh()}）。 */
+    private static boolean pendingRefresh;
 
     private static List<? extends EmiIngredient> cacheIn;
     private static long cacheVersion = -1L;
@@ -184,8 +185,6 @@ public final class EmiFold {
         List<EmiIngredient> out = new ArrayList<>(in.size());
         Set<String> emittedId = new HashSet<>();
         Set<String> emittedGroup = new HashSet<>();
-        ANCHOR.clear();
-        COUNT.clear();
 
         for (EmiIngredient ing : in) {
             if (!(ing instanceof EmiStack s)) {
@@ -212,11 +211,9 @@ public final class EmiFold {
                 continue;                  // 该组的代表格已经出现过，本格隐藏
             }
             emittedId.add(id);
-            ANCHOR.put(group, id);
             out.add(ing);
 
             if (!EXPANDED.contains(group)) {
-                COUNT.put(group, EmiFoldStore.membersOf(group).size());
                 continue;
             }
             // 展开：按组定义顺序把成员紧接在代表格后面铺开
@@ -237,7 +234,6 @@ public final class EmiFold {
                 out.add(m);
                 n++;
             }
-            COUNT.put(group, n);
             if (loggedExpand.add(group)) {
                 Medals.LOGGER.info("[Lost Realm] 展开组「{}」：定义 {} 个成员，实际铺开 {} 个",
                         group, EmiFoldStore.membersOf(group).size(), n);
@@ -249,8 +245,7 @@ public final class EmiFold {
         cacheOut = out;
         if (!loggedFold) {
             loggedFold = true;
-            Medals.LOGGER.info("[Lost Realm] EMI 折叠生效：{} 格 → {} 格，命中 {} 个组",
-                    in.size(), out.size(), ANCHOR.size());
+            Medals.LOGGER.info("[Lost Realm] EMI 折叠生效：{} 格 → {} 格", in.size(), out.size());
         }
         return out;
     }
@@ -291,6 +286,7 @@ public final class EmiFold {
     private static void refresh() {
         stateVersion++;
         cacheIn = null;
+        pendingRefresh = true;
         try {
             EmiScreenManager.recalculate();
         } catch (Throwable t) {
@@ -298,14 +294,40 @@ public final class EmiFold {
         }
     }
 
+    /**
+     * 下一帧再排一次。
+     *
+     * <p>{@link #refresh()} 是在鼠标事件里调用的，那一刻 EMI 可能正处在
+     * 自己的点击处理中间（面板还没结算完），{@code recalculate()} 排出来的东西
+     * 会被它随后的处理覆盖掉 —— 表现就是"点了没反应、再点还是没反应"。
+     * 渲染前那一帧 EMI 已经收工，这时候再排一次就一定生效。
+     */
+    private static void flushPendingRefresh() {
+        if (!pendingRefresh) {
+            return;
+        }
+        pendingRefresh = false;
+        try {
+            EmiScreenManager.recalculate();
+        } catch (Throwable t) {
+            Medals.LOGGER.debug("[Lost Realm] EMI 延迟重排失败", t);
+        }
+    }
+
     private static void toggle(String group) {
         if (group == null) {
             return;
         }
+        boolean open;
         if (!EXPANDED.remove(group)) {
             EXPANDED.add(group);
+            open = true;
+        } else {
+            open = false;
         }
         refresh();
+        Medals.LOGGER.info("[Lost Realm] EMI 折叠：{}组「{}」，{} 个成员",
+                open ? "展开" : "收起", group, EmiFoldStore.membersOf(group).size());
     }
 
     // ================================================================
@@ -359,28 +381,86 @@ public final class EmiFold {
     /**
      * 命中的格子。
      *
-     * <p>badge 是右下角那个数字小块的矩形 —— <b>只有点这块才展开/收起</b>。
+     * <p>badge 是右下角那个小角标的矩形 —— <b>只有点这块才展开/收起</b>。
      * 之前整格都能切换，等于把"点开这个物品看配方"吃掉了；
      * 现在点格子其他地方照常交给 EMI。
      */
-    private record Cell(int x, int y, EmiStack stack, String group, boolean anchor, int count,
+    private record Cell(int x, int y, EmiStack stack, String group, boolean anchor,
                         int bx, int by, int bw, int bh) {
         boolean onBadge(double mx, double my) {
             return bw > 0 && mx >= bx && mx < bx + bw && my >= by && my < by + bh;
         }
     }
 
-    /**
-     * 数字角标：固定 8×8，贴格子右下角。
-     *
-     * <p>尺寸是精心选的：18×18 的格子里物品图标中心在 (9,9)，而这块从 (10,10)
-     * 开始 —— <b>点图标正中间不会命中它</b>。之前按数字宽度动态算、最宽能到 9px
-     * （起点 x+9），点物品中心正好触发展开/收起，用户感觉"点一下就被拆开了"。
-     */
-    private static final int BADGE = 8;
+    /** 列表里第 i 格所属的组名（不在任何组里返回 null）。 */
+    private static String groupAt(List<? extends EmiIngredient> list, int i) {
+        if (list == null || i < 0 || i >= list.size()) {
+            return null;
+        }
+        if (!(list.get(i) instanceof EmiStack st)) {
+            return null;
+        }
+        return EmiFoldStore.groupOf(EmiFoldStore.idOf(st));
+    }
 
-    private static int[] badgeRect(int cellX, int cellY, String group) {
-        return new int[]{cellX + CELL - BADGE, cellY + CELL - BADGE, BADGE, BADGE};
+    /**
+     * 第 i 格是不是它所属组的代表格 —— <b>该组在当前列表里第一次出现的那一格</b>。
+     *
+     * <p>这里每次现算，不再依赖 {@code foldList} 留下的缓存表。
+     * 缓存表只在折叠真正跑过一趟之后才有内容：万一某次列表没经过折叠
+     * （比如合成表界面里走的是另一条取列表的路），角标就点不动、
+     * 表现成"折叠起来了却展开不了"。现算就没有这个空窗期。
+     */
+    private static boolean isAnchorAt(List<? extends EmiIngredient> list, int i, String group) {
+        if (group == null) {
+            return false;
+        }
+        for (int j = 0; j < i; j++) {
+            if (group.equals(groupAt(list, j))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 该组的物品总数。
+     *
+     * <p>不用"这一屏铺开了几格"来算：EMI 是分页的，一页只给一部分格子，
+     * 跨页的组会显示成 3、5 这种随翻页乱跳的数。角标要说的是"这组一共几件"。
+     */
+    private static int sizeOf(String group) {
+        return group == null ? 0 : EmiFoldStore.membersOf(group).size();
+    }
+
+    /**
+     * 角标矩形（<b>同时是热区</b>）。
+     *
+     * <p>尺寸按数字实际宽度算，紧贴格子右下角，不再固定 8×8 —— 固定尺寸
+     * 对一位数是"一块大方块糊在图标上"，对三位数又不够宽。
+     *
+     * <p>热区比画出来的框大一圈（下面 {@link #HIT}），但仍然<b>从格子右下角
+     * 往里 10px 起</b>：18×18 格的图标中心在 (9,9)，从 10 起就永远碰不到中心，
+     * 点物品本体不会被当成"展开/收起"。
+     */
+    private static final float BADGE_SCALE = 0.5F;
+    private static final int BADGE_H = 7;
+    private static final int BADGE_HIT = 10;
+    /** 收起/展开的小箭头宽度。像素太小，自己画比用字形干净。 */
+    private static final int ARROW_W = 3;
+
+    private static int[] badgeRect(int cellX, int cellY, int count) {
+        var font = Minecraft.getInstance().font;
+        int numW = Math.max(1, Math.round(font.width(String.valueOf(Math.max(count, 0))) * BADGE_SCALE));
+        int bw = 1 + numW + 1 + ARROW_W + 1;             // 边框 1 + 数字 + 间隔 + 箭头 + 边框 1
+        int bx = cellX + CELL - 1 - bw;
+        int by = cellY + CELL - 1 - BADGE_H;
+        // 热区：画出来的框 ∪ 右下角固定 8×8，两个矩形的并集包围盒
+        int hx = Math.min(bx, cellX + BADGE_HIT);
+        int hy = Math.min(by, cellY + BADGE_HIT);
+        int hw = Math.max(bx + bw, cellX + CELL) - hx;
+        int hh = Math.max(by + BADGE_H, cellY + CELL) - hy;
+        return new int[]{bx, by, bw, BADGE_H, hx, hy, hw, hh};
     }
 
     /** 屏幕坐标落在哪个格子上；不在 EMI 物品列表里返回 null。 */
@@ -427,15 +507,14 @@ public final class EmiFold {
             if (!(list.get(i) instanceof EmiStack st)) {
                 return null;
             }
-            String id = EmiFoldStore.idOf(st);
-            String group = EmiFoldStore.groupOf(id);
-            boolean anchor = group != null && id != null && id.equals(ANCHOR.get(group));
-            int count = group == null ? 0 : COUNT.getOrDefault(group, 0);
+            String group = groupAt(list, i);
+            boolean anchor = isAnchorAt(list, i, group);
             if (anchor) {
-                int[] r = badgeRect(x, y, group);
-                return new Cell(x, y, st, group, true, count, r[0], r[1], r[2], r[3]);
+                int count = sizeOf(group);
+                int[] r = badgeRect(x, y, count);
+                return new Cell(x, y, st, group, true, r[4], r[5], r[6], r[7]);
             }
-            return new Cell(x, y, st, group, false, count, 0, 0, 0, 0);
+            return new Cell(x, y, st, group, false, 0, 0, 0, 0);
         }
         return null;
     }
@@ -484,7 +563,7 @@ public final class EmiFold {
                     // 已折叠的代表格不参与框选：它代表的是整组，
                     // 把"代表"选进去语义混乱，而且它会连带影响原来那一组
                     String owner = EmiFoldStore.groupOf(id);
-                    if (owner != null && id.equals(ANCHOR.get(owner))) {
+                    if (owner != null && isAnchorAt(list, i, owner)) {
                         continue;
                     }
                     if (seen.add(id)) {
@@ -977,10 +1056,17 @@ public final class EmiFold {
         // 还不够 —— EmiScreenManager 的面板是静态持有的，界面关掉之后仍然能取到，
         // 于是主菜单、聊天框上照旧把边框和数字画出来。
         // EmiScreenBase.getCurrent() 才是"当前有没有界面在让 EMI 渲染"的权威判断。
-        // 只认容器类界面（背包 / 创造物品栏 / 箱子…）。
-        // EmiScreenBase 对任何 Screen 都可能给出非空结果，单靠它挡不住主菜单。
+        //
+        // 两类界面要放行：
+        //   ① 容器界面（背包 / 创造物品栏 / 箱子…）—— 走 EmiScreenBase 判断；
+        //   ② EMI 自己的配方界面（RecipeScreen / BoMScreen）—— 它继承的是 Screen
+        //      而不是 AbstractContainerScreen，之前被 ① 的条件挡在外面，
+        //      一打开合成表，所有边框和角标就全没了。
         boolean rendering = screen instanceof AbstractContainerScreen;
-        if (rendering) {
+        if (!rendering && screen != null && isEmiOwnScreen(screen)) {
+            rendering = true;      // EMI 自己的界面：面板可能挂在不同空间，不看 EmiScreenBase
+        }
+        if (rendering && screen instanceof AbstractContainerScreen) {
             try {
                 EmiScreenBase base = EmiScreenBase.getCurrent();
                 rendering = base != null && !base.isEmpty();
@@ -994,6 +1080,7 @@ public final class EmiFold {
         }
 
         rebuildButtons();
+        flushPendingRefresh();
         boolean hasGroups = !EmiFoldStore.isEmpty();
         boolean hasPending = !PENDING.isEmpty();
         if (!hasGroups && !hasPending && !selecting && BUTTONS.isEmpty()) {
@@ -1016,6 +1103,12 @@ public final class EmiFold {
         if (hasPending) {
             drawHint(g);
         }
+    }
+
+    /** 是不是 EMI 自己的界面（配方表 / 书之类）。配置界面不算。 */
+    private static boolean isEmiOwnScreen(Screen screen) {
+        String n = screen.getClass().getName();
+        return n.startsWith("dev.emi.emi.screen.") && !n.startsWith("dev.emi.emi.screen.Config");
     }
 
     /** EMI 配置界面左下角的总开关。 */
@@ -1096,8 +1189,6 @@ public final class EmiFold {
     }
 
     private static void drawFolders(GuiGraphics g) {
-        // 有 tooltip 正在显示时不画角标 —— 数字压在提示框上比看不到更烦人
-        boolean noBadge = EmiScreenManager.lastStackTooltipRendered != null;
         for (SidebarPanel panel : allPanels()) {
             List<ScreenSpace> spaces;
             try {
@@ -1121,85 +1212,74 @@ public final class EmiFold {
                 if (list == null) {
                     continue;
                 }
-                // 展开出来的成员：收集坐标，最后统一画一个大框，
-                // 而不是每个物品各套一个小框（那样一展开满屏碎格子）
-                Map<String, List<int[]>> spread = new java.util.HashMap<>();
-                for (int i = 0; i < list.size(); i++) {
-                    if (!(list.get(i) instanceof EmiStack st)) {
-                        continue;
-                    }
-                    String id = EmiFoldStore.idOf(st);
-                    String group = EmiFoldStore.groupOf(id);
-                    if (group == null) {
-                        continue;
-                    }
-                    if (id.equals(ANCHOR.get(group))) {
-                        int x = space.getRawX(i);
-                        int y = space.getRawY(i);
-                        drawFrame(g, x, y, colorFor(group));
-                        if (!noBadge) {
-                            drawBadge(g, x, y, group);
-                        }
-                    } else if (EXPANDED.contains(group)) {
-                        // 带上索引：画框时按"索引连续段"分组，
-                        // 否则一个矩形会把这一行里夹在中间的别的物品也框进去
-                        spread.computeIfAbsent(group, k -> new ArrayList<>())
-                                .add(new int[]{i, space.getRawX(i), space.getRawY(i)});
-                    }
-                }
-                for (Map.Entry<String, List<int[]>> e : spread.entrySet()) {
-                    drawSpreadBox(g, e.getValue(), colorFor(e.getKey()));
-                }
+                drawPage(g, list, space);
             }
         }
     }
 
     /**
-     * 展开出来的成员：按"索引连续段"分别画框。
+     * 一屏的组：<b>一个组合成一条外轮廓</b>。
      *
-     * <p>不能简单算一个包围矩形 —— 成员如果只占半行，矩形会把这行里
-     * 夹在中间的、根本不属于这组的物品一起框住（截图里就是这个现象）。
-     * 按列出顺序的连续段切开，每段各画一个框，就只框住自己人。
-     *
-     * <p>线宽 1px，和代表格那圈一致；2px 在小格子上太重。
+     * <p>之前是按"行内连续段"各画一个框，跨行的一个组就变成上下两个互不相干的方框，
+     * 同时展开好几个组时根本分不清哪几格是一家。现在把该组的所有格子并在一起，
+     * 只画并集的<b>外边界</b>：同一行相邻的格之间、上下相邻的行之间的公共边不画，
+     * 于是整组连成一条闭合折线 —— 方的一整块就是一个大方框，跨行错位就是一个
+     * 阶梯形，怎么算都不会框进中间夹着的外人。
      */
-    private static void drawSpreadBox(GuiGraphics g, List<int[]> cells, int color) {
+    private static void drawPage(GuiGraphics g, List<? extends EmiIngredient> list, ScreenSpace space) {
+        Map<String, List<int[]>> byGroup = new HashMap<>();
+        List<String> order = new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
+            String group = groupAt(list, i);
+            if (group == null) {
+                continue;
+            }
+            if (!byGroup.containsKey(group)) {
+                order.add(group);
+            }
+            byGroup.computeIfAbsent(group, k -> new ArrayList<>())
+                    .add(new int[]{i, space.getRawX(i), space.getRawY(i)});
+        }
+        for (String group : order) {
+            List<int[]> cells = byGroup.get(group);
+            drawGroupOutline(g, cells, colorFor(group));
+            // 代表格 = 该组在这一屏里索引最小的那一格（也就是收起时露出来的那格）
+            int[] first = cells.get(0);
+            drawBadge(g, first[1], first[2], group, sizeOf(group));
+        }
+    }
+
+    /** 一组格子的并集外轮廓（1px）。相邻格之间的公共边不画，所以是连成一条线。 */
+    private static void drawGroupOutline(GuiGraphics g, List<int[]> cells, int color) {
         if (cells == null || cells.isEmpty()) {
             return;
         }
-        cells.sort((a, b) -> Integer.compare(a[0], b[0]));
-        int segStart = 0;
-        for (int i = 1; i <= cells.size(); i++) {
-            // 索引连续**且在同一行**才算一段。
-            // 只判索引连续时，成员跨行会让一个矩形横跨两行 ——
-            // 既框住列范围内的外人，又漏掉下一行左侧的自己人。
-            boolean brk = i == cells.size()
-                    || cells.get(i)[0] != cells.get(i - 1)[0] + 1
-                    || cells.get(i)[2] != cells.get(i - 1)[2];
-            if (!brk) {
-                continue;
-            }
-            int x0 = Integer.MAX_VALUE;
-            int y0 = Integer.MAX_VALUE;
-            int x1 = Integer.MIN_VALUE;
-            int y1 = Integer.MIN_VALUE;
-            for (int k = segStart; k < i; k++) {
-                int[] c = cells.get(k);
-                x0 = Math.min(x0, c[1]);
-                y0 = Math.min(y0, c[2]);
-                x1 = Math.max(x1, c[1] + CELL);
-                y1 = Math.max(y1, c[2] + CELL);
-            }
-            x0 += 1;
-            y0 += 1;
-            x1 -= 1;
-            y1 -= 1;
-            g.fill(x0, y0, x1, y0 + 1, color);
-            g.fill(x0, y1 - 1, x1, y1, color);
-            g.fill(x0, y0, x0 + 1, y1, color);
-            g.fill(x1 - 1, y0, x1, y1, color);
-            segStart = i;
+        Set<Long> set = new HashSet<>();
+        for (int[] c : cells) {
+            set.add(cellKey(c[1], c[2]));
         }
+        for (int[] c : cells) {
+            int x = c[1];
+            int y = c[2];
+            int xr = x + CELL - 1;                 // 右边线所在像素列
+            int yb = y + CELL - 1;                 // 下边线所在像素行
+            if (!set.contains(cellKey(x, y - CELL))) {
+                g.fill(x, y, x + CELL, y + 1, color);              // 上
+            }
+            if (!set.contains(cellKey(x, y + CELL))) {
+                g.fill(x, yb, x + CELL, yb + 1, color);            // 下
+            }
+            if (!set.contains(cellKey(x - CELL, y))) {
+                g.fill(x, y, x + 1, y + CELL, color);              // 左
+            }
+            if (!set.contains(cellKey(x + CELL, y))) {
+                g.fill(xr, y, xr + 1, y + CELL, color);            // 右
+            }
+        }
+    }
+
+    private static long cellKey(int x, int y) {
+        return ((long) x << 32) ^ (y & 0xFFFFFFFFL);
     }
 
     /** 贴着图标画 1px 彩框（不占用格子外的空间，相邻格的框不会连成一片）。 */
@@ -1215,30 +1295,29 @@ public final class EmiFold {
     }
 
     /**
-     * 右下角的数字，带一个小方框。
+     * 右下角的小角标：<b>数字 + 一个小箭头</b>，1px 细框紧贴数字。
      *
-     * <p>这个方框不只是装饰 —— 它是<b>唯一能展开/收起的热区</b>。
-     * 之前整格都能切换，导致折叠后的第一个物品点不开、看不了配方。
-     */
-    /**
-     * 右下角的数字 + 一个小方框。
-     *
-     * <p>这块既是视觉提示、也是唯一能展开/收起的热区。
-     *
-     * <p>三个尺寸上的取舍（之前吃过亏）：
+     * <p>尺寸上的取舍（前面几版都栽在这里）：
      * <ul>
-     *   <li><b>不铺底色</b>：8×8 的不透明黑块压在 16px 图标上太显眼，
-     *       把图标右下角整个糊住了。只留 1px 边框，图标透出来。</li>
-     *   <li><b>数字缩到 0.7</b>：MC 字体高 9px，原尺寸塞进 8×8 会把四角全盖住，
-     *       看起来"只有数字没有框"。缩完约 5px，四角露得出来。</li>
-     *   <li><b>超过 99 显示 99</b>：三位数字宽 18px，缩完还超框。</li>
+     *   <li><b>框按数字实际宽度算</b>，不再是固定 8×8 的方块 —— 一位数就只占
+     *       十来个像素，看着才是"细"的；三位数自动变宽，不会被硬塞进去。</li>
+     *   <li><b>数字缩到 0.5</b>：MC 字体高度 9px，0.7 还是明显压住图标；0.5 之后
+     *       高约 4px，图标右下角基本透出来。</li>
+     *   <li><b>不再封顶 99</b>：超过 99 照实显示（99 变成 "99"→"120" 这类的变化
+     *       之前会误导人以为是 99 个）。</li>
+     *   <li><b>箭头表示状态</b>：收起是 "&lt;"（点一下能展开），展开是 "&gt;"。
+     *       箭头是自己画的 3×5 像素，不用字形 —— 字号缩到 0.5 时字形会糊。</li>
      * </ul>
      */
-    private static void drawBadge(GuiGraphics g, int x, int y, String group) {
+    private static void drawBadge(GuiGraphics g, int x, int y, String group, int count) {
         var font = Minecraft.getInstance().font;
-        int[] r = badgeRect(x, y, group);
-        int n = COUNT.getOrDefault(group, 0);
-        String text = EXPANDED.contains(group) ? "-" : (n > 99 ? "99" : String.valueOf(n));
+        boolean open = EXPANDED.contains(group);
+        String num = String.valueOf(Math.max(count, 0));
+        int[] r = badgeRect(x, y, count);
+        int bx = r[0];
+        int by = r[1];
+        int bw = r[2];
+        int bh = r[3];
 
         g.pose().pushPose();
         // 抬 z：EMI 的物品是批量绘制、最后统一 flush 的，
@@ -1246,21 +1325,37 @@ public final class EmiFold {
         g.pose().translate(0.0F, 0.0F, 200.0F);
 
         int c = 0xFF55E0FF;
-        g.fill(r[0], r[1], r[0] + r[2], r[1] + 1, c);
-        g.fill(r[0], r[1] + r[3] - 1, r[0] + r[2], r[1] + r[3], c);
-        g.fill(r[0], r[1], r[0] + 1, r[1] + r[3], c);
-        g.fill(r[0] + r[2] - 1, r[1], r[0] + r[2], r[1] + r[3], c);
+        g.fill(bx, by, bx + bw, by + 1, c);
+        g.fill(bx, by + bh - 1, bx + bw, by + bh, c);
+        g.fill(bx, by, bx + 1, by + bh, c);
+        g.fill(bx + bw - 1, by, bx + bw, by + bh, c);
 
-        float k = 0.7F;
+        // 数字：0.5 倍，左边留 1px，垂直居中
+        float k = BADGE_SCALE;
         g.pose().pushPose();
-        g.pose().translate(r[0], r[1], 0.0F);
+        g.pose().translate(bx + 1.0F, by + 1.5F, 0.0F);
         g.pose().scale(k, k, 1.0F);
-        int tw = font.width(text);
-        g.drawString(font, text,
-                Math.round((r[2] / k - tw) / 2.0F),
-                Math.round((r[3] / k - font.lineHeight) / 2.0F),
-                0xFFFFFFFF, false);
+        g.drawString(font, num, 0, 0, 0xFFFFFFFF, false);
         g.pose().popPose();
+
+        // 箭头：3 宽 5 高，紧跟在数字后面
+        int aw = ARROW_W;
+        int ax = bx + bw - 1 - aw;
+        int ay = by + 1;
+        int dark = 0xFFFFFFFF;
+        if (open) {
+            g.fill(ax, ay, ax + 1, ay + 1, dark);
+            g.fill(ax + 1, ay + 1, ax + 2, ay + 2, dark);
+            g.fill(ax + 2, ay + 2, ax + 3, ay + 3, dark);
+            g.fill(ax + 1, ay + 3, ax + 2, ay + 4, dark);
+            g.fill(ax, ay + 4, ax + 1, ay + 5, dark);
+        } else {
+            g.fill(ax + 2, ay, ax + 3, ay + 1, dark);
+            g.fill(ax + 1, ay + 1, ax + 2, ay + 2, dark);
+            g.fill(ax, ay + 2, ax + 1, ay + 3, dark);
+            g.fill(ax + 1, ay + 3, ax + 2, ay + 4, dark);
+            g.fill(ax + 2, ay + 4, ax + 3, ay + 5, dark);
+        }
         g.pose().popPose();
     }
 
