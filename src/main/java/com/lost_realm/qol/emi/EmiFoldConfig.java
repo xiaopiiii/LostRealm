@@ -9,6 +9,7 @@ import net.minecraft.network.chat.Component;
 import dev.emi.emi.screen.ConfigScreen;
 import dev.emi.emi.screen.widget.config.BooleanWidget;
 import dev.emi.emi.screen.widget.config.ConfigEntryWidget;
+import dev.emi.emi.screen.widget.config.ConfigSearch;
 import dev.emi.emi.screen.widget.config.GroupNameWidget;
 import dev.emi.emi.screen.widget.config.ListWidget;
 
@@ -128,6 +129,38 @@ public final class EmiFoldConfig {
         }
     }
 
+    /**
+     * 配置界面搜索框的当前内容。
+     *
+     * <p>这个参数<b>不是</b>"这一项的搜索关键词"，而是<b>查询词本身</b>：
+     * {@code ConfigEntryWidget.isVisible()} 干的是
+     * {@code 本项可搜文本.contains(查询词)}，查询词为空就算可见。
+     * 一开始我把自己那串关键词传了进去，于是空搜索框时
+     * {@code "".contains("遗落境 折叠编辑")} 恒为 false —— 整行直接被判为不可见，
+     * 插是插进去了，永远不渲染。这就是"配置菜单里看不到"的真正原因。
+     */
+    private static java.util.function.Supplier<String> queryOf(ConfigScreen screen) {
+        return new java.util.function.Supplier<>() {
+            private ConfigSearch box;
+            private boolean resolved;
+
+            @Override
+            public String get() {
+                if (!resolved) {
+                    resolved = true;
+                    try {
+                        Field f = field(screen.getClass(), "search");
+                        Object v = f == null ? null : f.get(screen);
+                        box = v instanceof ConfigSearch cs ? cs : null;
+                    } catch (Throwable ignored) {
+                        box = null;
+                    }
+                }
+                return box == null ? "" : box.getSearch();
+            }
+        };
+    }
+
     /** {@code ConfigScreen.list}（EMI 自己的字段名，不参与 MC 映射）。 */
     private static ListWidget listOf(ConfigScreen screen) {
         try {
@@ -173,7 +206,7 @@ public final class EmiFoldConfig {
         FoldEditEntry(ConfigScreen screen) {
             super(Component.translatable("config.emi.lostrealm_fold_edit"),
                     tooltip(),
-                    () -> "遗落境 lost realm 折叠编辑 fold edit",
+                    queryOf(screen),
                     screen.new Mutator<Boolean>() {
                         @Override
                         protected Boolean getValue() {
