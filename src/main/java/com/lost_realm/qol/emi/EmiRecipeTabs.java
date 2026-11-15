@@ -20,10 +20,10 @@ import dev.emi.emi.screen.RecipeScreen;
  *
  * <h2>标签栏在哪</h2>
  * 反推 {@code getTabAt}：标签条从 {@code x + 16 + tabOff} 起，到 {@code x + backgroundWidth}，
- * 竖直方向是 {@code y - 24} 到 {@code y}（{@code x}/{@code y} 是配方面板左上角，
- * 面板基本贴着屏幕顶端，所以标签条就在最上面那一条）。
- * {@code x .. x + 16} 这 16px 是标签条左边的空隙 —— 页码就画在这里，
- * 不压任何标签。
+ * 竖直方向是 {@code y - 24} 到 {@code y}（{@code x}/{@code y} 是配方面板左上角）。
+ * 页码画在<b>面板正上方居中</b>（{@code x + backgroundWidth/2}）、标签条再往上一点的位置：
+ * 那里是整块界面最空的地方，也最容易被一眼看到。
+ * 曾经放在标签条左端那 16px 空隙里，结果紧贴翻页箭头，看着像按钮的一部分。
  *
  * <p>只读不写：所有字段都通过反射读取（{@code tabPage} 等是 EMI 的私有字段），
  * 任何一步失败就当没有这个功能，绝不影响配方界面本身。
@@ -52,8 +52,12 @@ public final class EmiRecipeTabs {
             var font = Minecraft.getInstance().font;
             String text = (Math.max(0, Math.min(page, total - 1)) + 1) + "/" + total;
             int w = Math.max(1, Math.round(font.width(text) * 0.5F));
-            int bx = x + 15 - w;             // 右对齐到标签条左空隙的右缘
-            int by = y - 11;                 // 竖直居中在那条 24px 高的标签带上
+            // 位置：配方面板<b>正上方居中</b>，压在标签条上面那条空带上。
+            // 一开始放在标签条左端的 16px 空隙里，结果紧贴着翻页箭头，
+            // 既不显眼又容易被看成按钮的一部分。
+            int panelW = field("backgroundWidth").getInt(rs);
+            int bx = x + panelW / 2 - w / 2;
+            int by = Math.max(1, y - 24 - 11);   // 标签条高 24，再往上 11
             g.fill(bx - 1, by - 1, bx + w + 1, by + 6, 0xC0101010);
             g.pose().pushPose();
             g.pose().translate(0.0F, 0.0F, 200.0F);
