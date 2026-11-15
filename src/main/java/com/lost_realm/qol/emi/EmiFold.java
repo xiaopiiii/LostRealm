@@ -1220,21 +1220,47 @@ public final class EmiFold {
      * <p>这个方框不只是装饰 —— 它是<b>唯一能展开/收起的热区</b>。
      * 之前整格都能切换，导致折叠后的第一个物品点不开、看不了配方。
      */
+    /**
+     * 右下角的数字 + 一个小方框。
+     *
+     * <p>这块既是视觉提示、也是唯一能展开/收起的热区。
+     *
+     * <p>三个尺寸上的取舍（之前吃过亏）：
+     * <ul>
+     *   <li><b>不铺底色</b>：8×8 的不透明黑块压在 16px 图标上太显眼，
+     *       把图标右下角整个糊住了。只留 1px 边框，图标透出来。</li>
+     *   <li><b>数字缩到 0.7</b>：MC 字体高 9px，原尺寸塞进 8×8 会把四角全盖住，
+     *       看起来"只有数字没有框"。缩完约 5px，四角露得出来。</li>
+     *   <li><b>超过 99 显示 99</b>：三位数字宽 18px，缩完还超框。</li>
+     * </ul>
+     */
     private static void drawBadge(GuiGraphics g, int x, int y, String group) {
         var font = Minecraft.getInstance().font;
         int[] r = badgeRect(x, y, group);
-        String text = EXPANDED.contains(group) ? "−" : String.valueOf(COUNT.getOrDefault(group, 0));
-        int tw = font.width(text);
+        int n = COUNT.getOrDefault(group, 0);
+        String text = EXPANDED.contains(group) ? "-" : (n > 99 ? "99" : String.valueOf(n));
+
         g.pose().pushPose();
         // 抬 z：EMI 的物品是批量绘制、最后统一 flush 的，
         // 光靠"事件更靠后"压不住，数字会钻到图标底下
         g.pose().translate(0.0F, 0.0F, 200.0F);
-        g.fill(r[0], r[1], r[0] + r[2], r[1] + r[3], 0xF0101018);
-        g.fill(r[0], r[1], r[0] + r[2], r[1] + 1, 0xFF55E0FF);
-        g.fill(r[0], r[1] + r[3] - 1, r[0] + r[2], r[1] + r[3], 0xFF55E0FF);
-        g.fill(r[0], r[1], r[0] + 1, r[1] + r[3], 0xFF55E0FF);
-        g.fill(r[0] + r[2] - 1, r[1], r[0] + r[2], r[1] + r[3], 0xFF55E0FF);
-        g.drawString(font, text, r[0] + Math.max(0, (r[2] - tw) / 2), r[1], 0xFFFFFFFF, true);
+
+        int c = 0xFF55E0FF;
+        g.fill(r[0], r[1], r[0] + r[2], r[1] + 1, c);
+        g.fill(r[0], r[1] + r[3] - 1, r[0] + r[2], r[1] + r[3], c);
+        g.fill(r[0], r[1], r[0] + 1, r[1] + r[3], c);
+        g.fill(r[0] + r[2] - 1, r[1], r[0] + r[2], r[1] + r[3], c);
+
+        float k = 0.7F;
+        g.pose().pushPose();
+        g.pose().translate(r[0], r[1], 0.0F);
+        g.pose().scale(k, k, 1.0F);
+        int tw = font.width(text);
+        g.drawString(font, text,
+                Math.round((r[2] / k - tw) / 2.0F),
+                Math.round((r[3] / k - font.lineHeight) / 2.0F),
+                0xFFFFFFFF, false);
+        g.pose().popPose();
         g.pose().popPose();
     }
 
