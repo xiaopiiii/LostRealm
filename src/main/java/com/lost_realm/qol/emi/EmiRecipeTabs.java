@@ -51,19 +51,15 @@ public final class EmiRecipeTabs {
 
             var font = Minecraft.getInstance().font;
             String text = (Math.max(0, Math.min(page, total - 1)) + 1) + "/" + total;
-            int w = Math.max(1, Math.round(font.width(text) * 0.5F));
-            // 位置：配方面板<b>正上方居中</b>，压在标签条上面那条空带上。
-            // 一开始放在标签条左端的 16px 空隙里，结果紧贴着翻页箭头，
-            // 既不显眼又容易被看成按钮的一部分。
+            // 原尺寸（1.0），不加底衬 —— 之前 0.5 + 深色块，既小又像块补丁
+            int w = Math.max(1, font.width(text));
+            // 位置：配方面板正上方居中，压在标签条上面那条空带上
             int panelW = field("backgroundWidth").getInt(rs);
             int bx = x + panelW / 2 - w / 2;
-            int by = Math.max(1, y - 24 - 11);   // 标签条高 24，再往上 11
-            g.fill(bx - 1, by - 1, bx + w + 1, by + 6, 0xC0101010);
+            int by = Math.max(0, y - 24 - 9);    // 标签条高 24，再往上 9
             g.pose().pushPose();
             g.pose().translate(0.0F, 0.0F, 200.0F);
-            g.pose().translate(bx, by, 0.0F);
-            g.pose().scale(0.5F, 0.5F, 1.0F);
-            g.drawString(font, text, 0, 0, 0xFFFFFFFF, false);
+            g.drawString(font, text, bx, by, 0xFFFFFFFF, true);
             g.pose().popPose();
         } catch (Throwable ignored) {
             // EMI 换了字段名就安静地不画
