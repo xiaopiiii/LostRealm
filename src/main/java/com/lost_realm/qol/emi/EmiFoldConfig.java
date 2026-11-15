@@ -90,7 +90,7 @@ public final class EmiFoldConfig {
             }
             for (Row row : ROWS) {
                 if (!containsKey(entries, row.key())) {
-                    install(screen, entries, row);
+                    install(screen, list, entries, row);
                 }
             }
             foldRowPresent = containsKey(entries, "fold_edit");
@@ -108,7 +108,7 @@ public final class EmiFoldConfig {
         return false;
     }
 
-    private static void install(ConfigScreen screen, List<Object> entries, Row row) {
+    private static void install(ConfigScreen screen, ListWidget list, List<Object> entries, Row row) {
         try {
             GroupNameWidget group = null;
             for (Object o : entries) {
@@ -131,8 +131,17 @@ public final class EmiFoldConfig {
             }
             try {
                 entries.add(at, entry);
+                // parentList 必须指回去：ConfigEntryWidget.render 里要读
+                // parentList.client（屏幕宽高），漏了这一句就是
+                // "Cannot read field client because this.parentList is null"
+                entry.parentList = list;
             } catch (Throwable t) {
-                Medals.LOGGER.debug("[Lost Realm] 直接插入配置行失败", t);
+                Medals.LOGGER.debug("[Lost Realm] 直接插入配置行失败，退回 addEntry", t);
+                try {
+                    list.addEntry(entry);
+                } catch (Throwable ignored) {
+                    return;
+                }
             }
             Medals.LOGGER.info("[Lost Realm] 配置行「{}」已挂进 EMI 配置界面（{} 分组第 {} 项）",
                     row.key(), row.groupId(), at);
@@ -229,6 +238,33 @@ public final class EmiFoldConfig {
                         }
                     });
             this.key = row.key();
+        }
+
+        /**
+         * 兜底：这一行的绘制/布局任何异常都吞掉。
+         *
+         * <p>它是插进 EMI 自己的列表里的，一旦抛异常就是<b>整个配置界面直接崩</b>
+         * （已经因为少赋一次 {@code parentList} 崩过一次）。宁可少显示一行，
+         * 也不能把玩家踢出游戏。
+         */
+        @Override
+        public void render(net.minecraft.client.gui.GuiGraphics g, int index, int y, int x,
+                           int width, int height, int mouseX, int mouseY, boolean hovered,
+                           float delta) {
+            try {
+                super.render(g, index, y, x, width, height, mouseX, mouseY, hovered, delta);
+            } catch (Throwable ignored) {
+                // 静默
+            }
+        }
+
+        @Override
+        public void update(int x, int y, int width, int height) {
+            try {
+                super.update(x, y, width, height);
+            } catch (Throwable ignored) {
+                // 静默
+            }
         }
 
         private static List<ClientTooltipComponent> tooltip(String key) {
