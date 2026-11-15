@@ -163,6 +163,9 @@ public final class EmiFold {
         if (!EmiFoldStore.isEnabled() || EmiFoldStore.isEmpty() || type != SidebarType.INDEX) {
             return in;
         }
+        if (hasQuery()) {
+            return in;                     // 搜索时不折，否则被收起的成员搜不到
+        }
         if (in == cacheIn && cacheVersion == stateVersion) {
             return cacheOut;
         }
@@ -367,14 +370,17 @@ public final class EmiFold {
         }
     }
 
-    /** 数字角标的矩形（x, y, w, h）。 */
+    /**
+     * 数字角标：固定 8×8，贴格子右下角。
+     *
+     * <p>尺寸是精心选的：18×18 的格子里物品图标中心在 (9,9)，而这块从 (10,10)
+     * 开始 —— <b>点图标正中间不会命中它</b>。之前按数字宽度动态算、最宽能到 9px
+     * （起点 x+9），点物品中心正好触发展开/收起，用户感觉"点一下就被拆开了"。
+     */
+    private static final int BADGE = 8;
+
     private static int[] badgeRect(int cellX, int cellY, String group) {
-        var font = Minecraft.getInstance().font;
-        String text = EXPANDED.contains(group) ? "−" : String.valueOf(COUNT.getOrDefault(group, 0));
-        int tw = font.width(text);
-        int w = Math.max(9, tw + 3);
-        int h = 9;
-        return new int[]{cellX + CELL - w, cellY + CELL - h, w, h};
+        return new int[]{cellX + CELL - BADGE, cellY + CELL - BADGE, BADGE, BADGE};
     }
 
     /** 屏幕坐标落在哪个格子上；不在 EMI 物品列表里返回 null。 */
@@ -494,6 +500,54 @@ public final class EmiFold {
     // 事件
     // ================================================================
 
+    /**
+     * 搜索框里有没有输内容。
+     *
+     * <p>折叠的列表就是最终展示的那一份，组员被收起后搜索也搜不到 ——
+     * 用户搜"白羊毛"结果只看到组代表格，等于搜丢了。
+     * 所以只要在搜索，就完全不折叠，保证"搜什么给什么"。
+     */
+    private static boolean hasQuery() {
+        try {
+            var box = EmiScreenManager.search;
+            if (box == null) {
+                return false;
+            }
+            String v = box.getValue();
+            return v != null && !v.isBlank();
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    /** 这个控件是否被鼠标压住（且可见）。 */
+    private static boolean hitWidget(Object w, double mx, double my) {
+        if (!(w instanceof net.minecraft.client.gui.components.AbstractWidget aw) || !aw.visible) {
+            return false;
+        }
+        return mx >= aw.getX() && mx < aw.getX() + aw.getWidth()
+                && my >= aw.getY() && my < aw.getY() + aw.getHeight();
+    }
+
+    /**
+     * 是否点在面板自带的按钮上（翻页箭头、类型循环按钮）。
+     *
+     * <p>这些按钮在面板 bounds 之内。常开框选模式下如果不把它们排除，
+     * 一按就变成"框选起手"并取消了事件，翻页按钮永远点不到。
+     */
+    private static boolean onPanelButton(double mx, double my) {
+        for (SidebarPanel p : allPanels()) {
+            if (p == null) {
+                continue;
+            }
+            if (hitWidget(p.pageLeft, mx, my) || hitWidget(p.pageRight, mx, my)
+                    || hitWidget(p.cycle, mx, my)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** 某个物理键是否按下（区分左右）。 */
     private static boolean key(int glfwKey) {
         Minecraft mc = Minecraft.getInstance();
@@ -608,7 +662,13 @@ public final class EmiFold {
             return true;
         }
 
-        // ④ 框选起手：按住 Ctrl+Shift，或者开了"常开框选"模式
+        // ④ 面板自带的按钮（翻页 / 循环）不参与框选。
+        //    常开模式下一按就抢，翻页箭头会完全失灵。
+        if (onPanelButton(mx, my)) {
+            return false;
+        }
+
+        // ⑤ 框选起手：按住 Ctrl+Shift，或者开了"常开框选"模式
         if (!isModifierDown() && !EmiFoldStore.isStickySelect()) {
             return false;
         }
@@ -1110,7 +1170,12 @@ public final class EmiFold {
         cells.sort((a, b) -> Integer.compare(a[0], b[0]));
         int segStart = 0;
         for (int i = 1; i <= cells.size(); i++) {
-            boolean brk = i == cells.size() || cells.get(i)[0] != cells.get(i - 1)[0] + 1;
+            // 索引连续**且在同一行**才算一段。
+            // 只判索引连续时，成员跨行会让一个矩形横跨两行 ——
+            // 既框住列范围内的外人，又漏掉下一行左侧的自己人。
+            boolean brk = i == cells.size()
+                    || cells.get(i)[0] != cells.get(i - 1)[0] + 1
+                    || cells.get(i)[2] != cells.get(i - 1)[2];
             if (!brk) {
                 continue;
             }
@@ -1169,7 +1234,7 @@ public final class EmiFold {
         g.fill(r[0], r[1] + r[3] - 1, r[0] + r[2], r[1] + r[3], 0xFF55E0FF);
         g.fill(r[0], r[1], r[0] + 1, r[1] + r[3], 0xFF55E0FF);
         g.fill(r[0] + r[2] - 1, r[1], r[0] + r[2], r[1] + r[3], 0xFF55E0FF);
-        g.drawString(font, text, r[0] + (r[2] - tw) / 2, r[1] + 1, 0xFFFFFFFF, true);
+        g.drawString(font, text, r[0] + Math.max(0, (r[2] - tw) / 2), r[1], 0xFFFFFFFF, true);
         g.pose().popPose();
     }
 
