@@ -7,8 +7,7 @@
   "client": [
     "EmiSidebarsMixin",
     "MouseHandlerMixin",
-    "EmiScreenManagerMixin",
-    "EmiConfigScreenMixin"
+    "EmiScreenManagerMixin"
   ],
   "injectors": {
     "defaultRequire": 0

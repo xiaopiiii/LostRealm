@@ -29,6 +29,7 @@ import dev.emi.emi.api.widget.Bounds;
 import dev.emi.emi.config.SidebarSide;
 import dev.emi.emi.config.SidebarType;
 import dev.emi.emi.registry.EmiStackList;
+import dev.emi.emi.screen.ConfigScreen;
 import dev.emi.emi.screen.EmiScreenBase;
 import dev.emi.emi.screen.EmiScreenManager;
 import dev.emi.emi.screen.EmiScreenManager.ScreenSpace;
@@ -391,8 +392,16 @@ public final class EmiFold {
      * 可能把物品列表挂在别的类型上（搜索态、收藏等），条件太窄会导致
      * 鼠标明明在格子上却一个都选不中。
      */
+    /**
+     * 只有<b>物品索引</b>这一种空间参与折叠：角标、边框、框选、展开全都只认它。
+     *
+     * <p>EMI 的侧栏分页不止一种：收藏夹、查询记录、可合成、历史……它们共用同一套
+     * 格子坐标，但列表来源不同。之前这里只排除了 CHESS，于是"查询记录"里也画出角标、
+     * 点了还真能点开 —— 可那页的列表根本没折过（折叠只作用于 INDEX），
+     * 结果就是点了个寂寞：数字变了，物品一件没铺开。
+     */
     private static boolean usableSpace(ScreenSpace space) {
-        return space != null && space.getType() != SidebarType.CHESS;
+        return space != null && space.getType() == SidebarType.INDEX && !hasQuery();
     }
 
     /**
@@ -1091,6 +1100,12 @@ public final class EmiFold {
         if (screen != null
                 && "dev.emi.emi.screen.ConfigScreen".equals(screen.getClass().getName())) {
             BUTTONS.clear();
+            // 每帧确认一次那一行还在（列表可能会被重建），失败了才画左下角兜底
+            try {
+                EmiFoldConfig.ensure((ConfigScreen) screen);
+            } catch (Throwable ignored) {
+                // 拿不到 ConfigScreen 就当没插进去
+            }
             if (EmiFoldConfig.installed()) {
                 CONFIG_BTN = null;
             } else {
