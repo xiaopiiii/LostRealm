@@ -94,6 +94,9 @@ public final class EmiFold {
      */
     private static final java.util.LinkedHashSet<String> PENDING = new java.util.LinkedHashSet<>();
 
+    /** 折叠生效日志只打一次，避免刷屏。 */
+    private static boolean loggedFold;
+
     /** F7 / F8 上一帧是否按下，用来做边沿检测。 */
     private static boolean keyF7Down;
     private static boolean keyF8Down;
@@ -198,6 +201,11 @@ public final class EmiFold {
         cacheIn = in;
         cacheVersion = stateVersion;
         cacheOut = out;
+        if (!loggedFold) {
+            loggedFold = true;
+            Medals.LOGGER.info("[Lost Realm] EMI 折叠生效：{} 格 → {} 格，命中 {} 个组",
+                    in.size(), out.size(), ANCHOR.size());
+        }
         return out;
     }
 

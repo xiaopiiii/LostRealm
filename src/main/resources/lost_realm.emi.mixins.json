@@ -6,7 +6,8 @@
   "refmap": "lost_realm.refmap.json",
   "client": [
     "EmiSidebarsMixin",
-    "MouseHandlerMixin"
+    "MouseHandlerMixin",
+    "EmiScreenManagerMixin"
   ],
   "injectors": {
     "defaultRequire": 0
