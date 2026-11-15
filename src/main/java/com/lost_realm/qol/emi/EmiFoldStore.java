@@ -61,6 +61,13 @@ public final class EmiFoldStore {
     /** 总开关。关掉之后折叠、框选、按钮全部不工作，列表保持原样。 */
     private static boolean enabled = true;
 
+    /**
+     * 框选方式：false = 必须按住 Ctrl+Shift 拖拽（默认，不易误触）；
+     * true = 常开，直接左键拖拽就是框选，不用按住修饰键。
+     * 按 F6 切换，存在同一个 json 里。
+     */
+    private static boolean stickySelect;
+
     private static long lastModified = -1L;
     private static boolean everLoaded;
 
@@ -104,6 +111,7 @@ public final class EmiFoldStore {
         }
         JsonObject root = JsonParser.parseString(text).getAsJsonObject();
         enabled = !root.has("enabled") || root.get("enabled").getAsBoolean();
+        stickySelect = root.has("stickySelect") && root.get("stickySelect").getAsBoolean();
         JsonElement arr = root.get("groups");
         if (arr == null || !arr.isJsonArray()) {
             return;
@@ -152,6 +160,7 @@ public final class EmiFoldStore {
         readme.add("一个物品只能属于一个组；组不足 2 个成员会被忽略。");
         root.add("_readme", readme);
         root.addProperty("enabled", true);
+        root.addProperty("stickySelect", false);
         root.add("groups", new JsonArray());
         Files.writeString(f, new GsonBuilder().setPrettyPrinting().create().toJson(root) + "\n",
                 StandardCharsets.UTF_8);
@@ -172,6 +181,7 @@ public final class EmiFoldStore {
             readme.add("一个物品只能属于一个组；组不足 2 个成员会被忽略。");
             root.add("_readme", readme);
             root.addProperty("enabled", enabled);
+            root.addProperty("stickySelect", stickySelect);
 
             JsonArray groups = new JsonArray();
             for (Map.Entry<String, List<String>> e : GROUPS.entrySet()) {
@@ -230,6 +240,18 @@ public final class EmiFoldStore {
         enabled = !enabled;
         save();
         return enabled;
+    }
+
+    /** 框选是否常开（不用按住修饰键）。 */
+    public static boolean isStickySelect() {
+        return stickySelect;
+    }
+
+    /** 切换常开框选并落盘。返回切换后的状态。 */
+    public static boolean toggleStickySelect() {
+        stickySelect = !stickySelect;
+        save();
+        return stickySelect;
     }
 
     /** 该成员属于哪个组；没有返回 null。 */

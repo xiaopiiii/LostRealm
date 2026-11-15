@@ -112,7 +112,16 @@ public final class EmiFold {
 
     private static final List<Btn> BUTTONS = new ArrayList<>();
 
+    /** EMI 配置界面上那个自绘总开关的矩形；不在配置界面时为 null。 */
+    private static volatile int[] CONFIG_BTN;
+
+    private static boolean inRect(int[] r, double mx, double my) {
+        return r != null && r.length == 4
+                && mx >= r[0] && mx < r[0] + r[2] && my >= r[1] && my < r[1] + r[3];
+    }
+
     /** F7 / F8 上一帧是否按下，用来做边沿检测。 */
+    private static boolean keyF6Down;
     private static boolean keyF7Down;
     private static boolean keyF8Down;
 
@@ -293,7 +302,29 @@ public final class EmiFold {
         return space != null && space.getType() != SidebarType.CHESS;
     }
 
-    private record Cell(int x, int y, EmiStack stack, String group, boolean anchor, int count) {}
+    /**
+     * 命中的格子。
+     *
+     * <p>badge 是右下角那个数字小块的矩形 —— <b>只有点这块才展开/收起</b>。
+     * 之前整格都能切换，等于把"点开这个物品看配方"吃掉了；
+     * 现在点格子其他地方照常交给 EMI。
+     */
+    private record Cell(int x, int y, EmiStack stack, String group, boolean anchor, int count,
+                        int bx, int by, int bw, int bh) {
+        boolean onBadge(double mx, double my) {
+            return bw > 0 && mx >= bx && mx < bx + bw && my >= by && my < by + bh;
+        }
+    }
+
+    /** 数字角标的矩形（x, y, w, h）。 */
+    private static int[] badgeRect(int cellX, int cellY, String group) {
+        var font = Minecraft.getInstance().font;
+        String text = EXPANDED.contains(group) ? "−" : String.valueOf(COUNT.getOrDefault(group, 0));
+        int tw = font.width(text);
+        int w = Math.max(9, tw + 3);
+        int h = 9;
+        return new int[]{cellX + CELL - w, cellY + CELL - h, w, h};
+    }
 
     /** 屏幕坐标落在哪个格子上；不在 EMI 物品列表里返回 null。 */
     private static Cell cellAt(double mx, double my) {
@@ -343,7 +374,11 @@ public final class EmiFold {
             String group = EmiFoldStore.groupOf(id);
             boolean anchor = group != null && id != null && id.equals(ANCHOR.get(group));
             int count = group == null ? 0 : COUNT.getOrDefault(group, 0);
-            return new Cell(x, y, st, group, anchor, count);
+            if (anchor) {
+                int[] r = badgeRect(x, y, group);
+                return new Cell(x, y, st, group, true, count, r[0], r[1], r[2], r[3]);
+            }
+            return new Cell(x, y, st, group, false, count, 0, 0, 0, 0);
         }
         return null;
     }
@@ -469,9 +504,6 @@ public final class EmiFold {
 
     /** 左键按下。返回 true 表示这次按下已被接管。 */
     public static boolean beginSelection() {
-        if (!EmiFoldStore.isEnabled()) {
-            return false;
-        }
         double[] p = guiMouse();
         if (p == null) {
             return false;
@@ -479,43 +511,59 @@ public final class EmiFold {
         double mx = p[0];
         double my = p[1];
 
-        // 先看是不是点在自绘按钮上
+        // ① 配置界面的总开关。功能关着的时候也必须能点开，所以放在最前面、不看 isEnabled。
+        if (inRect(CONFIG_BTN, mx, my)) {
+            boolean now = EmiFoldStore.toggleEnabled();
+            if (!now) {
+                PENDING.clear();
+                lastClickedGroup = null;
+            }
+            stateVersion++;
+            cacheIn = null;
+            Medals.LOGGER.info("[Lost Realm] EMI 物品折叠已{}", now ? "开启" : "关闭");
+            try {
+                EmiScreenManager.recalculate();
+            } catch (Throwable ignored) {
+                // 界面还没建好时忽略
+            }
+            return true;
+        }
+
+        if (!EmiFoldStore.isEnabled()) {
+            return false;
+        }
+
+        // ② 底部自绘按钮
         for (Btn b : BUTTONS) {
             if (b.hit(mx, my)) {
                 if (b.enabled()) {
                     b.action().run();
                 }
-                return true;               // 不管可不可点，都别再往下走
-            }
-        }
-
-        if (!isModifierDown()) {
-            // 无修饰键：点在折叠格上就展开 / 收起。
-            // 这一段之前被弄丢了 —— 改造成"框选"时只保留了修饰键分支，
-            // 于是折叠出来的组再也打不开，只能看着。
-            Cell cell = null;
-            try {
-                cell = cellAt(mx, my);
-            } catch (Throwable ignored) {
-                // 命中失败就当没点中
-            }
-            if (cell != null && cell.anchor()) {
-                toggle(cell.group());
-                lastClickedGroup = cell.group();
                 return true;
             }
-            return false;                  // 其余情况交给 EMI（取物品 / 看配方）
         }
 
-        if (!inEmiPanel(mx, my)) {
-            logPanelDiag(mx, my);
-            return false;
-        }
+        // ③ 折叠格右下角那个数字小块：只有点它才展开/收起。
+        //    点格子其他地方一律放行，让 EMI 正常取物品 / 看配方。
         Cell cell = null;
         try {
             cell = cellAt(mx, my);
-        } catch (Throwable t) {
-            Medals.LOGGER.debug("[Lost Realm] EMI 折叠：命中检测失败，按空白处处理", t);
+        } catch (Throwable ignored) {
+            // 命中失败就当没点中
+        }
+        if (cell != null && cell.anchor() && cell.onBadge(mx, my)) {
+            toggle(cell.group());
+            lastClickedGroup = cell.group();
+            return true;
+        }
+
+        // ④ 框选起手：按住 Ctrl+Shift，或者开了"常开框选"模式
+        if (!isModifierDown() && !EmiFoldStore.isStickySelect()) {
+            return false;
+        }
+        if (!inEmiPanel(mx, my)) {
+            logPanelDiag(mx, my);
+            return false;
         }
         pressedAnchor = (cell != null && cell.anchor()) ? cell.group() : null;
         selecting = true;
@@ -672,14 +720,21 @@ public final class EmiFold {
      * 也不会被任何模组吞掉。
      */
     private static void pollConfirmKeys() {
+        boolean f6 = key(GLFW.GLFW_KEY_F6);
         boolean f7 = key(GLFW.GLFW_KEY_F7);
         boolean f8 = key(GLFW.GLFW_KEY_F8);
+        if (f6 && !keyF6Down) {
+            boolean now = EmiFoldStore.toggleStickySelect();
+            Medals.LOGGER.info("[Lost Realm] 框选方式：{}",
+                    now ? "常开（直接左键拖拽）" : "按住 Ctrl+Shift 拖拽");
+        }
         if (f7 && !keyF7Down && !PENDING.isEmpty()) {
             confirmFold();
         }
         if (f8 && !keyF8Down && !PENDING.isEmpty()) {
             clearPending();
         }
+        keyF6Down = f6;
         keyF7Down = f7;
         keyF8Down = f8;
     }
@@ -781,56 +836,40 @@ public final class EmiFold {
         Medals.LOGGER.info(sb.toString());
     }
 
-    /** 在 EMI 的配置界面上挂"物品折叠"总开关。 */
-    public static void attachConfigButton(ScreenEvent.Init.Post event) {
-        Screen screen = event.getScreen();
-        if (screen == null) {
-            return;
-        }
-        // 用类名比较，避免直接引用 EMI 的界面类（EMI 不在时会 NoClassDefFoundError）
-        if (!"dev.emi.emi.screen.ConfigScreen".equals(screen.getClass().getName())) {
-            return;
-        }
-        Button button = Button.builder(labelFor(EmiFoldStore.isEnabled()), b -> {
-            boolean now = EmiFoldStore.toggleEnabled();
-            b.setMessage(labelFor(now));
-            if (!now) {
-                PENDING.clear();
-                lastClickedGroup = null;
-            }
-            stateVersion++;
-            cacheIn = null;
-            Medals.LOGGER.info("[Lost Realm] EMI 物品折叠已{}", now ? "开启" : "关闭");
-            try {
-                EmiScreenManager.recalculate();
-            } catch (Throwable ignored) {
-                // 界面还没建好时忽略
-            }
-        }).bounds(6, screen.height - 26, 140, 20).build();
-        event.addListener(button);
-    }
-
-    private static Component labelFor(boolean on) {
-        return Component.literal("[遗落境] 物品折叠：" + (on ? "开" : "关"));
-    }
-
     // ================================================================
     // 绘制
     // ================================================================
 
     private static void render(ScreenEvent.Render.Post event) {
-        // 每帧都要轮询确认键，哪怕当前没选中任何东西 ——
-        // 否则"确认后松开、再框一次"时边沿状态会卡住，第二次按 F7 就不响应了
         pollConfirmKeys();
-        rebuildButtons();
+        GuiGraphics g = event.getGuiGraphics();
+        if (g == null) {
+            return;
+        }
+        Minecraft mc = Minecraft.getInstance();
+        Screen screen = mc.screen;
 
+        // EMI 的配置界面：只画那个总开关，别的一概不画
+        if (screen != null
+                && "dev.emi.emi.screen.ConfigScreen".equals(screen.getClass().getName())) {
+            BUTTONS.clear();
+            drawConfigSwitch(g, screen);
+            return;
+        }
+        CONFIG_BTN = null;
+
+        // 不在 EMI 面板上就彻底收手。
+        // Render.Post 是全局事件 —— 不判断这一下，边框会画到主菜单、
+        // 聊天框、以及所有别的 GUI 上。
+        if (allPanels().isEmpty()) {
+            BUTTONS.clear();
+            return;
+        }
+
+        rebuildButtons();
         boolean hasGroups = !EmiFoldStore.isEmpty();
         boolean hasPending = !PENDING.isEmpty();
         if (!hasGroups && !hasPending && !selecting && BUTTONS.isEmpty()) {
-            return;
-        }
-        GuiGraphics g = event.getGuiGraphics();
-        if (g == null) {
             return;
         }
         if (hasPending) {
@@ -850,6 +889,25 @@ public final class EmiFold {
         if (hasPending) {
             drawHint(g);
         }
+    }
+
+    /** EMI 配置界面左下角的总开关。 */
+    private static void drawConfigSwitch(GuiGraphics g, Screen screen) {
+        var font = Minecraft.getInstance().font;
+        boolean on = EmiFoldStore.isEnabled();
+        String label = "[遗落境] 物品折叠：" + (on ? "开" : "关");
+        int w = font.width(label) + 10;
+        int h = 16;
+        int x = 6;
+        int y = screen.height - 22;
+        CONFIG_BTN = new int[]{x, y, w, h};
+        g.fill(x, y, x + w, y + h, 0xE0202030);
+        int border = on ? 0xFF55E0FF : 0xFF707080;
+        g.fill(x, y, x + w, y + 1, border);
+        g.fill(x, y + h - 1, x + w, y + h, border);
+        g.fill(x, y, x + 1, y + h, border);
+        g.fill(x + w - 1, y, x + w, y + h, border);
+        g.drawString(font, label, x + 5, y + 4, on ? 0xFFFFFFFF : 0xFF909098, true);
     }
 
     /** 待折叠的格子：半透明亮青底 + 亮青框，和已成的组（彩色框）区分开。 */
@@ -900,7 +958,8 @@ public final class EmiFold {
         if (mc == null || mc.screen == null) {
             return;
         }
-        String tip = "已选 " + PENDING.size() + " 个物品　·　F7 折叠成组　·　F8 清空";
+        String tip = "已选 " + PENDING.size() + " 个物品　·　F7 折叠　·　F8 清空　·　"
+                + (EmiFoldStore.isStickySelect() ? "框选常开（F6 关）" : "F6 开常开框选");
         var font = mc.font;
         int w = font.width(tip);
         int x = (mc.screen.width - w) / 2;
@@ -912,7 +971,6 @@ public final class EmiFold {
     private static void drawFolders(GuiGraphics g) {
         // 有 tooltip 正在显示时不画角标 —— 数字压在提示框上比看不到更烦人
         boolean noBadge = EmiScreenManager.lastStackTooltipRendered != null;
-        var font = Minecraft.getInstance().font;
         for (SidebarPanel panel : allPanels()) {
             List<ScreenSpace> spaces;
             try {
@@ -927,29 +985,75 @@ public final class EmiFold {
                 if (!usableSpace(space)) {
                     continue;
                 }
-                List<? extends EmiIngredient> list = space.getPage(panel.page);
+                List<? extends EmiIngredient> list;
+                try {
+                    list = space.getPage(panel.page);
+                } catch (Throwable t) {
+                    continue;
+                }
                 if (list == null) {
                     continue;
                 }
+                // 展开出来的成员：收集坐标，最后统一画一个大框，
+                // 而不是每个物品各套一个小框（那样一展开满屏碎格子）
+                Map<String, List<int[]>> spread = new java.util.HashMap<>();
                 for (int i = 0; i < list.size(); i++) {
                     if (!(list.get(i) instanceof EmiStack st)) {
                         continue;
                     }
                     String id = EmiFoldStore.idOf(st);
                     String group = EmiFoldStore.groupOf(id);
-                    if (group == null || !id.equals(ANCHOR.get(group))) {
+                    if (group == null) {
                         continue;
                     }
-                    // 先筛出代表格再算坐标：getRawX/Y 内部要按行累加，
-                    // 每帧对整页几百个格子调用一次不划算，绝大多数格子在上一行就被跳过了
-                    int x = space.getRawX(i);
-                    int y = space.getRawY(i);
-                    drawFrame(g, x, y, colorFor(group));
-                    if (!noBadge) {
-                        drawBadge(g, font, x, y, group);
+                    if (id.equals(ANCHOR.get(group))) {
+                        int x = space.getRawX(i);
+                        int y = space.getRawY(i);
+                        drawFrame(g, x, y, colorFor(group));
+                        if (!noBadge) {
+                            drawBadge(g, x, y, group);
+                        }
+                    } else if (EXPANDED.contains(group)) {
+                        spread.computeIfAbsent(group, k -> new ArrayList<>())
+                                .add(new int[]{space.getRawX(i), space.getRawY(i)});
                     }
                 }
+                for (Map.Entry<String, List<int[]>> e : spread.entrySet()) {
+                    drawSpreadBox(g, e.getValue(), colorFor(e.getKey()));
+                }
             }
+        }
+    }
+
+    /**
+     * 展开出来的那一坨成员，用一个整体大框围起来。
+     *
+     * <p>不含代表格 —— 代表格自己有小框和数字，套进大框反而看不清楚。
+     * 用了 2px，比代表格那圈 1px 稍重，视觉上明确"这是一整块"。
+     */
+    private static void drawSpreadBox(GuiGraphics g, List<int[]> cells, int color) {
+        if (cells == null || cells.isEmpty()) {
+            return;
+        }
+        int x0 = Integer.MAX_VALUE;
+        int y0 = Integer.MAX_VALUE;
+        int x1 = Integer.MIN_VALUE;
+        int y1 = Integer.MIN_VALUE;
+        for (int[] c : cells) {
+            x0 = Math.min(x0, c[0]);
+            y0 = Math.min(y0, c[1]);
+            x1 = Math.max(x1, c[0] + CELL);
+            y1 = Math.max(y1, c[1] + CELL);
+        }
+        x0 += 1;
+        y0 += 1;
+        x1 -= 1;
+        y1 -= 1;
+        for (int t = 0; t < 2; t++) {
+            g.fill(x0 + t, y0 + t, x1 - t, y0 + t + 1, color);
+            g.fill(x0 + t, y1 - t - 1, x1 - t, y1 - t, color);
+            g.fill(x0 + t, y0 + t, x0 + t + 1, y1 - t, color);
+            g.fill(x1 - t - 1, y0 + t, x1 - t, y1 - t, color);
         }
     }
 
@@ -966,18 +1070,27 @@ public final class EmiFold {
     }
 
     /** 右下角数量。只写字带阴影，不加底色 —— 16px 的图标经不起一个方块压上去。 */
-    private static void drawBadge(GuiGraphics g, net.minecraft.client.gui.Font font,
-                                  int x, int y, String group) {
-        int n = COUNT.getOrDefault(group, 0);
-        String text = EXPANDED.contains(group) ? "−" : String.valueOf(n);
-        int w = font.width(text);
-        int tx = x + CELL - 2 - w;
-        int ty = y + CELL - 10;
+    /**
+     * 右下角的数字，带一个小方框。
+     *
+     * <p>这个方框不只是装饰 —— 它是<b>唯一能展开/收起的热区</b>。
+     * 之前整格都能切换，导致折叠后的第一个物品点不开、看不了配方。
+     */
+    private static void drawBadge(GuiGraphics g, int x, int y, String group) {
+        var font = Minecraft.getInstance().font;
+        int[] r = badgeRect(x, y, group);
+        String text = EXPANDED.contains(group) ? "−" : String.valueOf(COUNT.getOrDefault(group, 0));
+        int tw = font.width(text);
+        g.pose().pushPose();
         // 抬 z：EMI 的物品是批量绘制、最后统一 flush 的，
         // 光靠"事件更靠后"压不住，数字会钻到图标底下
-        g.pose().pushPose();
         g.pose().translate(0.0F, 0.0F, 200.0F);
-        g.drawString(font, text, tx, ty, 0xFFFFFFFF, true);
+        g.fill(r[0], r[1], r[0] + r[2], r[1] + r[3], 0xF0101018);
+        g.fill(r[0], r[1], r[0] + r[2], r[1] + 1, 0xFF55E0FF);
+        g.fill(r[0], r[1] + r[3] - 1, r[0] + r[2], r[1] + r[3], 0xFF55E0FF);
+        g.fill(r[0], r[1], r[0] + 1, r[1] + r[3], 0xFF55E0FF);
+        g.fill(r[0] + r[2] - 1, r[1], r[0] + r[2], r[1] + r[3], 0xFF55E0FF);
+        g.drawString(font, text, r[0] + (r[2] - tw) / 2, r[1] + 1, 0xFFFFFFFF, true);
         g.pose().popPose();
     }
 
@@ -1027,25 +1140,6 @@ public final class EmiFold {
                 EmiFold.render(event);
             } catch (Throwable t) {
                 Medals.LOGGER.warn("[Lost Realm] EMI 折叠绘制失败（本次跳过）", t);
-            }
-        }
-
-        /**
-         * EMI 的配置界面里加一个开关。
-         *
-         * <p>不去动它那个由反射扫描字段生成的配置列表 —— 那套东西要精确匹配
-         * 注解、分组和布局，改坏了整个配置页都会错位。这里只是往 Screen 上
-         * 挂一个普通按钮，位置固定在左下角，不影响它自己的排版。
-         */
-        @SubscribeEvent
-        public static void onScreenInit(ScreenEvent.Init.Post event) {
-            if (!available()) {
-                return;
-            }
-            try {
-                EmiFold.attachConfigButton(event);
-            } catch (Throwable t) {
-                Medals.LOGGER.warn("[Lost Realm] 往 EMI 配置界面加开关失败", t);
             }
         }
 
