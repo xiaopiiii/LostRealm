@@ -84,6 +84,8 @@ public final class EmiFold {
     private static double selY1;
     /** 按下时若正好压在折叠格上，记下组名 —— 松手时位移很小就当作"解除"。 */
     private static String pressedAnchor;
+    /** 按键诊断日志最多打这么多次，避免刷屏。 */
+    private static int pressLogCount;
 
     /** 组的边框配色。按组名散列取，保证同一个组每次颜色一致。 */
     private static final int[] PALETTE = {
@@ -321,60 +323,100 @@ public final class EmiFold {
     // 事件
     // ================================================================
 
-    /**
-     * 框选修饰键：<b>右 Ctrl + 右 Shift</b>。
-     *
-     * <p>为什么不用左 Ctrl：EMI 自己占用了 Ctrl+左键（取整组 / 拖拽），
-     * 抢它的点击会连带影响原有操作。右 Ctrl 与右 Shift 在 EMI 里没有绑定，
-     * 而且要求两个键同时按下，平时误触的概率极低。
-     *
-     * <p>必须直接查 GLFW 的按键状态：MC 的 {@code Screen.hasControlDown()}
-     * 把左右 Control 算作同一个键，区分不出来。
-     */
-    private static boolean isModifierDown() {
+    /** 某个物理键是否按下（区分左右）。 */
+    private static boolean key(int glfwKey) {
         Minecraft mc = Minecraft.getInstance();
         if (mc == null || mc.getWindow() == null) {
             return false;
         }
         long win = mc.getWindow().getWindow();
-        if (win == 0L) {
-            return false;
-        }
-        return InputConstants.isKeyDown(win, GLFW.GLFW_KEY_RIGHT_CONTROL)
-                && InputConstants.isKeyDown(win, GLFW.GLFW_KEY_RIGHT_SHIFT);
+        return win != 0L && InputConstants.isKeyDown(win, glfwKey);
     }
 
-    /** 按下。返回 true 表示消费掉这次点击。 */
-    private static boolean onPress(double mx, double my, int button) {
-        if (button != 0) {
+    /**
+     * 框选修饰键：<b>Ctrl + Shift</b>（左右不限）。
+     *
+     * <p>为什么不单用 Ctrl：EMI 自己占用了 Ctrl+左键（取整组 / 拖拽），
+     * 抢它会连带影响原有操作。再加上 Shift 之后这个组合没被占用。
+     *
+     * <p>为什么不再死认右 Ctrl：右 Ctrl 在笔记本键盘和紧凑配列上常常不存在
+     * 或者位置很别扭，只认右边反而更难点。Ctrl+Shift 本身不会和 EMI 冲突，
+     * 所以不分左右更实用。
+     *
+     * <p>必须直接查 GLFW：MC 的 {@code Screen.hasControlDown()} 把左右 Control
+     * 视为同一个键，虽然这里不限左右，但诊断日志要区分是哪一个。
+     */
+    private static boolean isModifierDown() {
+        return (key(GLFW.GLFW_KEY_LEFT_CONTROL) || key(GLFW.GLFW_KEY_RIGHT_CONTROL))
+                && (key(GLFW.GLFW_KEY_LEFT_SHIFT) || key(GLFW.GLFW_KEY_RIGHT_SHIFT));
+    }
+
+    /**
+     * 诊断用：把四个修饰键的真实状态打出来。
+     *
+     * <p>"按了没反应"最难查的就是这一步 —— 到底是键没被识别，还是事件没走到。
+     * 只在前 20 次按下时记录，不会刷屏。
+     */
+    public static void logModifierState() {
+        if (pressLogCount++ > 20) {
+            return;
+        }
+        Medals.LOGGER.info("[Lost Realm] EMI 折叠 · 按键诊断：左Ctrl={} 右Ctrl={} 左Shift={} 右Shift={} → 组合成立={}",
+                key(GLFW.GLFW_KEY_LEFT_CONTROL), key(GLFW.GLFW_KEY_RIGHT_CONTROL),
+                key(GLFW.GLFW_KEY_LEFT_SHIFT), key(GLFW.GLFW_KEY_RIGHT_SHIFT),
+                isModifierDown());
+    }
+
+    /** 鼠标当前的 GUI 坐标。 */
+    private static double[] guiMouse() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc == null || mc.getWindow() == null || mc.mouseHandler == null) {
+            return null;
+        }
+        var w = mc.getWindow();
+        // xpos()/ypos() 是窗口像素坐标，界面缩放不是 100% 时必须换算成 GUI 坐标
+        double sx = mc.mouseHandler.xpos() * (double) w.getGuiScaledWidth()
+                / Math.max(1, w.getScreenWidth());
+        double sy = mc.mouseHandler.ypos() * (double) w.getGuiScaledHeight()
+                / Math.max(1, w.getScreenHeight());
+        return new double[]{sx, sy};
+    }
+
+    /** 左键按下：满足框选条件就起手。返回 true 表示这次按下已被接管。 */
+    public static boolean beginSelection() {
+        if (!isModifierDown()) {
             return false;
         }
-        boolean mod = isModifierDown();
+        double[] p = guiMouse();
+        if (p == null) {
+            return false;
+        }
+        double mx = p[0];
+        double my = p[1];
+        if (!inEmiPanel(mx, my)) {
+            return false;
+        }
         Cell cell = cellAt(mx, my);
-
-        if (mod && inEmiPanel(mx, my)) {
-            // 右Ctrl+右Shift+左键统一从这里起手：可能是框选，也可能是点折叠格（松手时按位移区分）
-            pressedAnchor = (cell != null && cell.anchor()) ? cell.group() : null;
-            selecting = true;
-            selX0 = mx;
-            selY0 = my;
-            selX1 = mx;
-            selY1 = my;
-            return true;                   // 吃掉，免得 EMI 顺手开始拖物品
-        }
-        if (cell != null && cell.anchor()) {
-            toggle(cell.group());
-            return true;
-        }
-        return false;
+        pressedAnchor = (cell != null && cell.anchor()) ? cell.group() : null;
+        selecting = true;
+        selX0 = mx;
+        selY0 = my;
+        selX1 = mx;
+        selY1 = my;
+        Medals.LOGGER.info("[Lost Realm] EMI 折叠：开始框选 @({}, {}){}", (int) mx, (int) my,
+                pressedAnchor == null ? "" : "，压住折叠格「" + pressedAnchor + "」");
+        return true;
     }
 
-    /** 松开。返回 true 表示消费掉。 */
-    private static boolean onRelease(double mx, double my, int button) {
-        if (button != 0 || !selecting) {
+    /** 左键松开：结算框选，或按位移判定为单击。返回 true 表示这次松开已被接管。 */
+    public static boolean endSelection() {
+        if (!selecting) {
             return false;
         }
         selecting = false;
+        double[] p = guiMouse();
+        double mx = p == null ? selX0 : p[0];
+        double my = p == null ? selY0 : p[1];
         selX1 = mx;
         selY1 = my;
 
@@ -386,6 +428,8 @@ public final class EmiFold {
                 EmiFoldStore.remove(pressedAnchor);
                 Medals.LOGGER.info("[Lost Realm] EMI 折叠：已解除组「{}」", pressedAnchor);
                 refresh();
+            } else {
+                Medals.LOGGER.info("[Lost Realm] EMI 折叠：单击（未拖动），没有成组");
             }
             pressedAnchor = null;
             return true;
@@ -575,32 +619,8 @@ public final class EmiFold {
             }
         }
 
-        @SubscribeEvent
-        public static void onPress(ScreenEvent.MouseButtonPressed.Pre event) {
-            if (!available()) {
-                return;
-            }
-            try {
-                if (EmiFold.onPress(event.getMouseX(), event.getMouseY(), event.getButton())) {
-                    event.setCanceled(true);
-                }
-            } catch (Throwable t) {
-                Medals.LOGGER.warn("[Lost Realm] EMI 折叠点击处理失败", t);
-            }
-        }
-
-        @SubscribeEvent
-        public static void onRelease(ScreenEvent.MouseButtonReleased.Pre event) {
-            if (!available()) {
-                return;
-            }
-            try {
-                if (EmiFold.onRelease(event.getMouseX(), event.getMouseY(), event.getButton())) {
-                    event.setCanceled(true);
-                }
-            } catch (Throwable t) {
-                Medals.LOGGER.warn("[Lost Realm] EMI 折叠框选结算失败", t);
-            }
-        }
+        // 按下/松开不在这里监听。EMI 是在 MouseHandler.onPress 里就把事件 cancel 掉的，
+        // Screen.mouseClicked 根本不会被调用，所以 ScreenEvent.MouseButtonPressed 永不触发。
+        // 那两个动作由 MouseHandlerMixin 在同一层、更早地拦下来。
     }
 }
