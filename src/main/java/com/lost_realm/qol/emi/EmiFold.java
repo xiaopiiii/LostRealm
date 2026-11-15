@@ -249,12 +249,11 @@ public final class EmiFold {
         if (list == null || list.isEmpty()) {
             return null;
         }
-        int cols = Math.max(1, space.getWidth(space.pageSize));
         for (int i = 0; i < list.size(); i++) {
-            int col = i % cols;
-            int row = i / cols;
-            int x = space.getX(col, space.pageSize);
-            int y = space.getY(col, row);
+            // 坐标必须走 getRawX/getRawY：EMI 的网格**每行列数不同**（侧栏按钮会挤窄某些行），
+            // 不能用 i % cols 算。这两个方法内部按每行实际列数累加得出 (col,row)。
+            int x = space.getRawX(i);
+            int y = space.getRawY(i);
             if (mx < x || mx >= x + CELL || my < y || my >= y + CELL) {
                 continue;
             }
@@ -294,12 +293,9 @@ public final class EmiFold {
                 if (list == null) {
                     continue;
                 }
-                int cols = Math.max(1, space.getWidth(space.pageSize));
                 for (int i = 0; i < list.size(); i++) {
-                    int col = i % cols;
-                    int row = i / cols;
-                    int x = space.getX(col, space.pageSize);
-                    int y = space.getY(col, row);
+                    int x = space.getRawX(i);
+                    int y = space.getRawY(i);
                     // 格子中心落在矩形内才算选中
                     double cx = x + CELL / 2.0;
                     double cy = y + CELL / 2.0;
@@ -396,7 +392,13 @@ public final class EmiFold {
         if (!inEmiPanel(mx, my)) {
             return false;
         }
-        Cell cell = cellAt(mx, my);
+        // 命中判定出问题不应该连累框选本身：拿不到格子就当作"从空白处起手"
+        Cell cell = null;
+        try {
+            cell = cellAt(mx, my);
+        } catch (Throwable t) {
+            Medals.LOGGER.debug("[Lost Realm] EMI 折叠：命中检测失败，按空白处处理", t);
+        }
         pressedAnchor = (cell != null && cell.anchor()) ? cell.group() : null;
         selecting = true;
         selX0 = mx;
@@ -526,7 +528,6 @@ public final class EmiFold {
                 if (list == null) {
                     continue;
                 }
-                int cols = Math.max(1, space.getWidth(space.pageSize));
                 for (int i = 0; i < list.size(); i++) {
                     if (!(list.get(i) instanceof EmiStack st)) {
                         continue;
@@ -536,8 +537,10 @@ public final class EmiFold {
                     if (group == null || !id.equals(ANCHOR.get(group))) {
                         continue;
                     }
-                    int x = space.getX(i % cols, space.pageSize);
-                    int y = space.getY(i % cols, i / cols);
+                    // 先筛出代表格再算坐标：getRawX/Y 内部要按行累加，
+                    // 每帧对整页几百个格子调用一次不划算，绝大多数格子在上一行就被跳过了
+                    int x = space.getRawX(i);
+                    int y = space.getRawY(i);
                     drawFrame(g, x, y, colorFor(group));
                     if (!noBadge) {
                         drawBadge(g, font, x, y, group);
