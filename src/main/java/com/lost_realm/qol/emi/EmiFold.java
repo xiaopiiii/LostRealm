@@ -215,23 +215,57 @@ public final class EmiFold {
     // 格子命中
     // ================================================================
 
-    private record Cell(int x, int y, EmiStack stack, String group, boolean anchor, int count) {}
-
-    /** 屏幕坐标落在哪个格子上；不在 EMI 物品列表里返回 null。 */
-    private static Cell cellAt(double mx, double my) {
+    /**
+     * 收集所有可能承载物品列表的面板。
+     *
+     * <p>两条路都试：按方位（LEFT/RIGHT/…）和按类型（INDEX）。EMI 的面板不一定
+     * 挂在侧栏方位上 —— 配置不同时 {@code getPanelFor(SidebarSide)} 可能全是 null，
+     * 而按类型查还能拿到。之前只走方位这一条，一旦拿不到就整条链路静默失效。
+     */
+    private static List<SidebarPanel> allPanels() {
+        List<SidebarPanel> out = new ArrayList<>(2);
         for (SidebarSide side : SidebarSide.values()) {
             if (side == SidebarSide.NONE) {
                 continue;
             }
-            SidebarPanel panel = EmiScreenManager.getPanelFor(side);
-            if (panel == null || !panel.isVisible()) {
+            try {
+                SidebarPanel p = EmiScreenManager.getPanelFor(side);
+                if (p != null && !out.contains(p)) {
+                    out.add(p);
+                }
+            } catch (Throwable ignored) {
+                // 换下一条路
+            }
+        }
+        try {
+            SidebarPanel p = EmiScreenManager.getPanelFor(SidebarType.INDEX);
+            if (p != null && !out.contains(p)) {
+                out.add(p);
+            }
+        } catch (Throwable ignored) {
+            // 拿不到就只用方位那几个
+        }
+        return out;
+    }
+
+    private record Cell(int x, int y, EmiStack stack, String group, boolean anchor, int count) {}
+
+    /** 屏幕坐标落在哪个格子上；不在 EMI 物品列表里返回 null。 */
+    private static Cell cellAt(double mx, double my) {
+        // 不按 panel.getBounds() 预过滤：一旦那个边界和格子坐标不在同一坐标空间，
+        // 就会"鼠标明明在格子上却判定不在面板内"，整条链路静默失效。
+        // 格子坐标本身是精确的，直接拿它判断。
+        for (SidebarPanel panel : allPanels()) {
+            List<ScreenSpace> spaces;
+            try {
+                spaces = panel.getSpaces();
+            } catch (Throwable t) {
                 continue;
             }
-            Bounds b = panel.getBounds();
-            if (b == null || !b.contains((int) mx, (int) my)) {
+            if (spaces == null) {
                 continue;
             }
-            for (ScreenSpace space : panel.getSpaces()) {
+            for (ScreenSpace space : spaces) {
                 if (space == null || space.getType() != SidebarType.INDEX) {
                     continue;
                 }
@@ -277,15 +311,17 @@ public final class EmiFold {
         double hy = Math.max(y0, y1);
         List<String> ids = new ArrayList<>();
         Set<String> seen = new HashSet<>();
-        for (SidebarSide side : SidebarSide.values()) {
-            if (side == SidebarSide.NONE) {
+        for (SidebarPanel panel : allPanels()) {
+            List<ScreenSpace> spaces;
+            try {
+                spaces = panel.getSpaces();
+            } catch (Throwable t) {
                 continue;
             }
-            SidebarPanel panel = EmiScreenManager.getPanelFor(side);
-            if (panel == null || !panel.isVisible()) {
+            if (spaces == null) {
                 continue;
             }
-            for (ScreenSpace space : panel.getSpaces()) {
+            for (ScreenSpace space : spaces) {
                 if (space == null || space.getType() != SidebarType.INDEX) {
                     continue;
                 }
@@ -390,6 +426,7 @@ public final class EmiFold {
         double mx = p[0];
         double my = p[1];
         if (!inEmiPanel(mx, my)) {
+            logPanelDiag(mx, my);
             return false;
         }
         // 命中判定出问题不应该连累框选本身：拿不到格子就当作"从空白处起手"
@@ -463,7 +500,7 @@ public final class EmiFold {
                 return true;
             }
         } catch (Throwable ignored) {
-            // 落到下面的边界比对
+            // 落到下面的判定
         }
         for (SidebarSide side : SidebarSide.values()) {
             if (side == SidebarSide.NONE) {
@@ -471,7 +508,7 @@ public final class EmiFold {
             }
             try {
                 SidebarPanel p = EmiScreenManager.getPanelFor(side);
-                if (p == null || !p.isVisible()) {
+                if (p == null) {
                     continue;
                 }
                 Bounds b = p.getBounds();
@@ -482,7 +519,69 @@ public final class EmiFold {
                 // 单个面板取不到就算了
             }
         }
-        return false;
+        // 最后一道兜底：只要鼠标压在某个格子上就算在面板内。
+        // 前两层都依赖 EMI 自己的边界数据，一旦那套坐标空间和应用的对不上，
+        // 这一层还能靠精确的格子坐标救回来。
+        return cellAt(mx, my) != null;
+    }
+
+    /**
+     * 走到"组合键成立但没起框"这一步时打一条完整的面板诊断。
+     *
+     * <p>这一层如果静默失败，外面看到的就是"按了没反应"，没有任何线索。
+     * 把坐标换算的中间量、每个面板的可见性与边界一次性打出来，一眼能看出是哪一环。
+     */
+    private static void logPanelDiag(double mx, double my) {
+        if (pressLogCount > 40) {
+            return;
+        }
+        StringBuilder sb = new StringBuilder("[Lost Realm] EMI 折叠 · 面板诊断：");
+        Minecraft mc = Minecraft.getInstance();
+        if (mc != null && mc.getWindow() != null && mc.mouseHandler != null) {
+            var w = mc.getWindow();
+            sb.append("xpos=").append(mc.mouseHandler.xpos())
+                    .append(" ypos=").append(mc.mouseHandler.ypos())
+                    .append(" screen=").append(w.getScreenWidth()).append('x').append(w.getScreenHeight())
+                    .append(" gui=").append(w.getGuiScaledWidth()).append('x').append(w.getGuiScaledHeight())
+                    .append(" → guiMouse=(").append((int) mx).append(',').append((int) my).append(") | ");
+        }
+        for (SidebarSide side : SidebarSide.values()) {
+            if (side == SidebarSide.NONE) {
+                continue;
+            }
+            try {
+                SidebarPanel p = EmiScreenManager.getPanelFor(side);
+                sb.append(side).append('=');
+                if (p == null) {
+                    sb.append("null ");
+                    continue;
+                }
+                Bounds b = p.getBounds();
+                sb.append("vis:").append(p.isVisible()).append(" bounds:")
+                        .append(b == null ? "null"
+                                : (b.left() + "," + b.top() + " " + b.width() + "x" + b.height()));
+                List<ScreenSpace> ss = p.getSpaces();
+                sb.append(" spaces:").append(ss == null ? -1 : ss.size());
+                if (ss != null) {
+                    for (ScreenSpace sp : ss) {
+                        if (sp == null) {
+                            continue;
+                        }
+                        // 把每个 space 的"第 0 个格子坐标"也打出来，
+                        // 好和上面的 guiMouse 对比是不是同一个坐标空间
+                        sb.append(" [").append(sp.getType())
+                                .append(" 首格:").append(sp.getRawX(0)).append(',').append(sp.getRawY(0))
+                                .append(" th:").append(sp.th)
+                                .append(" pageSize:").append(sp.pageSize).append(']');
+                    }
+                }
+                sb.append(' ');
+            } catch (Throwable t) {
+                sb.append(side).append("=异常 ");
+            }
+        }
+        sb.append("| allPanels:").append(allPanels().size());
+        Medals.LOGGER.info(sb.toString());
     }
 
     // ================================================================
@@ -512,15 +611,17 @@ public final class EmiFold {
         // 有 tooltip 正在显示时不画角标 —— 数字压在提示框上比看不到更烦人
         boolean noBadge = EmiScreenManager.lastStackTooltipRendered != null;
         var font = Minecraft.getInstance().font;
-        for (SidebarSide side : SidebarSide.values()) {
-            if (side == SidebarSide.NONE) {
+        for (SidebarPanel panel : allPanels()) {
+            List<ScreenSpace> spaces;
+            try {
+                spaces = panel.getSpaces();
+            } catch (Throwable t) {
                 continue;
             }
-            SidebarPanel panel = EmiScreenManager.getPanelFor(side);
-            if (panel == null || !panel.isVisible()) {
+            if (spaces == null) {
                 continue;
             }
-            for (ScreenSpace space : panel.getSpaces()) {
+            for (ScreenSpace space : spaces) {
                 if (space == null || space.getType() != SidebarType.INDEX) {
                     continue;
                 }
