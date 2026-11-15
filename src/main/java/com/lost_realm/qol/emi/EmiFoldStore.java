@@ -58,8 +58,12 @@ public final class EmiFoldStore {
     /** 成员 id → 组名，用于 O(1) 反查。 */
     private static final Map<String, String> OWNER = new LinkedHashMap<>();
 
-    /** 总开关。关掉之后折叠、框选、按钮全部不工作，列表保持原样。 */
-    private static boolean enabled = true;
+    /**
+     * <b>折叠编辑开关</b>。只管"改分组"这类编辑动作（框选、成组、拆组、底部按钮、F6/F7/F8）；
+     * 关掉之后已经折好的组照旧折叠、照旧能点角标展开收起 ——
+     * 它不是"折叠功能开关"，关它不该把东西全摊开。
+     */
+    private static boolean editEnabled = true;
 
     /**
      * 框选方式：false = 必须按住 Ctrl+Shift 拖拽（默认，不易误触）；
@@ -110,7 +114,7 @@ public final class EmiFoldStore {
             return;
         }
         JsonObject root = JsonParser.parseString(text).getAsJsonObject();
-        enabled = !root.has("enabled") || root.get("enabled").getAsBoolean();
+        editEnabled = !root.has("editEnabled") || root.get("editEnabled").getAsBoolean();
         stickySelect = root.has("stickySelect") && root.get("stickySelect").getAsBoolean();
         JsonElement arr = root.get("groups");
         if (arr == null || !arr.isJsonArray()) {
@@ -159,7 +163,7 @@ public final class EmiFoldStore {
         readme.add("也可以不改文件：在游戏里按住 Ctrl 左键拖拽框选一批物品，自动成组。");
         readme.add("一个物品只能属于一个组；组不足 2 个成员会被忽略。");
         root.add("_readme", readme);
-        root.addProperty("enabled", true);
+        root.addProperty("editEnabled", true);
         root.addProperty("stickySelect", false);
         root.add("groups", new JsonArray());
         Files.writeString(f, new GsonBuilder().setPrettyPrinting().create().toJson(root) + "\n",
@@ -180,7 +184,7 @@ public final class EmiFoldStore {
             readme.add("也可以不改文件：在游戏里按住 Ctrl 左键拖拽框选一批物品，自动成组。");
             readme.add("一个物品只能属于一个组；组不足 2 个成员会被忽略。");
             root.add("_readme", readme);
-            root.addProperty("enabled", enabled);
+            root.addProperty("editEnabled", editEnabled);
             root.addProperty("stickySelect", stickySelect);
 
             JsonArray groups = new JsonArray();
@@ -230,16 +234,16 @@ public final class EmiFoldStore {
         }
     }
 
-    /** 折叠功能总开关。 */
-    public static boolean isEnabled() {
-        return enabled;
+    /** 折叠编辑开关是否开着。 */
+    public static boolean isEditEnabled() {
+        return editEnabled;
     }
 
-    /** 切换总开关并立刻落盘。返回切换后的状态。 */
-    public static boolean toggleEnabled() {
-        enabled = !enabled;
+    /** 切换折叠编辑开关并立刻落盘。返回切换后的状态。 */
+    public static boolean toggleEdit() {
+        editEnabled = !editEnabled;
         save();
-        return enabled;
+        return editEnabled;
     }
 
     /** 框选是否常开（不用按住修饰键）。 */

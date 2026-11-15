@@ -161,7 +161,7 @@ public final class EmiFold {
             return in;
         }
         EmiFoldStore.reloadIfChanged();
-        if (!EmiFoldStore.isEnabled() || EmiFoldStore.isEmpty() || type != SidebarType.INDEX) {
+        if (EmiFoldStore.isEmpty() || type != SidebarType.INDEX) {
             return in;
         }
         if (hasQuery()) {
@@ -443,19 +443,53 @@ public final class EmiFold {
      * 往里 10px 起</b>：18×18 格的图标中心在 (9,9)，从 10 起就永远碰不到中心，
      * 点物品本体不会被当成"展开/收起"。
      */
-    private static final float BADGE_SCALE = 0.5F;
-    private static final int BADGE_H = 7;
+    private static final int BADGE_H = 5;
     private static final int BADGE_HIT = 10;
     /** 收起/展开的小箭头宽度。像素太小，自己画比用字形干净。 */
     private static final int ARROW_W = 3;
 
+    /**
+     * 3×5 点阵数字。<b>不是字体</b>，自己画 —— 原因有两个：
+     * <ul>
+     *   <li>MC 字体缩到 0.5 时是"像素抽样"，笔画会掉点、糊成一团，看着比实际更大更脏；</li>
+     *   <li>3×5 正好塞进 16px 图标右下角，还能缩：一位数只占 7px 宽、5px 高。</li>
+     * </ul>
+     * 每行 3 bit，从高位到低位是左到右。这就是"贴图逻辑"：一个像素一个像素地放。
+     */
+    private static final int[][] DIGIT = {
+            {0b111, 0b101, 0b101, 0b101, 0b111},   // 0
+            {0b010, 0b110, 0b010, 0b010, 0b111},   // 1
+            {0b111, 0b001, 0b111, 0b100, 0b111},   // 2
+            {0b111, 0b001, 0b111, 0b001, 0b111},   // 3
+            {0b101, 0b101, 0b111, 0b001, 0b001},   // 4
+            {0b111, 0b100, 0b111, 0b001, 0b111},   // 5
+            {0b111, 0b100, 0b111, 0b101, 0b111},   // 6
+            {0b111, 0b001, 0b010, 0b010, 0b010},   // 7
+            {0b111, 0b101, 0b111, 0b101, 0b111},   // 8
+            {0b111, 0b101, 0b111, 0b001, 0b111},   // 9
+    };
+
+    /** 点阵数字串的宽度（每位 3px + 1px 间隔）。 */
+    private static int digitsWidth(int count) {
+        int n = digitsOf(count);
+        return n * 4 - 1;
+    }
+
+    private static int digitsOf(int count) {
+        String s = String.valueOf(Math.max(count, 0));
+        return s.length();
+    }
+
+    /**
+     * 角标的尺寸。宽度跟数字位数走：{@code 位数*4-1 + 1 + 3(箭头)}。
+     * 一位数 7px、两位数 11px、三位数 15px，高度固定 5px。
+     *
+     * <p>返回 {@code {画, 画, 宽, 高, 热区x, 热区y, 热区w, 热区h}}。
+     */
     private static int[] badgeRect(int cellX, int cellY, int count) {
-        var font = Minecraft.getInstance().font;
-        int numW = Math.max(1, Math.round(font.width(String.valueOf(Math.max(count, 0))) * BADGE_SCALE));
-        int bw = 1 + numW + 1 + ARROW_W + 1;             // 边框 1 + 数字 + 间隔 + 箭头 + 边框 1
-        int bx = cellX + CELL - 1 - bw;
-        int by = cellY + CELL - 1 - BADGE_H;
-        // 热区：画出来的框 ∪ 右下角固定 8×8，两个矩形的并集包围盒
+        int bw = digitsWidth(count) + 1 + ARROW_W;
+        int bx = cellX + CELL - 2 - bw;          // 右对齐到图标右边缘
+        int by = cellY + CELL - 2 - BADGE_H;     // 下对齐到图标下边缘
         int hx = Math.min(bx, cellX + BADGE_HIT);
         int hy = Math.min(by, cellY + BADGE_HIT);
         int hw = Math.max(bx + bw, cellX + CELL) - hx;
@@ -695,16 +729,18 @@ public final class EmiFold {
         double mx = p[0];
         double my = p[1];
 
-        // ① 配置界面的总开关。功能关着的时候也必须能点开，所以放在最前面、不看 isEnabled。
+        // ① 配置界面的"折叠编辑"开关。这个开关自己关着时也必须能点开，
+        //    所以放在最前面、不看 editEnabled。
         if (inRect(CONFIG_BTN, mx, my)) {
-            boolean now = EmiFoldStore.toggleEnabled();
+            boolean now = EmiFoldStore.toggleEdit();
             if (!now) {
                 PENDING.clear();
+                selecting = false;
                 lastClickedGroup = null;
             }
             stateVersion++;
             cacheIn = null;
-            Medals.LOGGER.info("[Lost Realm] EMI 物品折叠已{}", now ? "开启" : "关闭");
+            Medals.LOGGER.info("[Lost Realm] EMI 折叠编辑已{}", now ? "开启" : "关闭");
             try {
                 EmiScreenManager.recalculate();
             } catch (Throwable ignored) {
@@ -713,22 +749,10 @@ public final class EmiFold {
             return true;
         }
 
-        if (!EmiFoldStore.isEnabled()) {
-            return false;
-        }
-
-        // ② 底部自绘按钮
-        for (Btn b : BUTTONS) {
-            if (b.hit(mx, my)) {
-                if (b.enabled()) {
-                    b.action().run();
-                }
-                return true;
-            }
-        }
-
-        // ③ 折叠格右下角那个数字小块：只有点它才展开/收起。
-        //    点格子其他地方一律放行，让 EMI 正常取物品 / 看配方。
+        // ② 折叠格右下角的角标：展开 / 收起。
+        //    <b>这一步不受"折叠编辑"开关影响</b> —— 关掉编辑只是不能改分组，
+        //    已经折好的东西照样得能翻开看。之前把整个入口挂在总开关后面，
+        //    一关就既摊开了列表又点不动角标。
         Cell cell = null;
         try {
             cell = cellAt(mx, my);
@@ -739,6 +763,22 @@ public final class EmiFold {
             toggle(cell.group());
             lastClickedGroup = cell.group();
             return true;
+        }
+
+        // 以下都是"编辑"动作：改分组、拉框、按钮。编辑开关关着就一律不做，
+        // 让点击原样交给 EMI（取物品、看配方）。
+        if (!EmiFoldStore.isEditEnabled()) {
+            return false;
+        }
+
+        // ③ 底部自绘按钮
+        for (Btn b : BUTTONS) {
+            if (b.hit(mx, my)) {
+                if (b.enabled()) {
+                    b.action().run();
+                }
+                return true;
+            }
         }
 
         // ④ 面板自带的按钮（翻页 / 循环）不参与框选。
@@ -836,13 +876,13 @@ public final class EmiFold {
     /**
      * 重建按钮列表。每帧算一次，因为位置依赖当前屏幕尺寸。
      *
-     * <p>只在功能开启、且"有待折叠项"或"刚点过某个组"时出现 ——
-     * 平时不占地方。
+     * <p>只在"折叠编辑"开着、且"有待折叠项"或"刚点过某个组"时出现 ——
+     * 平时不占地方。编辑关掉之后这些按钮就没有意义了（它们全是改分组的动作）。
      */
     private static void rebuildButtons() {
         BUTTONS.clear();
         Minecraft mc = Minecraft.getInstance();
-        if (mc == null || mc.screen == null || !EmiFoldStore.isEnabled()) {
+        if (mc == null || mc.screen == null || !EmiFoldStore.isEditEnabled()) {
             return;
         }
         boolean hasPending = !PENDING.isEmpty();
@@ -915,6 +955,13 @@ public final class EmiFold {
         boolean f6 = key(GLFW.GLFW_KEY_F6);
         boolean f7 = key(GLFW.GLFW_KEY_F7);
         boolean f8 = key(GLFW.GLFW_KEY_F8);
+        // 编辑关掉时这几个键全部让路（F6 是框选模式，F7/F8 是改分组）
+        if (!EmiFoldStore.isEditEnabled()) {
+            keyF6Down = f6;
+            keyF7Down = f7;
+            keyF8Down = f8;
+            return;
+        }
         if (f6 && !keyF6Down) {
             boolean now = EmiFoldStore.toggleStickySelect();
             Medals.LOGGER.info("[Lost Realm] 框选方式：{}",
@@ -1111,11 +1158,11 @@ public final class EmiFold {
         return n.startsWith("dev.emi.emi.screen.") && !n.startsWith("dev.emi.emi.screen.Config");
     }
 
-    /** EMI 配置界面左下角的总开关。 */
+    /** EMI 配置界面左下角的"折叠编辑"开关。 */
     private static void drawConfigSwitch(GuiGraphics g, Screen screen) {
         var font = Minecraft.getInstance().font;
-        boolean on = EmiFoldStore.isEnabled();
-        String label = "[遗落境] 物品折叠：" + (on ? "开" : "关");
+        boolean on = EmiFoldStore.isEditEnabled();
+        String label = "[遗落境] 折叠编辑：" + (on ? "开" : "关");
         int w = font.width(label) + 10;
         int h = 16;
         int x = 6;
@@ -1249,7 +1296,15 @@ public final class EmiFold {
         }
     }
 
-    /** 一组格子的并集外轮廓（1px）。相邻格之间的公共边不画，所以是连成一条线。 */
+    /**
+     * 一组格子的并集外轮廓（1px）。相邻格之间的公共边不画，所以是连成一条线。
+     *
+     * <p>四条边一律压在<b>格子的边界线</b>上（上边 y、下边 y+CELL、左边 x、右边 x+CELL），
+     * 而不是贴着图标内缩 1px。差别在于转角：
+     * 内缩画法下，阶梯拐弯处两条线各差 1px，交汇的那个像素谁也不盖 ——
+     * 就是截图里"转角缺了一个像素"。压在格线上、两端多画 1px 把角补满，
+     * 拐角就永远是连着的。
+     */
     private static void drawGroupOutline(GuiGraphics g, List<int[]> cells, int color) {
         if (cells == null || cells.isEmpty()) {
             return;
@@ -1261,19 +1316,17 @@ public final class EmiFold {
         for (int[] c : cells) {
             int x = c[1];
             int y = c[2];
-            int xr = x + CELL - 1;                 // 右边线所在像素列
-            int yb = y + CELL - 1;                 // 下边线所在像素行
             if (!set.contains(cellKey(x, y - CELL))) {
-                g.fill(x, y, x + CELL, y + 1, color);              // 上
+                g.fill(x, y, x + CELL + 1, y + 1, color);                       // 上
             }
             if (!set.contains(cellKey(x, y + CELL))) {
-                g.fill(x, yb, x + CELL, yb + 1, color);            // 下
+                g.fill(x, y + CELL, x + CELL + 1, y + CELL + 1, color);          // 下
             }
             if (!set.contains(cellKey(x - CELL, y))) {
-                g.fill(x, y, x + 1, y + CELL, color);              // 左
+                g.fill(x, y, x + 1, y + CELL + 1, color);                        // 左
             }
             if (!set.contains(cellKey(x + CELL, y))) {
-                g.fill(xr, y, xr + 1, y + CELL, color);            // 右
+                g.fill(x + CELL, y, x + CELL + 1, y + CELL + 1, color);          // 右
             }
         }
     }
@@ -1295,68 +1348,73 @@ public final class EmiFold {
     }
 
     /**
-     * 右下角的小角标：<b>数字 + 一个小箭头</b>，1px 细框紧贴数字。
+     * 右下角的角标：<b>点阵数字 + 一个小箭头</b>，没有边框、没有底色。
      *
-     * <p>尺寸上的取舍（前面几版都栽在这里）：
-     * <ul>
-     *   <li><b>框按数字实际宽度算</b>，不再是固定 8×8 的方块 —— 一位数就只占
-     *       十来个像素，看着才是"细"的；三位数自动变宽，不会被硬塞进去。</li>
-     *   <li><b>数字缩到 0.5</b>：MC 字体高度 9px，0.7 还是明显压住图标；0.5 之后
-     *       高约 4px，图标右下角基本透出来。</li>
-     *   <li><b>不再封顶 99</b>：超过 99 照实显示（99 变成 "99"→"120" 这类的变化
-     *       之前会误导人以为是 99 个）。</li>
-     *   <li><b>箭头表示状态</b>：收起是 "&lt;"（点一下能展开），展开是 "&gt;"。
-     *       箭头是自己画的 3×5 像素，不用字形 —— 字号缩到 0.5 时字形会糊。</li>
-     * </ul>
+     * <p>为什么把边框去掉：这块地方只有 16px 见方，1px 的框一圈就要吃掉
+     * 两行两列像素，框本身还自带"厚度感"，怎么缩都显得大。
+     * 去掉框以后，画的每一个像素都是信息本身。
+     *
+     * <p>数字用 {@link #DIGIT} 的 3×5 点阵逐像素画（不是 MC 字体缩半），
+     * 所以笔画不会掉、也不会糊；右下各补 1px 深色影子，压在亮色图标上也看得清。
      */
     private static void drawBadge(GuiGraphics g, int x, int y, String group, int count) {
-        var font = Minecraft.getInstance().font;
         boolean open = EXPANDED.contains(group);
-        String num = String.valueOf(Math.max(count, 0));
         int[] r = badgeRect(x, y, count);
         int bx = r[0];
         int by = r[1];
-        int bw = r[2];
-        int bh = r[3];
 
         g.pose().pushPose();
         // 抬 z：EMI 的物品是批量绘制、最后统一 flush 的，
         // 光靠"事件更靠后"压不住，数字会钻到图标底下
         g.pose().translate(0.0F, 0.0F, 200.0F);
 
-        int c = 0xFF55E0FF;
-        g.fill(bx, by, bx + bw, by + 1, c);
-        g.fill(bx, by + bh - 1, bx + bw, by + bh, c);
-        g.fill(bx, by, bx + 1, by + bh, c);
-        g.fill(bx + bw - 1, by, bx + bw, by + bh, c);
+        // 先画一遍影子（右下各 1px），再画本体 —— 原版物品数量的做法
+        drawDigits(g, bx + 1, by + 1, count, 0xC0000000);
+        drawArrow(g, bx + digitsWidth(count) + 1, by + 1, open, 0xC0000000);
+        drawDigits(g, bx, by, count, 0xFFFFFFFF);
+        drawArrow(g, bx + digitsWidth(count) + 1, by, open, 0xFFFFFFFF);
 
-        // 数字：0.5 倍，左边留 1px，垂直居中
-        float k = BADGE_SCALE;
-        g.pose().pushPose();
-        g.pose().translate(bx + 1.0F, by + 1.5F, 0.0F);
-        g.pose().scale(k, k, 1.0F);
-        g.drawString(font, num, 0, 0, 0xFFFFFFFF, false);
         g.pose().popPose();
+    }
 
-        // 箭头：3 宽 5 高，紧跟在数字后面
-        int aw = ARROW_W;
-        int ax = bx + bw - 1 - aw;
-        int ay = by + 1;
-        int dark = 0xFFFFFFFF;
-        if (open) {
-            g.fill(ax, ay, ax + 1, ay + 1, dark);
-            g.fill(ax + 1, ay + 1, ax + 2, ay + 2, dark);
-            g.fill(ax + 2, ay + 2, ax + 3, ay + 3, dark);
-            g.fill(ax + 1, ay + 3, ax + 2, ay + 4, dark);
-            g.fill(ax, ay + 4, ax + 1, ay + 5, dark);
-        } else {
-            g.fill(ax + 2, ay, ax + 3, ay + 1, dark);
-            g.fill(ax + 1, ay + 1, ax + 2, ay + 2, dark);
-            g.fill(ax, ay + 2, ax + 1, ay + 3, dark);
-            g.fill(ax + 1, ay + 3, ax + 2, ay + 4, dark);
-            g.fill(ax + 2, ay + 4, ax + 3, ay + 5, dark);
+    /** 逐像素画数字。 */
+    private static void drawDigits(GuiGraphics g, int x, int y, int count, int color) {
+        String s = String.valueOf(Math.max(count, 0));
+        int cx = x;
+        for (int i = 0; i < s.length(); i++) {
+            int d = s.charAt(i) - '0';
+            if (d < 0 || d > 9) {
+                cx += 4;
+                continue;
+            }
+            int[] rows = DIGIT[d];
+            for (int row = 0; row < rows.length; row++) {
+                int bits = rows[row];
+                for (int col = 0; col < 3; col++) {
+                    if ((bits & (0b100 >> col)) != 0) {
+                        g.fill(cx + col, y + row, cx + col + 1, y + row + 1, color);
+                    }
+                }
+            }
+            cx += 4;
         }
-        g.pose().popPose();
+    }
+
+    /** 3×5 的 "&lt;" / "&gt;"。 */
+    private static void drawArrow(GuiGraphics g, int x, int y, boolean open, int color) {
+        if (open) {
+            g.fill(x, y, x + 1, y + 1, color);
+            g.fill(x + 1, y + 1, x + 2, y + 2, color);
+            g.fill(x + 2, y + 2, x + 3, y + 3, color);
+            g.fill(x + 1, y + 3, x + 2, y + 4, color);
+            g.fill(x, y + 4, x + 1, y + 5, color);
+        } else {
+            g.fill(x + 2, y, x + 3, y + 1, color);
+            g.fill(x + 1, y + 1, x + 2, y + 2, color);
+            g.fill(x, y + 2, x + 1, y + 3, color);
+            g.fill(x + 1, y + 3, x + 2, y + 4, color);
+            g.fill(x + 2, y + 4, x + 3, y + 5, color);
+        }
     }
 
     private static void drawSelection(GuiGraphics g) {
