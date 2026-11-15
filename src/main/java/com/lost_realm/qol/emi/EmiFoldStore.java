@@ -58,6 +58,9 @@ public final class EmiFoldStore {
     /** 成员 id → 组名，用于 O(1) 反查。 */
     private static final Map<String, String> OWNER = new LinkedHashMap<>();
 
+    /** 总开关。关掉之后折叠、框选、按钮全部不工作，列表保持原样。 */
+    private static boolean enabled = true;
+
     private static long lastModified = -1L;
     private static boolean everLoaded;
 
@@ -100,6 +103,7 @@ public final class EmiFoldStore {
             return;
         }
         JsonObject root = JsonParser.parseString(text).getAsJsonObject();
+        enabled = !root.has("enabled") || root.get("enabled").getAsBoolean();
         JsonElement arr = root.get("groups");
         if (arr == null || !arr.isJsonArray()) {
             return;
@@ -147,6 +151,7 @@ public final class EmiFoldStore {
         readme.add("也可以不改文件：在游戏里按住 Ctrl 左键拖拽框选一批物品，自动成组。");
         readme.add("一个物品只能属于一个组；组不足 2 个成员会被忽略。");
         root.add("_readme", readme);
+        root.addProperty("enabled", true);
         root.add("groups", new JsonArray());
         Files.writeString(f, new GsonBuilder().setPrettyPrinting().create().toJson(root) + "\n",
                 StandardCharsets.UTF_8);
@@ -166,6 +171,7 @@ public final class EmiFoldStore {
             readme.add("也可以不改文件：在游戏里按住 Ctrl 左键拖拽框选一批物品，自动成组。");
             readme.add("一个物品只能属于一个组；组不足 2 个成员会被忽略。");
             root.add("_readme", readme);
+            root.addProperty("enabled", enabled);
 
             JsonArray groups = new JsonArray();
             for (Map.Entry<String, List<String>> e : GROUPS.entrySet()) {
@@ -212,6 +218,18 @@ public final class EmiFoldStore {
         } catch (Throwable t) {
             return null;
         }
+    }
+
+    /** 折叠功能总开关。 */
+    public static boolean isEnabled() {
+        return enabled;
+    }
+
+    /** 切换总开关并立刻落盘。返回切换后的状态。 */
+    public static boolean toggleEnabled() {
+        enabled = !enabled;
+        save();
+        return enabled;
     }
 
     /** 该成员属于哪个组；没有返回 null。 */

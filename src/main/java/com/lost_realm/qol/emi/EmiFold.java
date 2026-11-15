@@ -11,6 +11,9 @@ import com.mojang.blaze3d.platform.InputConstants;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -97,6 +100,18 @@ public final class EmiFold {
     /** 折叠生效日志只打一次，避免刷屏。 */
     private static boolean loggedFold;
 
+    /** 最近一次点击（展开/收起）过的组，供"拆开"按钮使用。 */
+    private static String lastClickedGroup;
+
+    /** 自绘按钮。位置每帧按屏幕尺寸重算，点击时用上一帧的结果判断。 */
+    private record Btn(int x, int y, int w, int h, String label, boolean enabled, Runnable action) {
+        boolean hit(double mx, double my) {
+            return mx >= x && mx < x + w && my >= y && my < y + h;
+        }
+    }
+
+    private static final List<Btn> BUTTONS = new ArrayList<>();
+
     /** F7 / F8 上一帧是否按下，用来做边沿检测。 */
     private static boolean keyF7Down;
     private static boolean keyF8Down;
@@ -126,7 +141,7 @@ public final class EmiFold {
             return in;
         }
         EmiFoldStore.reloadIfChanged();
-        if (EmiFoldStore.isEmpty() || type != SidebarType.INDEX) {
+        if (!EmiFoldStore.isEnabled() || EmiFoldStore.isEmpty() || type != SidebarType.INDEX) {
             return in;
         }
         if (in == cacheIn && cacheVersion == stateVersion) {
@@ -362,17 +377,25 @@ public final class EmiFold {
                 for (int i = 0; i < list.size(); i++) {
                     int x = space.getRawX(i);
                     int y = space.getRawY(i);
-                    // 格子中心落在矩形内才算选中
-                    double cx = x + CELL / 2.0;
-                    double cy = y + CELL / 2.0;
-                    if (cx < lx || cx > hx || cy < ly || cy > hy) {
+                    // 改为"矩形与格子相交即算"：原来要求格子中心落在框内，
+                    // 手稍微差一点就漏掉边上的那一排，手感偏紧。
+                    if (x + CELL <= lx || x >= hx || y + CELL <= ly || y >= hy) {
                         continue;
                     }
                     if (!(list.get(i) instanceof EmiStack st)) {
                         continue;
                     }
                     String id = EmiFoldStore.idOf(st);
-                    if (id != null && seen.add(id)) {
+                    if (id == null) {
+                        continue;
+                    }
+                    // 已折叠的代表格不参与框选：它代表的是整组，
+                    // 把"代表"选进去语义混乱，而且它会连带影响原来那一组
+                    String owner = EmiFoldStore.groupOf(id);
+                    if (owner != null && id.equals(ANCHOR.get(owner))) {
+                        continue;
+                    }
+                    if (seen.add(id)) {
                         ids.add(id);
                     }
                 }
@@ -444,9 +467,9 @@ public final class EmiFold {
         return new double[]{sx, sy};
     }
 
-    /** 左键按下：满足框选条件就起手。返回 true 表示这次按下已被接管。 */
+    /** 左键按下。返回 true 表示这次按下已被接管。 */
     public static boolean beginSelection() {
-        if (!isModifierDown()) {
+        if (!EmiFoldStore.isEnabled()) {
             return false;
         }
         double[] p = guiMouse();
@@ -455,11 +478,39 @@ public final class EmiFold {
         }
         double mx = p[0];
         double my = p[1];
+
+        // 先看是不是点在自绘按钮上
+        for (Btn b : BUTTONS) {
+            if (b.hit(mx, my)) {
+                if (b.enabled()) {
+                    b.action().run();
+                }
+                return true;               // 不管可不可点，都别再往下走
+            }
+        }
+
+        if (!isModifierDown()) {
+            // 无修饰键：点在折叠格上就展开 / 收起。
+            // 这一段之前被弄丢了 —— 改造成"框选"时只保留了修饰键分支，
+            // 于是折叠出来的组再也打不开，只能看着。
+            Cell cell = null;
+            try {
+                cell = cellAt(mx, my);
+            } catch (Throwable ignored) {
+                // 命中失败就当没点中
+            }
+            if (cell != null && cell.anchor()) {
+                toggle(cell.group());
+                lastClickedGroup = cell.group();
+                return true;
+            }
+            return false;                  // 其余情况交给 EMI（取物品 / 看配方）
+        }
+
         if (!inEmiPanel(mx, my)) {
             logPanelDiag(mx, my);
             return false;
         }
-        // 命中判定出问题不应该连累框选本身：拿不到格子就当作"从空白处起手"
         Cell cell = null;
         try {
             cell = cellAt(mx, my);
@@ -529,6 +580,81 @@ public final class EmiFold {
         PENDING.clear();
         Medals.LOGGER.info("[Lost Realm] EMI 折叠：新建组「{}」，{} 个成员", name, ids.size());
         refresh();
+    }
+
+    /** 拆开最近点击过的那个组。 */
+    private static void dissolveLast() {
+        String g = lastClickedGroup;
+        if (g == null) {
+            return;
+        }
+        EmiFoldStore.remove(g);
+        EXPANDED.remove(g);
+        lastClickedGroup = null;
+        Medals.LOGGER.info("[Lost Realm] EMI 折叠：已拆开组「{}」", g);
+        refresh();
+    }
+
+    /**
+     * 重建按钮列表。每帧算一次，因为位置依赖当前屏幕尺寸。
+     *
+     * <p>只在功能开启、且"有待折叠项"或"刚点过某个组"时出现 ——
+     * 平时不占地方。
+     */
+    private static void rebuildButtons() {
+        BUTTONS.clear();
+        Minecraft mc = Minecraft.getInstance();
+        if (mc == null || mc.screen == null || !EmiFoldStore.isEnabled()) {
+            return;
+        }
+        boolean hasPending = !PENDING.isEmpty();
+        boolean hasGroup = lastClickedGroup != null
+                && EmiFoldStore.groupNames().contains(lastClickedGroup);
+        if (!hasPending && !hasGroup) {
+            return;
+        }
+        final int bw = 66;
+        final int bh = 18;
+        final int gap = 6;
+        int count = (hasPending ? 2 : 0) + (hasGroup ? 1 : 0);
+        int total = count * bw + (count - 1) * gap;
+        int x = (mc.screen.width - total) / 2;
+        int y = mc.screen.height - 46;
+
+        if (hasPending) {
+            BUTTONS.add(new Btn(x, y, bw, bh, "折叠 " + PENDING.size(),
+                    PENDING.size() >= 2, EmiFold::confirmFold));
+            x += bw + gap;
+        }
+        if (hasGroup) {
+            BUTTONS.add(new Btn(x, y, bw, bh, "拆开", true, EmiFold::dissolveLast));
+            x += bw + gap;
+        }
+        if (hasPending) {
+            BUTTONS.add(new Btn(x, y, bw, bh, "清空", true, EmiFold::clearPending));
+        }
+    }
+
+    private static void drawButtons(GuiGraphics g) {
+        if (BUTTONS.isEmpty()) {
+            return;
+        }
+        var font = Minecraft.getInstance().font;
+        for (Btn b : BUTTONS) {
+            g.fill(b.x(), b.y(), b.x() + b.w(), b.y() + b.h(),
+                    b.enabled() ? 0xE0202030 : 0x90181820);
+            int border = b.enabled() ? 0xFF55E0FF : 0xFF505060;
+            g.fill(b.x(), b.y(), b.x() + b.w(), b.y() + 1, border);
+            g.fill(b.x(), b.y() + b.h() - 1, b.x() + b.w(), b.y() + b.h(), border);
+            g.fill(b.x(), b.y(), b.x() + 1, b.y() + b.h(), border);
+            g.fill(b.x() + b.w() - 1, b.y(), b.x() + b.w(), b.y() + b.h(), border);
+            int tw = font.width(b.label());
+            g.pose().pushPose();
+            g.pose().translate(0.0F, 0.0F, 300.0F);
+            g.drawString(font, b.label(), b.x() + (b.w() - tw) / 2, b.y() + (b.h() - 8) / 2,
+                    b.enabled() ? 0xFFFFFFFF : 0xFF909098, true);
+            g.pose().popPose();
+        }
     }
 
     /** F8：清空当前选择（不动已有的组）。 */
@@ -655,6 +781,39 @@ public final class EmiFold {
         Medals.LOGGER.info(sb.toString());
     }
 
+    /** 在 EMI 的配置界面上挂"物品折叠"总开关。 */
+    public static void attachConfigButton(ScreenEvent.Init.Post event) {
+        Screen screen = event.getScreen();
+        if (screen == null) {
+            return;
+        }
+        // 用类名比较，避免直接引用 EMI 的界面类（EMI 不在时会 NoClassDefFoundError）
+        if (!"dev.emi.emi.screen.ConfigScreen".equals(screen.getClass().getName())) {
+            return;
+        }
+        Button button = Button.builder(labelFor(EmiFoldStore.isEnabled()), b -> {
+            boolean now = EmiFoldStore.toggleEnabled();
+            b.setMessage(labelFor(now));
+            if (!now) {
+                PENDING.clear();
+                lastClickedGroup = null;
+            }
+            stateVersion++;
+            cacheIn = null;
+            Medals.LOGGER.info("[Lost Realm] EMI 物品折叠已{}", now ? "开启" : "关闭");
+            try {
+                EmiScreenManager.recalculate();
+            } catch (Throwable ignored) {
+                // 界面还没建好时忽略
+            }
+        }).bounds(6, screen.height - 26, 140, 20).build();
+        event.addListener(button);
+    }
+
+    private static Component labelFor(boolean on) {
+        return Component.literal("[遗落境] 物品折叠：" + (on ? "开" : "关"));
+    }
+
     // ================================================================
     // 绘制
     // ================================================================
@@ -663,10 +822,11 @@ public final class EmiFold {
         // 每帧都要轮询确认键，哪怕当前没选中任何东西 ——
         // 否则"确认后松开、再框一次"时边沿状态会卡住，第二次按 F7 就不响应了
         pollConfirmKeys();
+        rebuildButtons();
 
         boolean hasGroups = !EmiFoldStore.isEmpty();
         boolean hasPending = !PENDING.isEmpty();
-        if (!hasGroups && !hasPending && !selecting) {
+        if (!hasGroups && !hasPending && !selecting && BUTTONS.isEmpty()) {
             return;
         }
         GuiGraphics g = event.getGuiGraphics();
@@ -683,6 +843,9 @@ public final class EmiFold {
             selX1 = event.getMouseX();
             selY1 = event.getMouseY();
             drawSelection(g);
+        }
+        if (!BUTTONS.isEmpty()) {
+            drawButtons(g);
         }
         if (hasPending) {
             drawHint(g);
@@ -741,7 +904,7 @@ public final class EmiFold {
         var font = mc.font;
         int w = font.width(tip);
         int x = (mc.screen.width - w) / 2;
-        int y = mc.screen.height - 26;
+        int y = mc.screen.height - 66;
         g.fill(x - 5, y - 4, x + w + 5, y + 10, 0xC8000000);
         g.drawString(font, tip, x, y, 0xFFFFE066, true);
     }
@@ -810,7 +973,12 @@ public final class EmiFold {
         int w = font.width(text);
         int tx = x + CELL - 2 - w;
         int ty = y + CELL - 10;
+        // 抬 z：EMI 的物品是批量绘制、最后统一 flush 的，
+        // 光靠"事件更靠后"压不住，数字会钻到图标底下
+        g.pose().pushPose();
+        g.pose().translate(0.0F, 0.0F, 200.0F);
         g.drawString(font, text, tx, ty, 0xFFFFFFFF, true);
+        g.pose().popPose();
     }
 
     private static void drawSelection(GuiGraphics g) {
@@ -859,6 +1027,25 @@ public final class EmiFold {
                 EmiFold.render(event);
             } catch (Throwable t) {
                 Medals.LOGGER.warn("[Lost Realm] EMI 折叠绘制失败（本次跳过）", t);
+            }
+        }
+
+        /**
+         * EMI 的配置界面里加一个开关。
+         *
+         * <p>不去动它那个由反射扫描字段生成的配置列表 —— 那套东西要精确匹配
+         * 注解、分组和布局，改坏了整个配置页都会错位。这里只是往 Screen 上
+         * 挂一个普通按钮，位置固定在左下角，不影响它自己的排版。
+         */
+        @SubscribeEvent
+        public static void onScreenInit(ScreenEvent.Init.Post event) {
+            if (!available()) {
+                return;
+            }
+            try {
+                EmiFold.attachConfigButton(event);
+            } catch (Throwable t) {
+                Medals.LOGGER.warn("[Lost Realm] 往 EMI 配置界面加开关失败", t);
             }
         }
 
