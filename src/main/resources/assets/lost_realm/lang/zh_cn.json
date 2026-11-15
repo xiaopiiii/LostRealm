@@ -1367,5 +1367,7 @@
   "gui.lost_realm.chunk_loader.size": "%s × %s 区块",
   "gui.lost_realm.chunk_loader.state_on": "强加载：开启",
   "gui.lost_realm.chunk_loader.state_off": "强加载：关闭",
-  "gui.lost_realm.chunk_loader.idle_hint": "已关闭，不占用加载资源"
+  "gui.lost_realm.chunk_loader.idle_hint": "已关闭，不占用加载资源",
+  "config.emi.lostrealm_fold_edit": "折叠编辑（遗落境）",
+  "config.emi.tooltip.lostrealm_fold_edit": "只影响改分组：关掉之后框选、成组、拆组、底部按钮全部停用，已经折好的组照旧折叠、照旧点角标展开。"
 }

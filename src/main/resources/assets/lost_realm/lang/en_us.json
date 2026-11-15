@@ -1367,5 +1367,7 @@
   "gui.lost_realm.chunk_loader.size": "%s × %s chunks",
   "gui.lost_realm.chunk_loader.state_on": "Force-loading: ON",
   "gui.lost_realm.chunk_loader.state_off": "Force-loading: OFF",
-  "gui.lost_realm.chunk_loader.idle_hint": "Disabled — no chunks are held"
+  "gui.lost_realm.chunk_loader.idle_hint": "Disabled — no chunks are held",
+  "config.emi.lostrealm_fold_edit": "Fold editing (Lost Realm)",
+  "config.emi.tooltip.lostrealm_fold_edit": "Only affects editing. When off, selection/folding/dissolving and the bottom buttons stop; existing groups stay folded and can still be expanded."
 }

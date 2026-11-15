@@ -282,6 +282,23 @@ public final class EmiFold {
         }
     }
 
+    /**
+     * 折叠编辑开关被改过（EMI 配置界面里那一行点的）。
+     *
+     * <p>关掉时把编辑状态收干净：框选中的、待成组的、刚点过的组，全部作废，
+     * 免得留个"半截编辑"在那儿。
+     */
+    public static void editToggled() {
+        boolean on = EmiFoldStore.isEditEnabled();
+        if (!on) {
+            PENDING.clear();
+            selecting = false;
+            lastClickedGroup = null;
+        }
+        refresh();
+        Medals.LOGGER.info("[Lost Realm] EMI 折叠编辑已{}（配置界面）", on ? "开启" : "关闭");
+    }
+
     /** 展开/收起/改组之后调用，让 EMI 重排列表。 */
     private static void refresh() {
         stateVersion++;
@@ -1068,11 +1085,17 @@ public final class EmiFold {
         Minecraft mc = Minecraft.getInstance();
         Screen screen = mc.screen;
 
-        // EMI 的配置界面：只画那个总开关，别的一概不画
+        // EMI 的配置界面：别的都不画。
+        // 开关本身已经作为一行正经设置挂进列表里了（见 EmiFoldConfig）；
+        // 只有在那一行没挂上（EMI 内部结构变了）时才退回左下角手画的那个。
         if (screen != null
                 && "dev.emi.emi.screen.ConfigScreen".equals(screen.getClass().getName())) {
             BUTTONS.clear();
-            drawConfigSwitch(g, screen);
+            if (EmiFoldConfig.installed()) {
+                CONFIG_BTN = null;
+            } else {
+                drawConfigSwitch(g, screen);
+            }
             return;
         }
         CONFIG_BTN = null;

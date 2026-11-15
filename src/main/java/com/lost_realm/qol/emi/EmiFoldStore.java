@@ -246,6 +246,15 @@ public final class EmiFoldStore {
         return editEnabled;
     }
 
+    /** 直接设定折叠编辑开关（EMI 配置界面的那一行用它）。 */
+    public static void setEditEnabled(boolean value) {
+        if (editEnabled == value) {
+            return;
+        }
+        editEnabled = value;
+        save();
+    }
+
     /** 框选是否常开（不用按住修饰键）。 */
     public static boolean isStickySelect() {
         return stickySelect;
