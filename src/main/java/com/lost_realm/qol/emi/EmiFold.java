@@ -87,6 +87,17 @@ public final class EmiFold {
     /** 按键诊断日志最多打这么多次，避免刷屏。 */
     private static int pressLogCount;
 
+    /**
+     * 待折叠的成员。<b>框选只往这里累积，不立即成组</b> ——
+     * 一次框不完两排、或者想跨页挑选时，累加才是对的。
+     * 按 F7 才真正落成一个组，F8 清空。
+     */
+    private static final java.util.LinkedHashSet<String> PENDING = new java.util.LinkedHashSet<>();
+
+    /** F7 / F8 上一帧是否按下，用来做边沿检测。 */
+    private static boolean keyF7Down;
+    private static boolean keyF8Down;
+
     /** 组的边框配色。按组名散列取，保证同一个组每次颜色一致。 */
     private static final int[] PALETTE = {
             0xFFE85D5D, 0xFFF2A63B, 0xFFE8D44D, 0xFF7BC96F,
@@ -248,6 +259,17 @@ public final class EmiFold {
         return out;
     }
 
+    /**
+     * 这个网格能不能参与折叠/框选。
+     *
+     * <p>只排除象棋彩蛋那个。早先限制成"必须是 INDEX"，但 EMI 在不同配置下
+     * 可能把物品列表挂在别的类型上（搜索态、收藏等），条件太窄会导致
+     * 鼠标明明在格子上却一个都选不中。
+     */
+    private static boolean usableSpace(ScreenSpace space) {
+        return space != null && space.getType() != SidebarType.CHESS;
+    }
+
     private record Cell(int x, int y, EmiStack stack, String group, boolean anchor, int count) {}
 
     /** 屏幕坐标落在哪个格子上；不在 EMI 物品列表里返回 null。 */
@@ -266,7 +288,7 @@ public final class EmiFold {
                 continue;
             }
             for (ScreenSpace space : spaces) {
-                if (space == null || space.getType() != SidebarType.INDEX) {
+                if (!usableSpace(space)) {
                     continue;
                 }
                 Cell c = cellIn(space, panel.page, mx, my);
@@ -322,7 +344,7 @@ public final class EmiFold {
                 continue;
             }
             for (ScreenSpace space : spaces) {
-                if (space == null || space.getType() != SidebarType.INDEX) {
+                if (!usableSpace(space)) {
                     continue;
                 }
                 List<? extends EmiIngredient> list = space.getPage(panel.page);
@@ -476,15 +498,56 @@ public final class EmiFold {
 
         List<String> ids = collectRect(selX0, selY0, mx, my);
         pressedAnchor = null;
-        if (ids.size() < 2) {
-            Medals.LOGGER.info("[Lost Realm] EMI 折叠：框内只有 {} 个物品，至少 2 个才能成组", ids.size());
+        if (ids.isEmpty()) {
+            Medals.LOGGER.info("[Lost Realm] EMI 折叠：框内没有物品");
             return true;
         }
+        int before = PENDING.size();
+        PENDING.addAll(ids);
+        Medals.LOGGER.info("[Lost Realm] EMI 折叠：本次框住 {} 个，累计已选 {} 个（新增 {}）· F7 折叠 / F8 清空",
+                ids.size(), PENDING.size(), PENDING.size() - before);
+        return true;
+    }
+
+    /** F7：把当前选中的物品真正确认成一个折叠组。 */
+    private static void confirmFold() {
+        if (PENDING.size() < 2) {
+            Medals.LOGGER.info("[Lost Realm] EMI 折叠：只选了 {} 个，至少 2 个才能成组", PENDING.size());
+            return;
+        }
+        List<String> ids = new ArrayList<>(PENDING);
         String name = EmiFoldStore.nextName();
         EmiFoldStore.put(name, ids);
+        PENDING.clear();
         Medals.LOGGER.info("[Lost Realm] EMI 折叠：新建组「{}」，{} 个成员", name, ids.size());
         refresh();
-        return true;
+    }
+
+    /** F8：清空当前选择（不动已有的组）。 */
+    private static void clearPending() {
+        int n = PENDING.size();
+        PENDING.clear();
+        Medals.LOGGER.info("[Lost Realm] EMI 折叠：已清空 {} 个待折叠项", n);
+    }
+
+    /**
+     * 每帧检查 F7 / F8 的边沿。
+     *
+     * <p>为什么不监听 {@code ScreenEvent.KeyPressed}：EMI 对键盘的处理也在很前面，
+     * 而且搜索框有焦点时按键会被它消费掉。直接查 GLFW 的物理键状态最省事，
+     * 也不会被任何模组吞掉。
+     */
+    private static void pollConfirmKeys() {
+        boolean f7 = key(GLFW.GLFW_KEY_F7);
+        boolean f8 = key(GLFW.GLFW_KEY_F8);
+        if (f7 && !keyF7Down && !PENDING.isEmpty()) {
+            confirmFold();
+        }
+        if (f8 && !keyF8Down && !PENDING.isEmpty()) {
+            clearPending();
+        }
+        keyF7Down = f7;
+        keyF8Down = f8;
     }
 
     /**
@@ -589,13 +652,21 @@ public final class EmiFold {
     // ================================================================
 
     private static void render(ScreenEvent.Render.Post event) {
+        // 每帧都要轮询确认键，哪怕当前没选中任何东西 ——
+        // 否则"确认后松开、再框一次"时边沿状态会卡住，第二次按 F7 就不响应了
+        pollConfirmKeys();
+
         boolean hasGroups = !EmiFoldStore.isEmpty();
-        if (!hasGroups && !selecting) {
+        boolean hasPending = !PENDING.isEmpty();
+        if (!hasGroups && !hasPending && !selecting) {
             return;
         }
         GuiGraphics g = event.getGuiGraphics();
         if (g == null) {
             return;
+        }
+        if (hasPending) {
+            drawPending(g);
         }
         if (hasGroups) {
             drawFolders(g);
@@ -605,6 +676,66 @@ public final class EmiFold {
             selY1 = event.getMouseY();
             drawSelection(g);
         }
+        if (hasPending) {
+            drawHint(g);
+        }
+    }
+
+    /** 待折叠的格子：半透明亮青底 + 亮青框，和已成的组（彩色框）区分开。 */
+    private static void drawPending(GuiGraphics g) {
+        for (SidebarPanel panel : allPanels()) {
+            List<ScreenSpace> spaces;
+            try {
+                spaces = panel.getSpaces();
+            } catch (Throwable t) {
+                continue;
+            }
+            if (spaces == null) {
+                continue;
+            }
+            for (ScreenSpace space : spaces) {
+                if (!usableSpace(space)) {
+                    continue;
+                }
+                List<? extends EmiIngredient> list;
+                try {
+                    list = space.getPage(panel.page);
+                } catch (Throwable t) {
+                    continue;
+                }
+                if (list == null) {
+                    continue;
+                }
+                for (int i = 0; i < list.size(); i++) {
+                    if (!(list.get(i) instanceof EmiStack st)) {
+                        continue;
+                    }
+                    String id = EmiFoldStore.idOf(st);
+                    if (id == null || !PENDING.contains(id)) {
+                        continue;
+                    }
+                    int x = space.getRawX(i);
+                    int y = space.getRawY(i);
+                    g.fill(x + 1, y + 1, x + CELL - 1, y + CELL - 1, 0x5055E0FF);
+                    drawFrame(g, x, y, 0xFF55E0FF);
+                }
+            }
+        }
+    }
+
+    /** 屏幕底部提示，告诉玩家当前选了多少、按什么确认。 */
+    private static void drawHint(GuiGraphics g) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc == null || mc.screen == null) {
+            return;
+        }
+        String tip = "已选 " + PENDING.size() + " 个物品　·　F7 折叠成组　·　F8 清空";
+        var font = mc.font;
+        int w = font.width(tip);
+        int x = (mc.screen.width - w) / 2;
+        int y = mc.screen.height - 26;
+        g.fill(x - 5, y - 4, x + w + 5, y + 10, 0xC8000000);
+        g.drawString(font, tip, x, y, 0xFFFFE066, true);
     }
 
     private static void drawFolders(GuiGraphics g) {
@@ -622,7 +753,7 @@ public final class EmiFold {
                 continue;
             }
             for (ScreenSpace space : spaces) {
-                if (space == null || space.getType() != SidebarType.INDEX) {
+                if (!usableSpace(space)) {
                     continue;
                 }
                 List<? extends EmiIngredient> list = space.getPage(panel.page);
