@@ -57,6 +57,8 @@ public final class VitalsHud {
     private static final int COLOR_HEALTH = 0xFFE03A3A;
     private static final int COLOR_HUNGER = 0xFFD98B3A;
     private static final int COLOR_ARMOR = 0xFF9EA9B8;
+    /** 伤害吸收：原版是黄色的心，这里沿用同一个黄。 */
+    private static final int COLOR_ABSORB = 0xFFFFC83A;
 
     private static final int BG = 0x90000000;
     private static final int BG_BORDER = 0xB0000000;
@@ -104,54 +106,100 @@ public final class VitalsHud {
         GuiGraphics g = event.getGuiGraphics();
         int left = g.guiWidth() / 2 - 91;
         int right = g.guiWidth() / 2 + 91;
+        // 原版基线：生命/饥饿这一行的顶端是 height-39
         int rowY = g.guiHeight() - 39;
-        int armorY = rowY - 10;
 
         try {
             int healthMode = MedalsConfig.HUD_HEALTH_MODE.get();
             int hungerMode = MedalsConfig.HUD_HUNGER_MODE.get();
             int armorMode = MedalsConfig.HUD_ARMOR_MODE.get();
 
+            int absorption = Mth.ceil(player.getAbsorptionAmount());
+
+            // ---- 护甲：先画，且在生命行上方留出空档 ----
+            // 原版护甲图标顶端在 height-49（比生命行高 10px），
+            // 但我们的生命行是进度条：条子带 1px 外框，顶端到 height-38，
+            // 只留 2px 会贴在一起（看着就像被血条压住）。这里再抬高 6px。
+            if (armorMode != 0) {
+                int armor = player.getArmorValue();
+                // 没穿甲就不画 —— 原版此时也是空的，凭空多个 0 很怪
+                if (armor > 0) {
+                    text(g, left, rowY - 16, String.valueOf(armor), COLOR_ARMOR, 1.0F);
+                }
+            }
+
+            // ---- 生命 ----
             if (healthMode != 0) {
                 int cur = Mth.ceil(player.getHealth());
                 int max = Math.max(1, Mth.ceil(player.getMaxHealth()));
-                String text = cur + "/" + max;
-                render(g, healthMode, left, rowY, BAR_W, cur / (float) max, text, COLOR_HEALTH);
+                healthRow(g, healthMode, left, rowY, cur, max, absorption);
             }
+
+            // ---- 饥饿 ----
             if (hungerMode != 0) {
                 int cur = player.getFoodData().getFoodLevel();
-                int max = 20;
-                String text = cur + "/" + max;
-                render(g, hungerMode, right - BAR_W, rowY, BAR_W, cur / (float) max, text, COLOR_HUNGER);
-            }
-            if (armorMode != 0) {
-                int cur = player.getArmorValue();
-                // 护甲只做到数值：没有分母，进度条无从谈起。
-                // 没穿甲就不画 —— 原版此时也是空的，凭空多个 0 很怪
-                if (cur > 0) {
-                    text(g, left, armorY, String.valueOf(cur), COLOR_ARMOR, 1.0F);
-                }
+                vitalsRow(g, hungerMode, right - BAR_W, rowY, BAR_W,
+                        cur / 20.0F, cur + "/20", COLOR_HUNGER, null, null);
             }
         } catch (Throwable ignored) {
             // HUD 画挂了不能影响游戏
         }
     }
 
+    /**
+     * 生命这一行：除了红色部分，还要把<b>伤害吸收</b>画出来。
+     *
+     * <p>我们一旦关掉原版的 {@code PLAYER_HEALTH} 覆盖层，原版的黄色吸收心也一起没了，
+     * 玩家会以为"吸收盾凭空消失"。所以：
+     * <ul>
+     *   <li>进度条：吸收部分接在红色后面，用金色画；</li>
+     *   <li>数值：在 {@code 18/20} 后面追加金色的 {@code +4}。</li>
+     * </ul>
+     */
+    private static void healthRow(GuiGraphics g, int mode, int x, int y,
+                                  int cur, int max, int absorption) {
+        float ratio = cur / (float) max;
+        float absorbRatio = absorption / (float) max;
+        vitalsRow(g, mode, x, y, BAR_W, ratio, cur + "/" + max, COLOR_HEALTH,
+                absorption > 0 ? "+" + absorption : null, absorbRatio);
+    }
+
     /** mode: 1 = 数值，2 = 进度条，3 = 进度条 + 数值。 */
-    private static void render(GuiGraphics g, int mode, int x, int y, int w,
-                               float ratio, String label, int color) {
+    private static void vitalsRow(GuiGraphics g, int mode, int x, int y, int w,
+                                  float ratio, String label, int color,
+                                  String extra, Float extraRatio) {
+        var font = Minecraft.getInstance().font;
+
         if (mode == 2 || mode == 3) {
             bar(g, x, y + 2, w, BAR_H, ratio, color);
+            if (extraRatio != null && extraRatio > 0.0F) {
+                int base = Math.round(w * Mth.clamp(ratio, 0.0F, 1.0F));
+                int add = Math.min(w - base, Math.round(w * extraRatio));
+                if (add > 0) {
+                    g.fill(x + base, y + 2, x + base + add, y + 2 + BAR_H, COLOR_ABSORB);
+                    g.fill(x + base, y + 2, x + base + add, y + 3, brighten(COLOR_ABSORB));
+                }
+            }
         }
+
         if (mode == 1) {
+            int w1 = font.width(label);
             text(g, x, y, label, color, 1.0F);
+            if (extra != null) {
+                text(g, x + w1 + 3, y, extra, COLOR_ABSORB, 1.0F);
+            }
         } else if (mode == 3) {
-            // 数字压在条上，0.5 缩放，白字带阴影
+            // 数字压在条上：0.5 缩放，白字带阴影
             float k = 0.5F;
-            int tw = Math.round(Minecraft.getInstance().font.width(label) * k);
-            int tx = x + (w - tw) / 2;
+            int wLabel = Math.round(font.width(label) * k);
+            int wExtra = extra == null ? 0 : Math.round(font.width(extra) * k) + 2;
+            int total = wLabel + wExtra;
+            int tx = x + (w - total) / 2;
             int ty = y + 2 + (BAR_H - Math.round(8 * k)) / 2;
             text(g, tx, ty, label, 0xFFFFFFFF, k);
+            if (extra != null) {
+                text(g, tx + wLabel + 2, ty, extra, COLOR_ABSORB, k);
+            }
         }
     }
 
