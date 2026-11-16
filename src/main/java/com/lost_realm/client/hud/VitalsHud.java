@@ -84,6 +84,7 @@ public final class VitalsHud {
             return;
         }
         ResourceLocation id = event.getOverlay().id();
+        diag("pre:" + id.getPath(), player);
         GuiGraphics g = event.getGuiGraphics();
         try {
             boolean drawn = false;
@@ -129,6 +130,7 @@ public final class VitalsHud {
         if (preDrew) {
             return;
         }
+        diag("post-fallback", Minecraft.getInstance().player);
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
         if (player == null || mc.options.hideGui || skipAll(player)) {
@@ -188,12 +190,6 @@ public final class VitalsHud {
         int left = g.guiWidth() / 2 - 91;
         int rowY = g.guiHeight() - 39;
         int armor = player.getArmorValue();
-        if (armor <= 0) {
-            // 没穿甲就交回原版（原版这时也是空的）。
-            // 注意：这里必须 return false —— 之前不管画没画都取消原版，
-            // 万一点数读到 0，就变成"取消了原版、自己又没画"，护甲彻底消失。
-            return false;
-        }
 
         // 护甲 y：生命行顶端 -12（给 8px 字和阴影留缝）；
         // 生命还是原版图标、且最大生命 > 20 时原版会把心往上叠排，护甲跟着让上去；
@@ -219,6 +215,25 @@ public final class VitalsHud {
 
     private static long lastArmorLog;
     private static String lastArmorState;
+
+    private static long lastDiag;
+
+    /** 总诊断：哪些覆盖层到底有没有走到、配置值是多少、护甲点数是多少。 */
+    private static void diag(String tag, Player p) {
+        long now = System.currentTimeMillis();
+        if (now - lastDiag < 5_000L) {
+            return;
+        }
+        lastDiag = now;
+        try {
+            Medals.LOGGER.info("[HUD] {} 生命={} 饥饿={} 护甲={} 护甲点数={} 创造={} 最大生命={}",
+                    tag, MedalsConfig.HUD_HEALTH_MODE.get(), MedalsConfig.HUD_HUNGER_MODE.get(),
+                    MedalsConfig.HUD_ARMOR_MODE.get(), p == null ? -1 : p.getArmorValue(),
+                    p != null && p.isCreative(), p == null ? -1 : Mth.ceil(p.getMaxHealth()));
+        } catch (Throwable ignored) {
+            // 诊断本身不能炸
+        }
+    }
 
     /** 护甲这条一旦出问题最难查（画没画、画在哪全靠猜），留一行诊断日志。 */
     private static void logArmorOnce(int mode, int armor, int armorY) {
