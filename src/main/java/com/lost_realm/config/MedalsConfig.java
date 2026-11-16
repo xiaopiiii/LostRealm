@@ -292,6 +292,7 @@ public final class MedalsConfig {
     public static IntValue HUD_HEALTH_MODE;
     public static IntValue HUD_HUNGER_MODE;
     public static IntValue HUD_ARMOR_MODE;
+    public static IntValue HUD_ARMOR_OFFSET;
     public static BooleanValue EFFECT_HUD_ENABLED;
     public static IntValue EFFECT_HUD_SCALE;
     public static IntValue EFFECT_HUD_CORNER;
@@ -793,6 +794,7 @@ public final class MedalsConfig {
         HUD_HEALTH_MODE = cl.HUD_HEALTH_MODE;
         HUD_HUNGER_MODE = cl.HUD_HUNGER_MODE;
         HUD_ARMOR_MODE = cl.HUD_ARMOR_MODE;
+        HUD_ARMOR_OFFSET = cl.HUD_ARMOR_OFFSET;
         EFFECT_HUD_ENABLED = cl.EFFECT_HUD_ENABLED;
         EFFECT_HUD_SCALE = cl.EFFECT_HUD_SCALE;
         EFFECT_HUD_CORNER = cl.EFFECT_HUD_CORNER;
@@ -2093,6 +2095,7 @@ public final class MedalsConfig {
         public IntValue HUD_HEALTH_MODE;
         public IntValue HUD_HUNGER_MODE;
         public IntValue HUD_ARMOR_MODE;
+        public IntValue HUD_ARMOR_OFFSET;
 
         // ---- 更好的状态效果 HUD ----
         public BooleanValue EFFECT_HUD_ENABLED;
@@ -2122,6 +2125,10 @@ public final class MedalsConfig {
                 .defineInRange("hunger_mode", 0, 0, 3);
         HUD_ARMOR_MODE = b.comment("护甲值显示方式。0 = 原版,1 = 数值(护甲没有进度条)。")
                 .defineInRange("armor_mode", 0, 0, 1);
+        HUD_ARMOR_OFFSET = b.comment(
+                "护甲数值的垂直微调(像素,正数往下)。原版护甲图标的位置受最大生命影响",
+                "(最大生命超过 20 时图标会往上叠),文字位置没法一概而论,这里留个手动档。")
+                .defineInRange("armor_offset", 0, -20, 20);
         b.pop();
 
         b.comment(

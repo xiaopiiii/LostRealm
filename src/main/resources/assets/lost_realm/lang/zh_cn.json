@@ -1391,5 +1391,8 @@
   "config.lost_realm.sub.vitals_hp": "生命",
   "config.lost_realm.sub.vitals_hunger": "饥饿",
   "config.lost_realm.sub.vitals_armor": "护甲",
-  "config.lost_realm.sub.effect": "状态效果"
+  "config.lost_realm.sub.effect": "状态效果",
+  "config.lost_realm.opt.hud_armor_offset": "护甲位置微调",
+  "config.lost_realm.opt.hud_armor_offset.desc": "负数往上、正数往下（像素）。不同最大生命下原版护甲图标高度不同，用这个对齐。",
+  "config.lost_realm.opt.hud_armor_offset.unit": "px"
 }

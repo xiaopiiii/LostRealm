@@ -52,7 +52,15 @@ import com.lost_realm.config.MedalsConfig;
 public final class VitalsHud {
 
     private static final int BAR_W = 80;
-    private static final int BAR_H = 6;
+    private static final int BAR_H = 5;
+    /**
+     * 条子相对生命行顶端的下移量。
+     *
+     * <p>生命行顶端 -39 到护甲图标底边 -40 只隔 1px，条子带 1px 外框就会顶到图标上
+     * （看着就像"血条把护甲压住了"）。往下让 3px，中间留出干净的一条缝，
+     * 同时不会碰到下面的经验条。
+     */
+    private static final int BAR_DY = 3;
 
     private static final int COLOR_HEALTH = 0xFFE03A3A;
     private static final int COLOR_HUNGER = 0xFFD98B3A;
@@ -116,6 +124,15 @@ public final class VitalsHud {
 
             int absorption = Mth.ceil(player.getAbsorptionAmount());
 
+            // 护甲数值的 y：
+            //   1) 生命行顶端 -12，给 8px 高的字和阴影留缝；
+            //   2) 生命还是原版图标、且最大生命超过 20 时，原版会把心往上叠排，
+            //      护甲得跟着让上去，否则会被上面那排心压住；
+            //   3) 再叠一个手动微调，方便按实际观感对齐。
+            int heartRows = Math.max(1, Mth.ceil(Mth.ceil(player.getMaxHealth()) / 20.0F));
+            int vanillaStack = (MedalsConfig.HUD_HEALTH_MODE.get() == 0) ? (heartRows - 1) * 10 : 0;
+            int armorY = rowY - 12 - vanillaStack + MedalsConfig.HUD_ARMOR_OFFSET.get();
+
             // ---- 护甲：先画，且在生命行上方留出空档 ----
             // 原版护甲图标顶端在 height-49（比生命行高 10px）。
             // 文字只有 8px 高、又带阴影，贴着 -49 会压到生命那行的字；
@@ -124,7 +141,7 @@ public final class VitalsHud {
                 int armor = player.getArmorValue();
                 // 没穿甲就不画 —— 原版此时也是空的，凭空多个 0 很怪
                 if (armor > 0) {
-                    text(g, left, rowY - 12, String.valueOf(armor), COLOR_ARMOR, 1.0F);
+                    text(g, left, armorY, String.valueOf(armor), COLOR_ARMOR, 1.0F);
                 }
             }
 
@@ -177,20 +194,20 @@ public final class VitalsHud {
         var font = Minecraft.getInstance().font;
 
         if (mode == 2 || mode == 3) {
-            bar(g, x, y + 2, w, BAR_H, ratio, color);
+            bar(g, x, y + BAR_DY, w, BAR_H, ratio, color);
             if (overlayRatio > 0.0F) {
                 // 饱和度：在已填充的部分上盖一层半透明金色
                 int ow = Math.round(w * Math.min(Mth.clamp(ratio, 0.0F, 1.0F), overlayRatio));
                 if (ow > 0) {
-                    g.fill(x, y + 2, x + ow, y + 2 + BAR_H, 0x66FFD24A);
+                    g.fill(x, y + BAR_DY, x + ow, y + BAR_DY + BAR_H, 0x66FFD24A);
                 }
             }
             if (extraRatio != null && extraRatio > 0.0F) {
                 int base = Math.round(w * Mth.clamp(ratio, 0.0F, 1.0F));
                 int add = Math.min(w - base, Math.round(w * extraRatio));
                 if (add > 0) {
-                    g.fill(x + base, y + 2, x + base + add, y + 2 + BAR_H, COLOR_ABSORB);
-                    g.fill(x + base, y + 2, x + base + add, y + 3, brighten(COLOR_ABSORB));
+                    g.fill(x + base, y + BAR_DY, x + base + add, y + BAR_DY + BAR_H, COLOR_ABSORB);
+                    g.fill(x + base, y + BAR_DY, x + base + add, y + BAR_DY + 1, brighten(COLOR_ABSORB));
                 }
             }
         }
@@ -208,7 +225,7 @@ public final class VitalsHud {
             int wExtra = extra == null ? 0 : Math.round(font.width(extra) * k) + 2;
             int total = wLabel + wExtra;
             int tx = x + (w - total) / 2;
-            int ty = y + 2 + (BAR_H - Math.round(8 * k)) / 2;
+            int ty = y + BAR_DY + (BAR_H - Math.round(8 * k)) / 2;
             text(g, tx, ty, label, 0xFFFFFFFF, k);
             if (extra != null) {
                 text(g, tx + wLabel + 2, ty, extra, COLOR_ABSORB, k);

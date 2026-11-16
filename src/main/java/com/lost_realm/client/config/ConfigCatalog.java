@@ -47,6 +47,7 @@ public final class ConfigCatalog {
         SUB_OF.put("hud_health_mode", "vitals_hp");
         SUB_OF.put("hud_hunger_mode", "vitals_hunger");
         SUB_OF.put("hud_armor_mode", "vitals_armor");
+        SUB_OF.put("hud_armor_offset", "vitals_armor");
     }
 
     /** 某个选项属于哪个子页；没登记返回 {@code null}。 */
@@ -299,6 +300,8 @@ public final class ConfigCatalog {
         // 护甲：上限随装备变化，画进度条没有意义，只给 原版 / 数值
         add(switchOpt("hud_armor_mode", ConfigCategory.EFFECT_HUD,
                 MedalsConfig.HUD_ARMOR_MODE, 0, 1, 0, C));
+        step("hud_armor_offset", ConfigCategory.EFFECT_HUD,
+                MedalsConfig.HUD_ARMOR_OFFSET, -20, 20, 0, C);
 
         // ============================================================
         // 客户端 · 状态效果 HUD
