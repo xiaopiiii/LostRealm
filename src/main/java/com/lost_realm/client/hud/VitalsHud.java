@@ -68,21 +68,8 @@ public final class VitalsHud {
     private static final int BG_BORDER = 0xB0000000;
     private static final int BG_TRACK = 0x70202020;
 
-    /**
-     * 条内数字的颜色。
-     *
-     * <p>黑字在"条没满"的时候贴在黑色底槽上，直接看不见；纯白又被否掉了。
-     * 所以用<b>本元素颜色的浅色调</b>：在底槽上亮得起来，在彩色填充上也分得开。
-     */
-    private static int onBarText(int color) {
-        int r = (color >> 16) & 0xFF;
-        int g = (color >> 8) & 0xFF;
-        int b = color & 0xFF;
-        r = Math.min(240, r + (255 - r) * 3 / 5);
-        g = Math.min(240, g + (255 - g) * 3 / 5);
-        b = Math.min(240, b + (255 - b) * 3 / 5);
-        return 0xFF000000 | (r << 16) | (g << 8) | b;
-    }
+    /** 所有数字统一亮白。 */
+    private static final int TEXT_WHITE = 0xFFFFFFFF;
 
     /** 这一帧的原版覆盖层是不是已经被我们替换过了（见 {@link #onRenderPost}）。 */
     private static boolean preDrewThisFrame;
@@ -170,10 +157,12 @@ public final class VitalsHud {
         if (!MedalsConfig.HUD_SHOW_XP.get()) {
             return;
         }
-        int x = g.guiWidth() / 2 + 91 + 4;
-        int y = g.guiHeight() - 32;
-        String s = player.totalExperience + "/" + player.getXpNeededForNextLevel();
-        text(g, x, y, s, 0xFF80FF20, 1.0F);
+        int need = Math.max(1, player.getXpNeededForNextLevel());
+        int cur = Math.round(player.experienceProgress * need);
+        // 画在经验条本身上：条的左端往里 2px，竖直居中（条高 5，字高 8）
+        int x = g.guiWidth() / 2 - 91 + 2;
+        int y = g.guiHeight() - 32 - 2;
+        text(g, x, y, cur + "/" + need, TEXT_WHITE, 1.0F);
     }
 
     /** 兜底那部分（创造模式不在这里，`skipAll` 已经挡掉了）。 */
@@ -247,7 +236,7 @@ public final class VitalsHud {
         logArmorOnce(mode, armor, armorY);
 
         if (mode == 1) {
-            text(g, left, armorY, String.valueOf(armor), color, 1.0F);
+            text(g, left, armorY, String.valueOf(armor), TEXT_WHITE, 1.0F);
             return true;
         }
         vitalsRow(g, mode, left, armorY, ratio, String.valueOf(armor), color, null, null, 0.0F);
@@ -322,9 +311,9 @@ public final class VitalsHud {
         }
 
         if (mode == 1) {
-            text(g, x, y, label, color, 1.0F);
+            text(g, x, y, label, TEXT_WHITE, 1.0F);
             if (suffix != null) {
-                text(g, x + font.width(label) + 3, y, suffix, COLOR_EXTRA, 1.0F);
+                text(g, x + font.width(label) + 3, y, suffix, TEXT_WHITE, 1.0F);
             }
         } else if (mode == 3) {
             // 条内数字：深色，不用白
@@ -333,9 +322,9 @@ public final class VitalsHud {
             int wExtra = suffix == null ? 0 : Math.round(font.width(suffix) * k) + 2;
             int tx = x + (BAR_W - wLabel - wExtra) / 2;
             int ty = y + BAR_DY + (BAR_H - Math.round(8 * k)) / 2;
-            text(g, tx, ty, label, onBarText(color), k);
+            text(g, tx, ty, label, TEXT_WHITE, k);
             if (suffix != null) {
-                text(g, tx + wLabel + 2, ty, suffix, COLOR_EXTRA, k);
+                text(g, tx + wLabel + 2, ty, suffix, TEXT_WHITE, k);
             }
         }
     }
@@ -358,7 +347,7 @@ public final class VitalsHud {
             g.pose().scale(scale, scale, 1.0F);
         }
         RenderSystem.enableBlend();
-        g.drawString(font, s, 0, 0, color, false);
+        g.drawString(font, s, 0, 0, color, true);
         g.pose().popPose();
     }
 
