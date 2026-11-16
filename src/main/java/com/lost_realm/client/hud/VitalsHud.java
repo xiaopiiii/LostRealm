@@ -70,6 +70,8 @@ public final class VitalsHud {
 
     /** 所有数字统一亮白。 */
     private static final int TEXT_WHITE = 0xFFFFFFFF;
+    /** 经验数字：原版经验条那抹亮绿。 */
+    private static final int TEXT_XP = 0xFF80FF20;
 
     /** 这一帧的原版覆盖层是不是已经被我们替换过了（见 {@link #onRenderPost}）。 */
     private static boolean preDrewThisFrame;
@@ -158,18 +160,19 @@ public final class VitalsHud {
             return;
         }
         var font = Minecraft.getInstance().font;
+        final float k = 0.5F;                 // 半号字，正好塞进 5px 高的条里
         int x0 = g.guiWidth() / 2 - 91;
         int x1 = g.guiWidth() / 2 + 91;
-        int y = g.guiHeight() - 32 - 2;      // 条高 5、字高 8，上提 2px 居中
+        int y = g.guiHeight() - 31;           // 竖直压在条的中间（条在 -32..-28）
 
         // 左：累计总经验
-        text(g, x0 + 2, y, String.valueOf(player.totalExperience), TEXT_WHITE, 1.0F);
+        text(g, x0 + 2, y, String.valueOf(player.totalExperience), TEXT_XP, k);
 
         // 右：本等级已获得 / 升到下一级所需，右对齐
         int need = Math.max(1, player.getXpNeededForNextLevel());
         int cur = Math.round(player.experienceProgress * need);
         String right = cur + "/" + need;
-        text(g, x1 - 2 - font.width(right), y, right, TEXT_WHITE, 1.0F);
+        text(g, x1 - 2 - Math.round(font.width(right) * k), y, right, TEXT_XP, k);
     }
 
     /** 兜底那部分（创造模式不在这里，`skipAll` 已经挡掉了）。 */
