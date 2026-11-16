@@ -297,9 +297,9 @@ public final class ConfigCatalog {
                 MedalsConfig.HUD_HEALTH_MODE, 0, 3, 0, C));
         add(switchOpt("hud_hunger_mode", ConfigCategory.EFFECT_HUD,
                 MedalsConfig.HUD_HUNGER_MODE, 0, 3, 0, C));
-        // 护甲：上限随装备变化，画进度条没有意义，只给 原版 / 数值
+        // 护甲：一条只表示 20 点，超过 20 整条换色
         add(switchOpt("hud_armor_mode", ConfigCategory.EFFECT_HUD,
-                MedalsConfig.HUD_ARMOR_MODE, 0, 1, 0, C));
+                MedalsConfig.HUD_ARMOR_MODE, 0, 3, 0, C));
         step("hud_armor_offset", ConfigCategory.EFFECT_HUD,
                 MedalsConfig.HUD_ARMOR_OFFSET, -20, 20, 0, C);
 

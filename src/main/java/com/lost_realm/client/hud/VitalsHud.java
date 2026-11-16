@@ -8,7 +8,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderGuiEvent;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -18,41 +17,37 @@ import com.lost_realm.Medals;
 import com.lost_realm.config.MedalsConfig;
 
 /**
- * 生命 / 饥饿 / 护甲的<b>自定义 HUD</b>：数值 / 进度条 / 原版 / 进度条+数值。
+ * 生命 / 饥饿 / 护甲的<b>自定义 HUD</b>：原版图标 / 数值 / 进度条 / 进度条+数值。
  *
- * <h2>做法</h2>
- * 两步，缺一不可：
- * <ol>
- *   <li>{@link RenderGuiOverlayEvent.Pre} 里把原版那条图标<b>取消掉</b>
- *       （{@code setCanceled(true)}），否则新画的和旧图标会叠在一起；</li>
- *   <li>{@link RenderGuiEvent.Post} 里按配置把我们自己的画上去 ——
- *       放在 Post 是因为 Pre 被取消后对应的 Post 不会再来，
- *       而且 Post 在所有原版 HUD 之后，压得住血条、经验条这些邻居。</li>
- * </ol>
+ * <h2>为什么"先画再取消"，而不是"先取消再画"</h2>
+ * 最早的写法是：在 {@code RenderGuiOverlayEvent.Pre} 里取消原版，再统一到
+ * {@code RenderGuiEvent.Post} 里画自己的。问题是一旦自己那段抛异常（配置没读到、
+ * 坐标算错…），原版已经被取消、新的又没画出来 —— 玩家看到的一条 HUD 都不剩。
+ * 现在改成：<b>当场把这一条画出来，画成功了才取消</b>。
+ * 画挂了就什么都不取消，原版照旧显示 —— 最差也只是"没自定义成功"，不会"什么都没有"。
  *
  * <h2>位置</h2>
- * 直接沿用原版的锚点，别自己发明坐标：
+ * 全部沿用原版锚点：生命左端 {@code 宽/2-91}、饥饿右端 {@code 宽/2+91}、
+ * 基线 {@code 高-39}，护甲在生命行上方。换画法之后和快捷栏、经验条仍然对齐。
+ *
+ * <h2>护甲的两个特殊规则</h2>
  * <ul>
- *   <li>生命：左端 {@code width/2 - 91}，基线 {@code height - 39}</li>
- *   <li>饥饿：右端 {@code width/2 + 91}（原版是从右往左排的）</li>
- *   <li>护甲：生命那一行<b>再往上 10px</b>，同一个左端</li>
+ *   <li>一条进度条只吃 <b>20 点</b>护甲；超过 20 时<b>整条</b>换成另一种颜色
+ *       （不是画两段，是整条换色），一眼能看出"已经溢出了"；</li>
+ *   <li>护甲上限随装备变化，所以数值才是主显示，进度条只是个大概。</li>
  * </ul>
- * 这样换成数值或进度条之后，和旁边的经验条、快捷栏仍然对齐。
  *
- * <h2>护甲为什么不给进度条</h2>
- * 生命和饥饿的上限是固定的 20，进度条的分母是确定的；
- * 护甲点数上限取决于穿了什么，一条"总是快满"的条看不出任何信息，
- * 所以护甲只有「原版 / 数值」两种。
- *
- * <h2>什么时候完全不管</h2>
- * 创造 / 观察者（原版本来就不画这些）、以及骑乘时（原版那三条是坐骑的血），
- * 一律原样交给原版，避免把坐骑血条顶掉。
+ * <h2>配色</h2>
+ * 三种元素各一个明确的颜色（红 / 橙 / 蓝），条子上不出现白色：
+ * 条内数字用深色，边框用深色，顶部的"高光"也去掉了 —— 之前那个
+ * {@code brighten()} 会把浅色拉到接近纯白，看着像一条白杠。
  */
 @Mod.EventBusSubscriber(modid = Medals.MODID, value = Dist.CLIENT)
 public final class VitalsHud {
 
     private static final int BAR_W = 80;
     private static final int BAR_H = 5;
+
     /**
      * 条子相对生命行顶端的下移量。
      *
@@ -64,171 +59,163 @@ public final class VitalsHud {
 
     private static final int COLOR_HEALTH = 0xFFE03A3A;
     private static final int COLOR_HUNGER = 0xFFD98B3A;
-    private static final int COLOR_ARMOR = 0xFF9EA9B8;
-    /** 伤害吸收：原版是黄色的心，这里沿用同一个黄。 */
-    private static final int COLOR_ABSORB = 0xFFFFC83A;
+    private static final int COLOR_ARMOR = 0xFF4E8FE0;
+    /** 护甲超过 20 点：整条换成这个颜色。 */
+    private static final int COLOR_ARMOR_OVER = 0xFFB05CE0;
+    /** 伤害吸收 / 饱和度：原版黄。 */
+    private static final int COLOR_EXTRA = 0xFFFFC83A;
 
-    private static final int BG = 0x90000000;
     private static final int BG_BORDER = 0xB0000000;
     private static final int BG_TRACK = 0x70202020;
 
+    /** 条内数字：深色，不用白色。 */
+    private static final int TEXT_ON_BAR = 0xFF101010;
+
     private VitalsHud() {}
 
-    // ================================================================
-    // 1. 关掉原版
-    // ================================================================
-
     @SubscribeEvent
-    public static void hideVanilla(RenderGuiOverlayEvent.Pre event) {
-        try {
-            if (skipAll()) {
-                return;
-            }
-            ResourceLocation id = event.getOverlay().id();
-            if (id.equals(VanillaGuiOverlay.PLAYER_HEALTH.id())
-                    && MedalsConfig.HUD_HEALTH_MODE.get() != 0) {
-                event.setCanceled(true);
-            } else if (id.equals(VanillaGuiOverlay.FOOD_LEVEL.id())
-                    && MedalsConfig.HUD_HUNGER_MODE.get() != 0) {
-                event.setCanceled(true);
-            } else if (id.equals(VanillaGuiOverlay.ARMOR_LEVEL.id())
-                    && MedalsConfig.HUD_ARMOR_MODE.get() != 0) {
-                event.setCanceled(true);
-            }
-        } catch (Throwable ignored) {
-            // 配置没就绪就当没这回事，原版照画
-        }
-    }
-
-    // ================================================================
-    // 2. 画自己的
-    // ================================================================
-
-    @SubscribeEvent
-    public static void draw(RenderGuiEvent.Post event) {
+    public static void onOverlayPre(RenderGuiOverlayEvent.Pre event) {
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
-        if (player == null || mc.options.hideGui || skipAll()) {
+        if (player == null || mc.options.hideGui || skipAll(player)) {
             return;
         }
+        ResourceLocation id = event.getOverlay().id();
         GuiGraphics g = event.getGuiGraphics();
-        int left = g.guiWidth() / 2 - 91;
-        int right = g.guiWidth() / 2 + 91;
-        // 原版基线：生命/饥饿这一行的顶端是 height-39
-        int rowY = g.guiHeight() - 39;
-
         try {
-            int healthMode = MedalsConfig.HUD_HEALTH_MODE.get();
-            int hungerMode = MedalsConfig.HUD_HUNGER_MODE.get();
-            int armorMode = MedalsConfig.HUD_ARMOR_MODE.get();
-
-            int absorption = Mth.ceil(player.getAbsorptionAmount());
-
-            // 护甲数值的 y：
-            //   1) 生命行顶端 -12，给 8px 高的字和阴影留缝；
-            //   2) 生命还是原版图标、且最大生命超过 20 时，原版会把心往上叠排，
-            //      护甲得跟着让上去，否则会被上面那排心压住；
-            //   3) 再叠一个手动微调，方便按实际观感对齐。
-            int heartRows = Math.max(1, Mth.ceil(Mth.ceil(player.getMaxHealth()) / 20.0F));
-            int vanillaStack = (MedalsConfig.HUD_HEALTH_MODE.get() == 0) ? (heartRows - 1) * 10 : 0;
-            int armorY = rowY - 12 - vanillaStack + MedalsConfig.HUD_ARMOR_OFFSET.get();
-
-            // ---- 护甲：先画，且在生命行上方留出空档 ----
-            // 原版护甲图标顶端在 height-49（比生命行高 10px）。
-            // 文字只有 8px 高、又带阴影，贴着 -49 会压到生命那行的字；
-            // 抬太高（试过 -16）又飘在半空。取 -12：比原版高 2px，正好留出一道缝。
-            if (armorMode != 0) {
-                int armor = player.getArmorValue();
-                // 没穿甲就不画 —— 原版此时也是空的，凭空多个 0 很怪
-                if (armor > 0) {
-                    text(g, left, armorY, String.valueOf(armor), COLOR_ARMOR, 1.0F);
+            if (id.equals(VanillaGuiOverlay.PLAYER_HEALTH.id())) {
+                int mode = MedalsConfig.HUD_HEALTH_MODE.get();
+                if (mode == 0) {
+                    return;
                 }
+                drawHealth(g, player, mode);
+                event.setCanceled(true);
+            } else if (id.equals(VanillaGuiOverlay.FOOD_LEVEL.id())) {
+                int mode = MedalsConfig.HUD_HUNGER_MODE.get();
+                if (mode == 0) {
+                    return;
+                }
+                drawHunger(g, player, mode);
+                event.setCanceled(true);
+            } else if (id.equals(VanillaGuiOverlay.ARMOR_LEVEL.id())) {
+                int mode = MedalsConfig.HUD_ARMOR_MODE.get();
+                if (mode == 0) {
+                    return;
+                }
+                drawArmor(g, player, mode);
+                event.setCanceled(true);
             }
-
-            // ---- 生命 ----
-            if (healthMode != 0) {
-                int cur = Mth.ceil(player.getHealth());
-                int max = Math.max(1, Mth.ceil(player.getMaxHealth()));
-                healthRow(g, healthMode, left, rowY, cur, max, absorption);
-            }
-
-            // ---- 饥饿：顺带把饱和度也画出来 ----
-            // 原版从不显示饱和度，但它决定了"这一口吃下去能不能回血"，
-            // 所以条上用一层金色覆盖表示饱和度占了前多少格，数字后面跟 +饱和度。
-            if (hungerMode != 0) {
-                int cur = player.getFoodData().getFoodLevel();
-                float sat = player.getFoodData().getSaturationLevel();
-                int satInt = Mth.ceil(sat);
-                vitalsRow(g, hungerMode, right - BAR_W, rowY, BAR_W,
-                        cur / 20.0F, cur + "/20", COLOR_HUNGER,
-                        satInt > 0 ? "+" + satInt : null, null,
-                        Mth.clamp(sat / 20.0F, 0.0F, 1.0F));
-            }
-        } catch (Throwable ignored) {
-            // HUD 画挂了不能影响游戏
+        } catch (Throwable t) {
+            // 画不出来就不取消 —— 让原版接着画，绝不能出现"两条都没了"
+            Medals.LOGGER.debug("[Lost Realm] 自定义 HUD 绘制失败，本次交回原版", t);
         }
     }
 
-    /**
-     * 生命这一行：除了红色部分，还要把<b>伤害吸收</b>画出来。
-     *
-     * <p>我们一旦关掉原版的 {@code PLAYER_HEALTH} 覆盖层，原版的黄色吸收心也一起没了，
-     * 玩家会以为"吸收盾凭空消失"。所以：
-     * <ul>
-     *   <li>进度条：吸收部分接在红色后面，用金色画；</li>
-     *   <li>数值：在 {@code 18/20} 后面追加金色的 {@code +4}。</li>
-     * </ul>
-     */
-    private static void healthRow(GuiGraphics g, int mode, int x, int y,
-                                  int cur, int max, int absorption) {
+    // ================================================================
+    // 三条 HUD
+    // ================================================================
+
+    private static void drawHealth(GuiGraphics g, Player player, int mode) {
+        int left = g.guiWidth() / 2 - 91;
+        int rowY = g.guiHeight() - 39;
+        int cur = Mth.ceil(player.getHealth());
+        int max = Math.max(1, Mth.ceil(player.getMaxHealth()));
+        int absorb = Mth.ceil(player.getAbsorptionAmount());
+
         float ratio = cur / (float) max;
-        float absorbRatio = absorption / (float) max;
-        vitalsRow(g, mode, x, y, BAR_W, ratio, cur + "/" + max, COLOR_HEALTH,
-                absorption > 0 ? "+" + absorption : null, absorbRatio, 0.0F);
+        Float extra = absorb > 0 ? (float) absorb : null;   // 吸收段占整条的比例
+        String label = cur + "/" + max;
+        String suffix = absorb > 0 ? "+" + absorb : null;
+        vitalsRow(g, mode, left, rowY, ratio, label, COLOR_HEALTH, suffix, extra, 0.0F);
     }
 
-    /** mode: 1 = 数值，2 = 进度条，3 = 进度条 + 数值。 */
-    private static void vitalsRow(GuiGraphics g, int mode, int x, int y, int w,
-                                  float ratio, String label, int color,
-                                  String extra, Float extraRatio, float overlayRatio) {
+    private static void drawHunger(GuiGraphics g, Player player, int mode) {
+        int right = g.guiWidth() / 2 + 91;
+        int rowY = g.guiHeight() - 39;
+        int cur = player.getFoodData().getFoodLevel();
+        float sat = player.getFoodData().getSaturationLevel();
+        int satInt = Mth.ceil(sat);
+
+        // 饱和度：条上盖一层半透明黄（宽度按 饱和度/20），数值后面跟 +饱和度
+        vitalsRow(g, mode, right - BAR_W, rowY, cur / 20.0F, cur + "/20", COLOR_HUNGER,
+                satInt > 0 ? "+" + satInt : null, null,
+                Mth.clamp(sat / 20.0F, 0.0F, 1.0F));
+    }
+
+    private static void drawArmor(GuiGraphics g, Player player, int mode) {
+        int left = g.guiWidth() / 2 - 91;
+        int rowY = g.guiHeight() - 39;
+        int armor = player.getArmorValue();
+        if (armor <= 0) {
+            return;                      // 没穿甲就是空的，和原版一致
+        }
+
+        // 护甲 y：生命行顶端 -12（给 8px 字和阴影留缝）；
+        // 生命还是原版图标、且最大生命 > 20 时原版会把心往上叠排，护甲跟着让上去；
+        // 最后再加一个手动微调（配置里 -20~20）。
+        int heartRows = Math.max(1, Mth.ceil(Mth.ceil(player.getMaxHealth()) / 20.0F));
+        int vanillaStack = (MedalsConfig.HUD_HEALTH_MODE.get() == 0) ? (heartRows - 1) * 10 : 0;
+        int armorY = rowY - 12 - vanillaStack + MedalsConfig.HUD_ARMOR_OFFSET.get();
+
+        // 一条只表示 20 点；超过 20 整条换色
+        boolean over = armor > 20;
+        int color = over ? COLOR_ARMOR_OVER : COLOR_ARMOR;
+        float ratio = Math.min(armor, 20) / 20.0F;
+
+        if (mode == 1) {
+            text(g, left, armorY, String.valueOf(armor), color, 1.0F);
+            return;
+        }
+        vitalsRow(g, mode, left, armorY, ratio, String.valueOf(armor), color, null, null, 0.0F);
+    }
+
+    // ================================================================
+    // 通用绘制
+    // ================================================================
+
+    /**
+     * 一条（或一条+数字）。
+     *
+     * @param extraRatio 条尾再接一段的比例（伤害吸收），{@code null} 表示没有
+     * @param overlay    盖在已填充部分上的比例（饱和度），0 表示不画
+     */
+    private static void vitalsRow(GuiGraphics g, int mode, int x, int y, float ratio,
+                                  String label, int color, String suffix,
+                                  Float extraRatio, float overlay) {
         var font = Minecraft.getInstance().font;
 
         if (mode == 2 || mode == 3) {
-            bar(g, x, y + BAR_DY, w, BAR_H, ratio, color);
-            if (overlayRatio > 0.0F) {
-                // 饱和度：在已填充的部分上盖一层半透明金色
-                int ow = Math.round(w * Math.min(Mth.clamp(ratio, 0.0F, 1.0F), overlayRatio));
+            bar(g, x, y + BAR_DY, BAR_W, BAR_H, ratio, color);
+            if (overlay > 0.0F) {
+                int ow = Math.round(BAR_W * Math.min(Mth.clamp(ratio, 0.0F, 1.0F), overlay));
                 if (ow > 0) {
                     g.fill(x, y + BAR_DY, x + ow, y + BAR_DY + BAR_H, 0x66FFD24A);
                 }
             }
             if (extraRatio != null && extraRatio > 0.0F) {
-                int base = Math.round(w * Mth.clamp(ratio, 0.0F, 1.0F));
-                int add = Math.min(w - base, Math.round(w * extraRatio));
+                int base = Math.round(BAR_W * Mth.clamp(ratio, 0.0F, 1.0F));
+                int add = Math.min(BAR_W - base, Math.round(BAR_W * extraRatio));
                 if (add > 0) {
-                    g.fill(x + base, y + BAR_DY, x + base + add, y + BAR_DY + BAR_H, COLOR_ABSORB);
-                    g.fill(x + base, y + BAR_DY, x + base + add, y + BAR_DY + 1, brighten(COLOR_ABSORB));
+                    g.fill(x + base, y + BAR_DY, x + base + add, y + BAR_DY + BAR_H, COLOR_EXTRA);
                 }
             }
         }
 
         if (mode == 1) {
-            int w1 = font.width(label);
             text(g, x, y, label, color, 1.0F);
-            if (extra != null) {
-                text(g, x + w1 + 3, y, extra, COLOR_ABSORB, 1.0F);
+            if (suffix != null) {
+                text(g, x + font.width(label) + 3, y, suffix, COLOR_EXTRA, 1.0F);
             }
         } else if (mode == 3) {
-            // 数字压在条上：0.5 缩放，白字带阴影
+            // 条内数字：深色，不用白
             float k = 0.5F;
             int wLabel = Math.round(font.width(label) * k);
-            int wExtra = extra == null ? 0 : Math.round(font.width(extra) * k) + 2;
-            int total = wLabel + wExtra;
-            int tx = x + (w - total) / 2;
+            int wExtra = suffix == null ? 0 : Math.round(font.width(suffix) * k) + 2;
+            int tx = x + (BAR_W - wLabel - wExtra) / 2;
             int ty = y + BAR_DY + (BAR_H - Math.round(8 * k)) / 2;
-            text(g, tx, ty, label, 0xFFFFFFFF, k);
-            if (extra != null) {
-                text(g, tx + wLabel + 2, ty, extra, COLOR_ABSORB, k);
+            text(g, tx, ty, label, TEXT_ON_BAR, k);
+            if (suffix != null) {
+                text(g, tx + wLabel + 2, ty, suffix, COLOR_EXTRA, k);
             }
         }
     }
@@ -236,22 +223,11 @@ public final class VitalsHud {
     private static void bar(GuiGraphics g, int x, int y, int w, int h, float ratio, int color) {
         float r = Mth.clamp(ratio, 0.0F, 1.0F);
         g.fill(x - 1, y - 1, x + w + 1, y + h + 1, BG_BORDER);
-        g.fill(x, y, x + w, y + h, BG);
         g.fill(x, y, x + w, y + h, BG_TRACK);
         int filled = Math.round(w * r);
         if (filled > 0) {
             g.fill(x, y, x + filled, y + h, color);
-            // 顶部一条更亮的边，让条子有厚度感
-            g.fill(x, y, x + filled, y + 1, brighten(color));
         }
-    }
-
-    private static int brighten(int argb) {
-        int a = (argb >>> 24) & 0xFF;
-        int r = Math.min(255, ((argb >> 16) & 0xFF) + 50);
-        int gg = Math.min(255, ((argb >> 8) & 0xFF) + 50);
-        int b = Math.min(255, (argb & 0xFF) + 50);
-        return (a << 24) | (r << 16) | (gg << 8) | b;
     }
 
     private static void text(GuiGraphics g, int x, int y, String s, int color, float scale) {
@@ -262,13 +238,12 @@ public final class VitalsHud {
             g.pose().scale(scale, scale, 1.0F);
         }
         RenderSystem.enableBlend();
-        g.drawString(font, s, 0, 0, color, true);
+        g.drawString(font, s, 0, 0, color, false);
         g.pose().popPose();
     }
 
     /** 创造 / 观察者 / 骑乘：原版怎么画就怎么画，我们不插手。 */
-    private static boolean skipAll() {
-        Player player = Minecraft.getInstance().player;
-        return player == null || player.isCreative() || player.isSpectator() || player.isPassenger();
+    private static boolean skipAll(Player player) {
+        return player.isCreative() || player.isSpectator() || player.isPassenger();
     }
 }

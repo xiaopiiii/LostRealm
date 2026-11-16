@@ -1385,7 +1385,7 @@
   "config.lost_realm.opt.hud_hunger_mode.2": "Bar",
   "config.lost_realm.opt.hud_hunger_mode.3": "Bar+Number",
   "config.lost_realm.opt.hud_armor_mode": "Armor display",
-  "config.lost_realm.opt.hud_armor_mode.desc": "Armor has no fixed maximum, so only vanilla or number.",
+  "config.lost_realm.opt.hud_armor_mode.desc": "One bar covers 20 armor points; above 20 the whole bar turns purple.",
   "config.lost_realm.opt.hud_armor_mode.0": "Vanilla",
   "config.lost_realm.opt.hud_armor_mode.1": "Number",
   "config.lost_realm.sub.vitals_hp": "Health",
@@ -1394,5 +1394,7 @@
   "config.lost_realm.sub.effect": "Effects",
   "config.lost_realm.opt.hud_armor_offset": "Armor Y offset",
   "config.lost_realm.opt.hud_armor_offset.desc": "Negative moves up, positive down (pixels).",
-  "config.lost_realm.opt.hud_armor_offset.unit": "px"
+  "config.lost_realm.opt.hud_armor_offset.unit": "px",
+  "config.lost_realm.opt.hud_armor_mode.2": "Bar",
+  "config.lost_realm.opt.hud_armor_mode.3": "Bar+Number"
 }

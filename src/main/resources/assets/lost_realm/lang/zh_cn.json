@@ -1385,7 +1385,7 @@
   "config.lost_realm.opt.hud_hunger_mode.2": "进度条",
   "config.lost_realm.opt.hud_hunger_mode.3": "进度条+数值",
   "config.lost_realm.opt.hud_armor_mode": "护甲值显示",
-  "config.lost_realm.opt.hud_armor_mode.desc": "护甲上限随装备变化，所以只有原版和数值两种。",
+  "config.lost_realm.opt.hud_armor_mode.desc": "一条进度条只表示 20 点护甲，超过 20 时整条换成紫色。",
   "config.lost_realm.opt.hud_armor_mode.0": "原版",
   "config.lost_realm.opt.hud_armor_mode.1": "数值",
   "config.lost_realm.sub.vitals_hp": "生命",
@@ -1394,5 +1394,7 @@
   "config.lost_realm.sub.effect": "状态效果",
   "config.lost_realm.opt.hud_armor_offset": "护甲位置微调",
   "config.lost_realm.opt.hud_armor_offset.desc": "负数往上、正数往下（像素）。不同最大生命下原版护甲图标高度不同，用这个对齐。",
-  "config.lost_realm.opt.hud_armor_offset.unit": "px"
+  "config.lost_realm.opt.hud_armor_offset.unit": "px",
+  "config.lost_realm.opt.hud_armor_mode.2": "进度条",
+  "config.lost_realm.opt.hud_armor_mode.3": "进度条+数值"
 }
