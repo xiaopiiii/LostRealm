@@ -157,12 +157,19 @@ public final class VitalsHud {
         if (!MedalsConfig.HUD_SHOW_XP.get()) {
             return;
         }
+        var font = Minecraft.getInstance().font;
+        int x0 = g.guiWidth() / 2 - 91;
+        int x1 = g.guiWidth() / 2 + 91;
+        int y = g.guiHeight() - 32 - 2;      // 条高 5、字高 8，上提 2px 居中
+
+        // 左：累计总经验
+        text(g, x0 + 2, y, String.valueOf(player.totalExperience), TEXT_WHITE, 1.0F);
+
+        // 右：本等级已获得 / 升到下一级所需，右对齐
         int need = Math.max(1, player.getXpNeededForNextLevel());
         int cur = Math.round(player.experienceProgress * need);
-        // 画在经验条本身上：条的左端往里 2px，竖直居中（条高 5，字高 8）
-        int x = g.guiWidth() / 2 - 91 + 2;
-        int y = g.guiHeight() - 32 - 2;
-        text(g, x, y, cur + "/" + need, TEXT_WHITE, 1.0F);
+        String right = cur + "/" + need;
+        text(g, x1 - 2 - font.width(right), y, right, TEXT_WHITE, 1.0F);
     }
 
     /** 兜底那部分（创造模式不在这里，`skipAll` 已经挡掉了）。 */
