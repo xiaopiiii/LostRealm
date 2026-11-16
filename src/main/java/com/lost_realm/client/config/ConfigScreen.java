@@ -181,7 +181,6 @@ public class ConfigScreen extends Screen {
         this.current = ConfigCatalog.ofCategory(id, subId);
         computeUnitColumn();
         rebuildRows();
-        rebuildSubTabs();
     }
 
     /** 切到同一分类下的另一个子页。 */
@@ -194,7 +193,6 @@ public class ConfigScreen extends Screen {
         this.current = ConfigCatalog.ofCategory(categoryId, sub);
         computeUnitColumn();
         rebuildRows();
-        rebuildSubTabs();
     }
 
     /**
@@ -258,6 +256,7 @@ public class ConfigScreen extends Screen {
         if (isDifficultyPage()) {
             buildDifficultyRows();
             buildFooter();
+            rebuildSubTabs();
             return;
         }
 
@@ -276,6 +275,10 @@ public class ConfigScreen extends Screen {
             y += ROW_H;
         }
         buildFooter();
+        // 二级菜单按钮也必须在这里重建：滚动、点开关、切分类都会走 rebuildRows，
+        // 而它开头 clearWidgets() 会把子页按钮一起清掉 —— 之前只在切分类时补，
+        // 于是一滚动"生命/饥饿/护甲"那排就没了。
+        rebuildSubTabs();
     }
 
     /** 为单个选项创建控件组。 */

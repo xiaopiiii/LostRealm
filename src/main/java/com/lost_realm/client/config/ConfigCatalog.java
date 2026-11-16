@@ -48,6 +48,7 @@ public final class ConfigCatalog {
         SUB_OF.put("hud_hunger_mode", "vitals_hunger");
         SUB_OF.put("hud_armor_mode", "vitals_armor");
         SUB_OF.put("hud_armor_offset", "vitals_armor");
+        SUB_OF.put("hud_show_xp", "xp");
     }
 
     /** 某个选项属于哪个子页；没登记返回 {@code null}。 */
@@ -302,6 +303,7 @@ public final class ConfigCatalog {
                 MedalsConfig.HUD_ARMOR_MODE, 0, 3, 0, C));
         step("hud_armor_offset", ConfigCategory.EFFECT_HUD,
                 MedalsConfig.HUD_ARMOR_OFFSET, -20, 20, 0, C);
+        toggle("hud_show_xp", ConfigCategory.EFFECT_HUD, MedalsConfig.HUD_SHOW_XP, true, C);
 
         // ============================================================
         // 客户端 · 状态效果 HUD

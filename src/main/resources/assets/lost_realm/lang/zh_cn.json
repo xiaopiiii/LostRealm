@@ -1396,5 +1396,8 @@
   "config.lost_realm.opt.hud_armor_offset.desc": "负数往上、正数往下（像素）。不同最大生命下原版护甲图标高度不同，用这个对齐。",
   "config.lost_realm.opt.hud_armor_offset.unit": "px",
   "config.lost_realm.opt.hud_armor_mode.2": "进度条",
-  "config.lost_realm.opt.hud_armor_mode.3": "进度条+数值"
+  "config.lost_realm.opt.hud_armor_mode.3": "进度条+数值",
+  "config.lost_realm.sub.xp": "经验",
+  "config.lost_realm.opt.hud_show_xp": "经验值显示",
+  "config.lost_realm.opt.hud_show_xp.desc": "在经验条右边显示「总经验 / 下一级所需」，例如 5/7。"
 }

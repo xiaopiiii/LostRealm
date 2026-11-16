@@ -68,8 +68,21 @@ public final class VitalsHud {
     private static final int BG_BORDER = 0xB0000000;
     private static final int BG_TRACK = 0x70202020;
 
-    /** 条内数字：深色，不用白色。 */
-    private static final int TEXT_ON_BAR = 0xFF101010;
+    /**
+     * 条内数字的颜色。
+     *
+     * <p>黑字在"条没满"的时候贴在黑色底槽上，直接看不见；纯白又被否掉了。
+     * 所以用<b>本元素颜色的浅色调</b>：在底槽上亮得起来，在彩色填充上也分得开。
+     */
+    private static int onBarText(int color) {
+        int r = (color >> 16) & 0xFF;
+        int g = (color >> 8) & 0xFF;
+        int b = color & 0xFF;
+        r = Math.min(240, r + (255 - r) * 3 / 5);
+        g = Math.min(240, g + (255 - g) * 3 / 5);
+        b = Math.min(240, b + (255 - b) * 3 / 5);
+        return 0xFF000000 | (r << 16) | (g << 8) | b;
+    }
 
     /** 这一帧的原版覆盖层是不是已经被我们替换过了（见 {@link #onRenderPost}）。 */
     private static boolean preDrewThisFrame;
@@ -127,17 +140,45 @@ public final class VitalsHud {
     public static void onRenderPost(net.minecraftforge.client.event.RenderGuiEvent.Post event) {
         boolean preDrew = preDrewThisFrame;
         preDrewThisFrame = false;
-        if (preDrew) {
-            return;
-        }
-        diag("post-fallback", Minecraft.getInstance().player);
+
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
         if (player == null || mc.options.hideGui || skipAll(player)) {
             return;
         }
+        GuiGraphics g = event.getGuiGraphics();
+        // 原版覆盖层没被替换过（创造模式 / 某些版本不触发 Pre）时补画
+        if (!preDrew) {
+            diag("post-fallback", player);
+            drawFallback(g, player);
+        }
+        // 经验数字跟上面三条互不影响，每帧都画
         try {
-            GuiGraphics g = event.getGuiGraphics();
+            drawXp(g, player);
+        } catch (Throwable t) {
+            Medals.LOGGER.debug("[Lost Realm] 经验数字绘制失败", t);
+        }
+    }
+
+    /**
+     * 经验数字：{@code 总经验 / 下一级所需}，比如 {@code 5/7}。
+     *
+     * <p>画在经验条<b>右边</b>：那一条横带上除了经验条本身没有别的东西，
+     * 不会和等级数字、快捷栏、上面的血条抢位置。
+     */
+    private static void drawXp(GuiGraphics g, Player player) {
+        if (!MedalsConfig.HUD_SHOW_XP.get()) {
+            return;
+        }
+        int x = g.guiWidth() / 2 + 91 + 4;
+        int y = g.guiHeight() - 32;
+        String s = player.totalExperience + "/" + player.getXpNeededForNextLevel();
+        text(g, x, y, s, 0xFF80FF20, 1.0F);
+    }
+
+    /** 兜底那部分（创造模式不在这里，`skipAll` 已经挡掉了）。 */
+    private static void drawFallback(GuiGraphics g, Player player) {
+        try {
             int health = MedalsConfig.HUD_HEALTH_MODE.get();
             if (health != 0) {
                 drawHealth(g, player, health);
@@ -292,7 +333,7 @@ public final class VitalsHud {
             int wExtra = suffix == null ? 0 : Math.round(font.width(suffix) * k) + 2;
             int tx = x + (BAR_W - wLabel - wExtra) / 2;
             int ty = y + BAR_DY + (BAR_H - Math.round(8 * k)) / 2;
-            text(g, tx, ty, label, TEXT_ON_BAR, k);
+            text(g, tx, ty, label, onBarText(color), k);
             if (suffix != null) {
                 text(g, tx + wLabel + 2, ty, suffix, COLOR_EXTRA, k);
             }
@@ -324,11 +365,10 @@ public final class VitalsHud {
     /**
      * 观察者 / 骑乘：整块交给原版。
      *
-     * <p>这里<b>不再排除创造模式</b> —— 创造下原版压根不画生存 HUD（心/鸡腿/盔甲），
-     * 但玩家既然把显示方式设成了数值/进度条，就该看得见。创造模式那几条数据
-     * 也确实是满的，画出来不算说谎。
+     * <p>创造模式也整块让位：那三条数据在创造下没有意义（原版也不画），
+     * 全满的血条/护甲条只会挡视线。
      */
     private static boolean skipAll(Player player) {
-        return player.isSpectator() || player.isPassenger();
+        return player.isCreative() || player.isSpectator() || player.isPassenger();
     }
 }

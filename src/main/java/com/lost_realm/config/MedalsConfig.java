@@ -293,6 +293,7 @@ public final class MedalsConfig {
     public static IntValue HUD_HUNGER_MODE;
     public static IntValue HUD_ARMOR_MODE;
     public static IntValue HUD_ARMOR_OFFSET;
+    public static BooleanValue HUD_SHOW_XP;
     public static BooleanValue EFFECT_HUD_ENABLED;
     public static IntValue EFFECT_HUD_SCALE;
     public static IntValue EFFECT_HUD_CORNER;
@@ -795,6 +796,7 @@ public final class MedalsConfig {
         HUD_HUNGER_MODE = cl.HUD_HUNGER_MODE;
         HUD_ARMOR_MODE = cl.HUD_ARMOR_MODE;
         HUD_ARMOR_OFFSET = cl.HUD_ARMOR_OFFSET;
+        HUD_SHOW_XP = cl.HUD_SHOW_XP;
         EFFECT_HUD_ENABLED = cl.EFFECT_HUD_ENABLED;
         EFFECT_HUD_SCALE = cl.EFFECT_HUD_SCALE;
         EFFECT_HUD_CORNER = cl.EFFECT_HUD_CORNER;
@@ -2096,6 +2098,7 @@ public final class MedalsConfig {
         public IntValue HUD_HUNGER_MODE;
         public IntValue HUD_ARMOR_MODE;
         public IntValue HUD_ARMOR_OFFSET;
+        public BooleanValue HUD_SHOW_XP;
 
         // ---- 更好的状态效果 HUD ----
         public BooleanValue EFFECT_HUD_ENABLED;
@@ -2131,6 +2134,9 @@ public final class MedalsConfig {
                 "护甲数值的垂直微调(像素,正数往下)。原版护甲图标的位置受最大生命影响",
                 "(最大生命超过 20 时图标会往上叠),文字位置没法一概而论,这里留个手动档。")
                 .defineInRange("armor_offset", 0, -20, 20);
+        HUD_SHOW_XP = b.comment(
+                "在经验条右边显示「总经验 / 下一级所需」，例如 5/7。")
+                .define("show_xp", true);
         b.pop();
 
         b.comment(
