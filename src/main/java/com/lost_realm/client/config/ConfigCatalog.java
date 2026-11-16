@@ -232,6 +232,19 @@ public final class ConfigCatalog {
                 MedalsConfig.QOL_DEATH_DROP_CENTERED, true, S);
 
         // ============================================================
+        // 客户端 · 生命 / 饥饿 / 护甲 HUD
+        // ============================================================
+
+        // 生命与饥饿：0 原版 / 1 数值 / 2 进度条 / 3 进度条+数值
+        add(switchOpt("hud_health_mode", ConfigCategory.VITALS,
+                MedalsConfig.HUD_HEALTH_MODE, 0, 3, 0, C));
+        add(switchOpt("hud_hunger_mode", ConfigCategory.VITALS,
+                MedalsConfig.HUD_HUNGER_MODE, 0, 3, 0, C));
+        // 护甲：上限随装备变化，画进度条没有意义，只给 原版 / 数值
+        add(switchOpt("hud_armor_mode", ConfigCategory.VITALS,
+                MedalsConfig.HUD_ARMOR_MODE, 0, 1, 0, C));
+
+        // ============================================================
         // 客户端 · 状态效果 HUD
         // ============================================================
 

@@ -49,6 +49,10 @@ public final class ConfigCategory {
             reg("qol", "config.lost_realm.cat.qol");
 
     // ---- 客户端显示 ----
+    /** 生命 / 饥饿 / 护甲这三条 HUD 的画法。 */
+    public static final ConfigCategory VITALS =
+            reg("vitals", "config.lost_realm.cat.vitals");
+
     public static final ConfigCategory EFFECT_HUD =
             reg("effect_hud", "config.lost_realm.cat.effect_hud");
 

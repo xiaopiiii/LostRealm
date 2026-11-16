@@ -289,6 +289,9 @@ public final class MedalsConfig {
     // (见 ItemMedal#appendHoverText),操作上更直观、也不占屏幕。
 
     // ---- 更好的状态效果 HUD ----
+    public static IntValue HUD_HEALTH_MODE;
+    public static IntValue HUD_HUNGER_MODE;
+    public static IntValue HUD_ARMOR_MODE;
     public static BooleanValue EFFECT_HUD_ENABLED;
     public static IntValue EFFECT_HUD_SCALE;
     public static IntValue EFFECT_HUD_CORNER;
@@ -787,6 +790,9 @@ public final class MedalsConfig {
         SWORD_ANIM_TICKS = c.SWORD_ANIM_TICKS;
         SWORD_BREAK_BLOCKS = c.SWORD_BREAK_BLOCKS;
         SWORD_HIT_PLAYERS = c.SWORD_HIT_PLAYERS;
+        HUD_HEALTH_MODE = cl.HUD_HEALTH_MODE;
+        HUD_HUNGER_MODE = cl.HUD_HUNGER_MODE;
+        HUD_ARMOR_MODE = cl.HUD_ARMOR_MODE;
         EFFECT_HUD_ENABLED = cl.EFFECT_HUD_ENABLED;
         EFFECT_HUD_SCALE = cl.EFFECT_HUD_SCALE;
         EFFECT_HUD_CORNER = cl.EFFECT_HUD_CORNER;
@@ -2083,6 +2089,11 @@ public final class MedalsConfig {
     public static class Client {
         // 熟练度 HUD 相关配置已移除(见类顶注释)。
 
+        // ---- 生命 / 饥饿 / 护甲 HUD ----
+        public IntValue HUD_HEALTH_MODE;
+        public IntValue HUD_HUNGER_MODE;
+        public IntValue HUD_ARMOR_MODE;
+
         // ---- 更好的状态效果 HUD ----
         public BooleanValue EFFECT_HUD_ENABLED;
         public IntValue EFFECT_HUD_SCALE;
@@ -2097,6 +2108,22 @@ public final class MedalsConfig {
         // ============================================================
         // 更好的状态效果 HUD
         // ============================================================
+        // ============================================================
+        // 生命 / 饥饿 / 护甲 HUD
+        // ============================================================
+        b.comment(
+                "生命 / 饥饿 / 护甲 HUD —— 把屏幕下方那三条改成别的画法。",
+                "生命与饥饿：0 = 原版图标,1 = 数值,2 = 进度条,3 = 进度条 + 数值;",
+                "护甲只有 0 = 原版,1 = 数值 —— 护甲上限不是固定 20,画成进度条没有意义。")
+                .push("vitals_hud");
+        HUD_HEALTH_MODE = b.comment("生命值显示方式。0 = 原版,1 = 数值,2 = 进度条,3 = 进度条 + 数值。")
+                .defineInRange("health_mode", 0, 0, 3);
+        HUD_HUNGER_MODE = b.comment("饥饿值显示方式。0 = 原版,1 = 数值,2 = 进度条,3 = 进度条 + 数值。")
+                .defineInRange("hunger_mode", 0, 0, 3);
+        HUD_ARMOR_MODE = b.comment("护甲值显示方式。0 = 原版,1 = 数值(护甲没有进度条)。")
+                .defineInRange("armor_mode", 0, 0, 1);
+        b.pop();
+
         b.comment(
                 "更好的状态效果 HUD —— 接管原版右上角的状态效果图标,支持缩放、",
                 "自定义位置、排列方向与倒计时显示方式。",

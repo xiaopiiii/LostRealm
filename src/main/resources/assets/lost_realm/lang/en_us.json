@@ -1371,5 +1371,22 @@
   "config.emi.lostrealm_fold_edit": "Fold editing",
   "config.emi.tooltip.lostrealm_fold_edit": "Only affects editing. When off, selection/folding/dissolving and the bottom buttons stop; existing groups stay folded and can still be expanded.",
   "config.emi.lostrealm_recipe_pages": "Show recipe category pages",
-  "config.emi.tooltip.lostrealm_recipe_pages": "When recipe category tabs do not fit, show \"page/total\" at the left end of the tab bar. Scroll over the tab bar to change pages."
+  "config.emi.tooltip.lostrealm_recipe_pages": "When recipe category tabs do not fit, show \"page/total\" at the left end of the tab bar. Scroll over the tab bar to change pages.",
+  "config.lost_realm.cat.vitals": "Health/Hunger/Armor",
+  "config.lost_realm.opt.hud_health_mode": "Health display",
+  "config.lost_realm.opt.hud_health_mode.desc": "How the health bar is drawn.",
+  "config.lost_realm.opt.hud_health_mode.0": "Vanilla",
+  "config.lost_realm.opt.hud_health_mode.1": "Number",
+  "config.lost_realm.opt.hud_health_mode.2": "Bar",
+  "config.lost_realm.opt.hud_health_mode.3": "Bar+Number",
+  "config.lost_realm.opt.hud_hunger_mode": "Hunger display",
+  "config.lost_realm.opt.hud_hunger_mode.desc": "How the hunger bar is drawn.",
+  "config.lost_realm.opt.hud_hunger_mode.0": "Vanilla",
+  "config.lost_realm.opt.hud_hunger_mode.1": "Number",
+  "config.lost_realm.opt.hud_hunger_mode.2": "Bar",
+  "config.lost_realm.opt.hud_hunger_mode.3": "Bar+Number",
+  "config.lost_realm.opt.hud_armor_mode": "Armor display",
+  "config.lost_realm.opt.hud_armor_mode.desc": "Armor has no fixed maximum, so only vanilla or number.",
+  "config.lost_realm.opt.hud_armor_mode.0": "Vanilla",
+  "config.lost_realm.opt.hud_armor_mode.1": "Number"
 }
