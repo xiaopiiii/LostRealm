@@ -71,6 +71,9 @@ public final class VitalsHud {
     /** 条内数字：深色，不用白色。 */
     private static final int TEXT_ON_BAR = 0xFF101010;
 
+    /** 这一帧的原版覆盖层是不是已经被我们替换过了（见 {@link #onRenderPost}）。 */
+    private static boolean preDrewThisFrame;
+
     private VitalsHud() {}
 
     @SubscribeEvent
@@ -83,31 +86,70 @@ public final class VitalsHud {
         ResourceLocation id = event.getOverlay().id();
         GuiGraphics g = event.getGuiGraphics();
         try {
+            boolean drawn = false;
             if (id.equals(VanillaGuiOverlay.PLAYER_HEALTH.id())) {
                 int mode = MedalsConfig.HUD_HEALTH_MODE.get();
-                if (mode == 0) {
-                    return;
+                if (mode != 0) {
+                    drawHealth(g, player, mode);
+                    drawn = true;
                 }
-                drawHealth(g, player, mode);
-                event.setCanceled(true);
             } else if (id.equals(VanillaGuiOverlay.FOOD_LEVEL.id())) {
                 int mode = MedalsConfig.HUD_HUNGER_MODE.get();
-                if (mode == 0) {
-                    return;
+                if (mode != 0) {
+                    drawHunger(g, player, mode);
+                    drawn = true;
                 }
-                drawHunger(g, player, mode);
-                event.setCanceled(true);
             } else if (id.equals(VanillaGuiOverlay.ARMOR_LEVEL.id())) {
                 int mode = MedalsConfig.HUD_ARMOR_MODE.get();
-                if (mode == 0) {
-                    return;
+                if (mode != 0) {
+                    drawn = drawArmor(g, player, mode);
                 }
-                drawArmor(g, player, mode);
+            }
+            if (drawn) {
+                preDrewThisFrame = true;
                 event.setCanceled(true);
             }
         } catch (Throwable t) {
             // 画不出来就不取消 —— 让原版接着画，绝不能出现"两条都没了"
             Medals.LOGGER.debug("[Lost Realm] 自定义 HUD 绘制失败，本次交回原版", t);
+        }
+    }
+
+    /**
+     * 兜底渲染。
+     *
+     * <p>创造模式下原版<b>根本不渲染</b>生存 HUD —— 那几个覆盖层不进渲染流程，
+     * 也就不会有 {@link RenderGuiOverlayEvent.Pre}，光靠上面那条路会一片空白。
+     * 所以这里再挂一个总 HUD 的 Post：只有当这一帧 Pre 一条都没画过时才补画。
+     */
+    @SubscribeEvent
+    public static void onRenderPost(net.minecraftforge.client.event.RenderGuiEvent.Post event) {
+        boolean preDrew = preDrewThisFrame;
+        preDrewThisFrame = false;
+        if (preDrew) {
+            return;
+        }
+        Minecraft mc = Minecraft.getInstance();
+        Player player = mc.player;
+        if (player == null || mc.options.hideGui || skipAll(player)) {
+            return;
+        }
+        try {
+            GuiGraphics g = event.getGuiGraphics();
+            int health = MedalsConfig.HUD_HEALTH_MODE.get();
+            if (health != 0) {
+                drawHealth(g, player, health);
+            }
+            int hunger = MedalsConfig.HUD_HUNGER_MODE.get();
+            if (hunger != 0) {
+                drawHunger(g, player, hunger);
+            }
+            int armor = MedalsConfig.HUD_ARMOR_MODE.get();
+            if (armor != 0) {
+                drawArmor(g, player, armor);
+            }
+        } catch (Throwable t) {
+            Medals.LOGGER.debug("[Lost Realm] 自定义 HUD 兜底渲染失败", t);
         }
     }
 
@@ -142,12 +184,15 @@ public final class VitalsHud {
                 Mth.clamp(sat / 20.0F, 0.0F, 1.0F));
     }
 
-    private static void drawArmor(GuiGraphics g, Player player, int mode) {
+    private static boolean drawArmor(GuiGraphics g, Player player, int mode) {
         int left = g.guiWidth() / 2 - 91;
         int rowY = g.guiHeight() - 39;
         int armor = player.getArmorValue();
         if (armor <= 0) {
-            return;                      // 没穿甲就是空的，和原版一致
+            // 没穿甲就交回原版（原版这时也是空的）。
+            // 注意：这里必须 return false —— 之前不管画没画都取消原版，
+            // 万一点数读到 0，就变成"取消了原版、自己又没画"，护甲彻底消失。
+            return false;
         }
 
         // 护甲 y：生命行顶端 -12（给 8px 字和阴影留缝）；
@@ -162,11 +207,30 @@ public final class VitalsHud {
         int color = over ? COLOR_ARMOR_OVER : COLOR_ARMOR;
         float ratio = Math.min(armor, 20) / 20.0F;
 
+        logArmorOnce(mode, armor, armorY);
+
         if (mode == 1) {
             text(g, left, armorY, String.valueOf(armor), color, 1.0F);
-            return;
+            return true;
         }
         vitalsRow(g, mode, left, armorY, ratio, String.valueOf(armor), color, null, null, 0.0F);
+        return true;
+    }
+
+    private static long lastArmorLog;
+    private static String lastArmorState;
+
+    /** 护甲这条一旦出问题最难查（画没画、画在哪全靠猜），留一行诊断日志。 */
+    private static void logArmorOnce(int mode, int armor, int armorY) {
+        String state = mode + "/" + armor + "/" + armorY;
+        long now = System.currentTimeMillis();
+        if (state.equals(lastArmorState) && now - lastArmorLog < 10_000L) {
+            return;
+        }
+        lastArmorState = state;
+        lastArmorLog = now;
+        Medals.LOGGER.info("[Lost Realm] HUD 护甲：mode={} 护甲点数={} 绘制y={} 最大生命={}",
+                mode, armor, armorY, Mth.ceil(Minecraft.getInstance().player.getMaxHealth()));
     }
 
     // ================================================================
@@ -242,8 +306,14 @@ public final class VitalsHud {
         g.pose().popPose();
     }
 
-    /** 创造 / 观察者 / 骑乘：原版怎么画就怎么画，我们不插手。 */
+    /**
+     * 观察者 / 骑乘：整块交给原版。
+     *
+     * <p>这里<b>不再排除创造模式</b> —— 创造下原版压根不画生存 HUD（心/鸡腿/盔甲），
+     * 但玩家既然把显示方式设成了数值/进度条，就该看得见。创造模式那几条数据
+     * 也确实是满的，画出来不算说谎。
+     */
     private static boolean skipAll(Player player) {
-        return player.isCreative() || player.isSpectator() || player.isPassenger();
+        return player.isSpectator() || player.isPassenger();
     }
 }
