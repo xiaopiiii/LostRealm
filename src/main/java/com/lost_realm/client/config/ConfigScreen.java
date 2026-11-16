@@ -107,6 +107,15 @@ public class ConfigScreen extends Screen {
     /** 当前分类的选项列表(缓存,切换分类时重建)。 */
     private List<ConfigOption> current = List.of();
 
+    /** 当前分类的子页 id(二级菜单);空表示这一页没有二级菜单。 */
+    private List<String> subs = List.of();
+
+    /** 当前选中的子页 id。 */
+    private String subId = "";
+
+    /** 二级菜单按钮,按顺序排列(用于给选中项描边)。 */
+    private final List<Button> subButtons = new ArrayList<>();
+
     /** 每行对应的控件(用于点击命中测试)。 */
     private final List<RowWidget> rows = new ArrayList<>();
 
@@ -120,7 +129,10 @@ public class ConfigScreen extends Screen {
 
     private int contentW() { return width - SIDEBAR_W - PAD * 2; }
 
-    private int contentTop() { return 30; }
+    /** 二级菜单条占用高度(没有二级菜单时为 0)。 */
+    private int subBarH() { return subs.size() > 1 ? 22 : 0; }
+
+    private int contentTop() { return 30 + subBarH(); }
 
     private int contentBottom() { return height - FOOTER_H; }
 
@@ -164,9 +176,57 @@ public class ConfigScreen extends Screen {
     private void switchCategory(String id) {
         this.categoryId = id;
         this.scroll = 0;
-        this.current = ConfigCatalog.ofCategory(id);
+        this.subs = ConfigCatalog.subsOf(id);
+        this.subId = subs.isEmpty() ? "" : subs.get(0);
+        this.current = ConfigCatalog.ofCategory(id, subId);
         computeUnitColumn();
         rebuildRows();
+        rebuildSubTabs();
+    }
+
+    /** 切到同一分类下的另一个子页。 */
+    private void switchSub(String sub) {
+        if (sub.equals(subId)) {
+            return;
+        }
+        this.subId = sub;
+        this.scroll = 0;
+        this.current = ConfigCatalog.ofCategory(categoryId, sub);
+        computeUnitColumn();
+        rebuildRows();
+        rebuildSubTabs();
+    }
+
+    /**
+     * 重建二级菜单那一排按钮。
+     *
+     * <p>必须排在 {@link #rebuildRows()} <b>之后</b>：那边 {@code clearWidgets()}
+     * 会把这些按钮一起清掉。
+     */
+    private void rebuildSubTabs() {
+        subButtons.clear();
+        if (subs.size() <= 1) {
+            return;
+        }
+        int cx = contentX();
+        int cw = contentW();
+        int n = subs.size();
+        int gap = 4;
+        int bw = (cw - gap * (n - 1)) / n;
+        int y = 32;
+        for (int i = 0; i < n; i++) {
+            String sub = subs.get(i);
+            boolean sel = sub.equals(subId);
+            Button b = Button.builder(
+                            Component.translatable("config.lost_realm.sub." + sub),
+                            btn -> switchSub(sub))
+                    .bounds(cx + i * (bw + gap), y, bw, 16)
+                    .build();
+            // 选中的那个不给点，避免重复重建
+            b.active = !sel;
+            subButtons.add(b);
+            addRenderableWidget(b);
+        }
     }
 
     /** 量出本页最宽的单位,作为整页统一的单位列宽。 */
@@ -669,6 +729,7 @@ public class ConfigScreen extends Screen {
     }
 
     private void renderContent(GuiGraphics gfx, int mouseX, int mouseY) {
+        renderSubTabs(gfx);
         int cx = contentX();
         int cw = contentW();
         int y = contentTop() - scroll;
@@ -715,6 +776,20 @@ public class ConfigScreen extends Screen {
 
         // 滚动条
         renderScrollbar(gfx, y);
+    }
+
+    /** 给二级菜单里选中的那一页描个框。 */
+    private void renderSubTabs(GuiGraphics gfx) {
+        if (subButtons.isEmpty()) {
+            return;
+        }
+        for (int i = 0; i < subButtons.size(); i++) {
+            Button b = subButtons.get(i);
+            if (!b.active) {
+                gfx.renderOutline(b.getX() - 1, b.getY() - 1, b.getWidth() + 2,
+                        b.getHeight() + 2, 0xFFFFC040);
+            }
+        }
     }
 
     private void renderScrollbar(GuiGraphics gfx, int lastY) {

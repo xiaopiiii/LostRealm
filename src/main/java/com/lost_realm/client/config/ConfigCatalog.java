@@ -33,6 +33,62 @@ public final class ConfigCatalog {
     private static List<ConfigOption> OPTIONS;
     private static Map<String, List<ConfigOption>> BY_CATEGORY;
 
+    /**
+     * <b>二级菜单</b>：选项 id → 所属子页 id。
+     *
+     * <p>只有「HUD」这一类用得上：它下面的东西太多（生命/饥饿/护甲/状态效果），
+     * 全塞一页要滚很久。子页分组写在表里而不是塞进 {@link ConfigOption}，
+     * 是因为这是纯粹的界面归类，跟配置本身存哪儿没关系；
+     * 没登记的选项自然归到「未分组」，老选项一行都不用改。
+     */
+    private static final Map<String, String> SUB_OF = new java.util.LinkedHashMap<>();
+
+    static {
+        SUB_OF.put("hud_health_mode", "vitals_hp");
+        SUB_OF.put("hud_hunger_mode", "vitals_hunger");
+        SUB_OF.put("hud_armor_mode", "vitals_armor");
+    }
+
+    /** 某个选项属于哪个子页；没登记返回 {@code null}。 */
+    public static String subOf(String optionId) {
+        if (SUB_OF.isEmpty()) {
+            return null;
+        }
+        String s = SUB_OF.get(optionId);
+        if (s != null) {
+            return s;
+        }
+        // 其余状态效果 HUD 的选项统一归到 effect 子页
+        return optionId.startsWith("effect_hud_") ? "effect" : null;
+    }
+
+    /** 某分类下的子页 id 列表（按选项中出现的先后顺序，去重）。 */
+    public static List<String> subsOf(String categoryId) {
+        List<String> out = new ArrayList<>();
+        for (ConfigOption o : ofCategory(categoryId)) {
+            String sub = subOf(o.id());
+            if (sub != null && !out.contains(sub)) {
+                out.add(sub);
+            }
+        }
+        return out;
+    }
+
+    /** 取某分类下某子页的选项；{@code sub} 为空则返回该分类全部选项。 */
+    public static List<ConfigOption> ofCategory(String categoryId, String sub) {
+        List<ConfigOption> all = ofCategory(categoryId);
+        if (sub == null || sub.isEmpty()) {
+            return all;
+        }
+        List<ConfigOption> out = new ArrayList<>();
+        for (ConfigOption o : all) {
+            if (sub.equals(subOf(o.id()))) {
+                out.add(o);
+            }
+        }
+        return out;
+    }
+
     /** 客户端配置的 spec(用于 save)。 */
     private static ForgeConfigSpec clientSpec() {
         return MedalsConfig.CLIENT_SPEC;
@@ -236,12 +292,12 @@ public final class ConfigCatalog {
         // ============================================================
 
         // 生命与饥饿：0 原版 / 1 数值 / 2 进度条 / 3 进度条+数值
-        add(switchOpt("hud_health_mode", ConfigCategory.VITALS,
+        add(switchOpt("hud_health_mode", ConfigCategory.EFFECT_HUD,
                 MedalsConfig.HUD_HEALTH_MODE, 0, 3, 0, C));
-        add(switchOpt("hud_hunger_mode", ConfigCategory.VITALS,
+        add(switchOpt("hud_hunger_mode", ConfigCategory.EFFECT_HUD,
                 MedalsConfig.HUD_HUNGER_MODE, 0, 3, 0, C));
         // 护甲：上限随装备变化，画进度条没有意义，只给 原版 / 数值
-        add(switchOpt("hud_armor_mode", ConfigCategory.VITALS,
+        add(switchOpt("hud_armor_mode", ConfigCategory.EFFECT_HUD,
                 MedalsConfig.HUD_ARMOR_MODE, 0, 1, 0, C));
 
         // ============================================================

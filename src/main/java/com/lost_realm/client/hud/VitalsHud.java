@@ -117,14 +117,14 @@ public final class VitalsHud {
             int absorption = Mth.ceil(player.getAbsorptionAmount());
 
             // ---- 护甲：先画，且在生命行上方留出空档 ----
-            // 原版护甲图标顶端在 height-49（比生命行高 10px），
-            // 但我们的生命行是进度条：条子带 1px 外框，顶端到 height-38，
-            // 只留 2px 会贴在一起（看着就像被血条压住）。这里再抬高 6px。
+            // 原版护甲图标顶端在 height-49（比生命行高 10px）。
+            // 文字只有 8px 高、又带阴影，贴着 -49 会压到生命那行的字；
+            // 抬太高（试过 -16）又飘在半空。取 -12：比原版高 2px，正好留出一道缝。
             if (armorMode != 0) {
                 int armor = player.getArmorValue();
                 // 没穿甲就不画 —— 原版此时也是空的，凭空多个 0 很怪
                 if (armor > 0) {
-                    text(g, left, rowY - 16, String.valueOf(armor), COLOR_ARMOR, 1.0F);
+                    text(g, left, rowY - 12, String.valueOf(armor), COLOR_ARMOR, 1.0F);
                 }
             }
 
@@ -135,11 +135,17 @@ public final class VitalsHud {
                 healthRow(g, healthMode, left, rowY, cur, max, absorption);
             }
 
-            // ---- 饥饿 ----
+            // ---- 饥饿：顺带把饱和度也画出来 ----
+            // 原版从不显示饱和度，但它决定了"这一口吃下去能不能回血"，
+            // 所以条上用一层金色覆盖表示饱和度占了前多少格，数字后面跟 +饱和度。
             if (hungerMode != 0) {
                 int cur = player.getFoodData().getFoodLevel();
+                float sat = player.getFoodData().getSaturationLevel();
+                int satInt = Mth.ceil(sat);
                 vitalsRow(g, hungerMode, right - BAR_W, rowY, BAR_W,
-                        cur / 20.0F, cur + "/20", COLOR_HUNGER, null, null);
+                        cur / 20.0F, cur + "/20", COLOR_HUNGER,
+                        satInt > 0 ? "+" + satInt : null, null,
+                        Mth.clamp(sat / 20.0F, 0.0F, 1.0F));
             }
         } catch (Throwable ignored) {
             // HUD 画挂了不能影响游戏
@@ -161,17 +167,24 @@ public final class VitalsHud {
         float ratio = cur / (float) max;
         float absorbRatio = absorption / (float) max;
         vitalsRow(g, mode, x, y, BAR_W, ratio, cur + "/" + max, COLOR_HEALTH,
-                absorption > 0 ? "+" + absorption : null, absorbRatio);
+                absorption > 0 ? "+" + absorption : null, absorbRatio, 0.0F);
     }
 
     /** mode: 1 = 数值，2 = 进度条，3 = 进度条 + 数值。 */
     private static void vitalsRow(GuiGraphics g, int mode, int x, int y, int w,
                                   float ratio, String label, int color,
-                                  String extra, Float extraRatio) {
+                                  String extra, Float extraRatio, float overlayRatio) {
         var font = Minecraft.getInstance().font;
 
         if (mode == 2 || mode == 3) {
             bar(g, x, y + 2, w, BAR_H, ratio, color);
+            if (overlayRatio > 0.0F) {
+                // 饱和度：在已填充的部分上盖一层半透明金色
+                int ow = Math.round(w * Math.min(Mth.clamp(ratio, 0.0F, 1.0F), overlayRatio));
+                if (ow > 0) {
+                    g.fill(x, y + 2, x + ow, y + 2 + BAR_H, 0x66FFD24A);
+                }
+            }
             if (extraRatio != null && extraRatio > 0.0F) {
                 int base = Math.round(w * Mth.clamp(ratio, 0.0F, 1.0F));
                 int add = Math.min(w - base, Math.round(w * extraRatio));
