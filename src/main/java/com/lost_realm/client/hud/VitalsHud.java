@@ -46,7 +46,7 @@ import com.lost_realm.config.MedalsConfig;
 public final class VitalsHud {
 
     private static final int BAR_W = 80;
-    private static final int BAR_H = 5;
+    private static final int BAR_H = 7;
 
     /**
      * 条子相对生命行顶端的下移量。
@@ -55,13 +55,11 @@ public final class VitalsHud {
      * （看着就像"血条把护甲压住了"）。往下让 3px，中间留出干净的一条缝，
      * 同时不会碰到下面的经验条。
      */
-    private static final int BAR_DY = 3;
+    private static final int BAR_DY = 1;
 
     private static final int COLOR_HEALTH = 0xFFE03A3A;
     private static final int COLOR_HUNGER = 0xFFD98B3A;
     private static final int COLOR_ARMOR = 0xFF4E8FE0;
-    /** 护甲超过 20 点：整条换成这个颜色。 */
-    private static final int COLOR_ARMOR_OVER = 0xFFB05CE0;
     /** 伤害吸收 / 饱和度：原版黄。 */
     private static final int COLOR_EXTRA = 0xFFFFC83A;
 
@@ -172,7 +170,7 @@ public final class VitalsHud {
         final float k = 0.5F;                 // 半号字，正好塞进 5px 高的条里
         int x0 = g.guiWidth() / 2 - 91;
         int x1 = g.guiWidth() / 2 + 91;
-        int y = g.guiHeight() - 31;           // 竖直压在条的中间（条在 -32..-28）
+        int y = g.guiHeight() - 30;           // 竖直压在条的中间（条在 -32..-28）
 
         // 左：累计总经验
         text(g, x0 + 2, y, String.valueOf(player.totalExperience), TEXT_XP, k);
@@ -247,9 +245,8 @@ public final class VitalsHud {
         int vanillaStack = (MedalsConfig.HUD_HEALTH_MODE.get() == 0) ? (heartRows - 1) * 10 : 0;
         int armorY = rowY - 12 - vanillaStack + MedalsConfig.HUD_ARMOR_OFFSET.get();
 
-        // 一条只表示 20 点；超过 20 整条换色
-        boolean over = armor > 20;
-        int color = over ? COLOR_ARMOR_OVER : COLOR_ARMOR;
+        // 一条只表示 20 点，满了就是满了；超过 20 不再换色，护甲只有一个颜色
+        int color = COLOR_ARMOR;
         float ratio = Math.min(armor, 20) / 20.0F;
 
         logArmorOnce(mode, armor, armorY);
@@ -331,11 +328,13 @@ public final class VitalsHud {
         }
 
         if (mode == 2 || mode == 3) {
-            bar(g, key, bx, y + BAR_DY, bw, BAR_H, ratio, color);
+            bar(g, key, bx, y + BAR_DY, bw, BAR_H, ratio, color, iconRight);
             if (overlay > 0.0F) {
                 int ow = Math.round(bw * Math.min(Mth.clamp(ratio, 0.0F, 1.0F), overlay));
                 if (ow > 0) {
-                    g.fill(bx, y + BAR_DY, bx + ow, y + BAR_DY + BAR_H, 0x66FFD24A);
+                    // 镜像条（饥饿）的饱和度也从右边开始
+                    int ox = iconRight ? bx + bw - ow : bx;
+                    g.fill(ox, y + BAR_DY, ox + ow, y + BAR_DY + BAR_H, 0x66FFD24A);
                 }
             }
             if (extraRatio != null && extraRatio > 0.0F) {
@@ -373,7 +372,7 @@ public final class VitalsHud {
      * 图案是<b>被裁掉</b>而不是被压扁。
      */
     private static void bar(GuiGraphics g, String key, int x, int y, int w, int h,
-                            float ratio, int color) {
+                            float ratio, int color, boolean mirror) {
         float r = Mth.clamp(ratio, 0.0F, 1.0F);
 
         HudTextures.Img bg = HudTextures.get(key + "_bg");
@@ -388,13 +387,15 @@ public final class VitalsHud {
         if (filled <= 0) {
             return;
         }
+        int fx = mirror ? x + w - filled : x;
         HudTextures.Img fill = HudTextures.get(key + "_fill");
         if (fill != null) {
-            g.blit(fill.id(), x, y, filled, h,
-                    0, 0, Math.max(1, Math.round(fill.w() * r)), fill.h(),
-                    fill.w(), fill.h());
+            // 镜像条取源图右侧那一段，图案跟着从右往左退
+            int sw = Math.max(1, Math.round(fill.w() * r));
+            int u = mirror ? fill.w() - sw : 0;
+            g.blit(fill.id(), fx, y, filled, h, u, 0, sw, fill.h(), fill.w(), fill.h());
         } else {
-            g.fill(x, y, x + filled, y + h, color);
+            g.fill(fx, y, fx + filled, y + h, color);
         }
     }
 
