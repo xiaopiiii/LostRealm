@@ -219,7 +219,7 @@ public final class VitalsHud {
         Float extra = absorb > 0 ? (float) absorb : null;   // 吸收段占整条的比例
         String label = cur + "/" + max;
         String suffix = absorb > 0 ? "+" + absorb : null;
-        vitalsRow(g, mode, "health", left, rowY, BAR_W, ratio, label, COLOR_HEALTH, suffix, extra, 0.0F, false);
+        vitalsRow(g, mode, "health", left, rowY, BAR_W, ratio, label, COLOR_HEALTH, suffix, extra, 0.0F, false, 1);
     }
 
     private static void drawHunger(GuiGraphics g, Player player, int mode) {
@@ -232,7 +232,7 @@ public final class VitalsHud {
         // 饱和度：条上盖一层半透明黄（宽度按 饱和度/20），数值后面跟 +饱和度
         vitalsRow(g, mode, "hunger", right - BAR_W, rowY, BAR_W, cur / 20.0F, cur + "/20", COLOR_HUNGER,
                 satInt > 0 ? "+" + satInt : null, null,
-                Mth.clamp(sat / 20.0F, 0.0F, 1.0F), true);
+                Mth.clamp(sat / 20.0F, 0.0F, 1.0F), true, 1);
     }
 
     /**
@@ -264,10 +264,12 @@ public final class VitalsHud {
         final int partW = 40;
         vitalsRow(g, mode, "armor", left, armorY, partW,
                 Math.min(armor, 20) / 20.0F, String.valueOf(armor), COLOR_ARMOR,
-                null, null, 0.0F, false);
-        vitalsRow(g, mode, "armor_toughness", left + partW - 1, armorY, partW,
+                null, null, 0.0F, false, 1);
+        // 韧性：图标位置不动，条整体往左顶 1px（间隔 0），
+        // 同时槽位还是 40px —— 于是条会宽 1px，右端仍然和下面的血条对齐。
+        vitalsRow(g, mode, "armor_toughness", left + partW, armorY, partW,
                 Math.min(toughness, 20) / 20.0F, String.valueOf(toughness), COLOR_TOUGHNESS,
-                null, null, 0.0F, false);
+                null, null, 0.0F, false, 0);
         return true;
     }
 
@@ -327,12 +329,12 @@ public final class VitalsHud {
      */
     private static void vitalsRow(GuiGraphics g, int mode, String key, int x, int y, int width,
                                   float ratio, String label, int color, String suffix,
-                                  Float extraRatio, float overlay, boolean iconRight) {
+                                  Float extraRatio, float overlay, boolean iconRight, int iconGap) {
         var font = Minecraft.getInstance().font;
 
         HudTextures.Img icon = HudTextures.get(key + "_icon");
         final int iconSize = 9;
-        int reserve = icon == null ? 0 : iconSize + 1;
+        int reserve = icon == null ? 0 : iconSize + iconGap;
         int bx = iconRight ? x : x + reserve;
         int bw = width - reserve;
 
