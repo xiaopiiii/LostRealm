@@ -219,7 +219,7 @@ public final class VitalsHud {
         Float extra = absorb > 0 ? (float) absorb : null;   // 吸收段占整条的比例
         String label = cur + "/" + max;
         String suffix = absorb > 0 ? "+" + absorb : null;
-        vitalsRow(g, mode, "health", left, rowY, ratio, label, COLOR_HEALTH, suffix, extra, 0.0F);
+        vitalsRow(g, mode, "health", left, rowY, ratio, label, COLOR_HEALTH, suffix, extra, 0.0F, false);
     }
 
     private static void drawHunger(GuiGraphics g, Player player, int mode) {
@@ -232,7 +232,7 @@ public final class VitalsHud {
         // 饱和度：条上盖一层半透明黄（宽度按 饱和度/20），数值后面跟 +饱和度
         vitalsRow(g, mode, "hunger", right - BAR_W, rowY, cur / 20.0F, cur + "/20", COLOR_HUNGER,
                 satInt > 0 ? "+" + satInt : null, null,
-                Mth.clamp(sat / 20.0F, 0.0F, 1.0F));
+                Mth.clamp(sat / 20.0F, 0.0F, 1.0F), true);
     }
 
     private static boolean drawArmor(GuiGraphics g, Player player, int mode) {
@@ -254,11 +254,7 @@ public final class VitalsHud {
 
         logArmorOnce(mode, armor, armorY);
 
-        if (mode == 1) {
-            numberRow(g, "armor", left, armorY, String.valueOf(armor), null, 1.0F);
-            return true;
-        }
-        vitalsRow(g, mode, "armor", left, armorY, ratio, String.valueOf(armor), color, null, null, 0.0F);
+        vitalsRow(g, mode, "armor", left, armorY, ratio, String.valueOf(armor), color, null, null, 0.0F, false);
         return true;
     }
 
@@ -307,57 +303,65 @@ public final class VitalsHud {
      * @param extraRatio 条尾再接一段的比例（伤害吸收），{@code null} 表示没有
      * @param overlay    盖在已填充部分上的比例（饱和度），0 表示不画
      */
+    /**
+     * 一条（或一条 + 数字），<b>先给图标让出位置</b>。
+     *
+     * <p>三条前面/后面都留一个 9px 的图标位，没有图标贴图时不留空 ——
+     * 否则会平白少一截。
+     * 生命、护甲图标在左，饥饿在右（跟原版"心在左、鸡腿在右"的习惯一致）。
+     *
+     * @param iconRight 图标是否放在右端（饥饿用 true）
+     */
     private static void vitalsRow(GuiGraphics g, int mode, String key, int x, int y, float ratio,
                                   String label, int color, String suffix,
-                                  Float extraRatio, float overlay) {
+                                  Float extraRatio, float overlay, boolean iconRight) {
         var font = Minecraft.getInstance().font;
 
+        HudTextures.Img icon = HudTextures.get(key + "_icon");
+        final int iconSize = 9;
+        int reserve = icon == null ? 0 : iconSize + 1;
+        int bx = iconRight ? x : x + reserve;
+        int bw = BAR_W - reserve;
+
+        if (icon != null) {
+            int ix = iconRight ? x + BAR_W - iconSize : x;
+            int iy = y + BAR_DY - 2;
+            g.blit(icon.id(), ix, iy, iconSize, iconSize, 0, 0,
+                    icon.w(), icon.h(), icon.w(), icon.h());
+        }
+
         if (mode == 2 || mode == 3) {
-            bar(g, key, x, y + BAR_DY, BAR_W, BAR_H, ratio, color);
+            bar(g, key, bx, y + BAR_DY, bw, BAR_H, ratio, color);
             if (overlay > 0.0F) {
-                int ow = Math.round(BAR_W * Math.min(Mth.clamp(ratio, 0.0F, 1.0F), overlay));
+                int ow = Math.round(bw * Math.min(Mth.clamp(ratio, 0.0F, 1.0F), overlay));
                 if (ow > 0) {
-                    g.fill(x, y + BAR_DY, x + ow, y + BAR_DY + BAR_H, 0x66FFD24A);
+                    g.fill(bx, y + BAR_DY, bx + ow, y + BAR_DY + BAR_H, 0x66FFD24A);
                 }
             }
             if (extraRatio != null && extraRatio > 0.0F) {
-                int base = Math.round(BAR_W * Mth.clamp(ratio, 0.0F, 1.0F));
-                int add = Math.min(BAR_W - base, Math.round(BAR_W * extraRatio));
+                int base = Math.round(bw * Mth.clamp(ratio, 0.0F, 1.0F));
+                int add = Math.min(bw - base, Math.round(bw * extraRatio));
                 if (add > 0) {
-                    g.fill(x + base, y + BAR_DY, x + base + add, y + BAR_DY + BAR_H, COLOR_EXTRA);
+                    g.fill(bx + base, y + BAR_DY, bx + base + add, y + BAR_DY + BAR_H, COLOR_EXTRA);
                 }
             }
         }
 
         if (mode == 1) {
-            numberRow(g, key, x, y, label, suffix, 1.0F);
+            text(g, bx, y, label, TEXT_WHITE, 1.0F);
+            if (suffix != null) {
+                text(g, bx + font.width(label) + 3, y, suffix, TEXT_WHITE, 1.0F);
+            }
         } else if (mode == 3) {
             float k = 0.5F;
             int wLabel = Math.round(font.width(label) * k);
             int wExtra = suffix == null ? 0 : Math.round(font.width(suffix) * k) + 2;
-            int tx = x + (BAR_W - wLabel - wExtra) / 2;
+            int tx = bx + (bw - wLabel - wExtra) / 2;
             int ty = y + BAR_DY + (BAR_H - Math.round(8 * k)) / 2;
             text(g, tx, ty, label, TEXT_WHITE, k);
             if (suffix != null) {
                 text(g, tx + wLabel + 2, ty, suffix, TEXT_WHITE, k);
             }
-        }
-    }
-
-    /** 数值模式：左边如果有 {@code <key>_icon.png} 就先画图标。 */
-    private static void numberRow(GuiGraphics g, String key, int x, int y,
-                                  String label, String suffix, float scale) {
-        var font = Minecraft.getInstance().font;
-        int dx = x;
-        HudTextures.Img icon = HudTextures.get(key + "_icon");
-        if (icon != null) {
-            int size = 9;
-            g.blit(icon.id(), dx, y - 1, size, size, 0, 0, icon.w(), icon.h(), icon.w(), icon.h());
-            dx += size + 1;
-        }
-        text(g, dx, y, label, TEXT_WHITE, scale);
-        if (suffix != null) {
-            text(g, dx + Math.round(font.width(label) * scale) + 3, y, suffix, TEXT_WHITE, scale);
         }
     }
 
