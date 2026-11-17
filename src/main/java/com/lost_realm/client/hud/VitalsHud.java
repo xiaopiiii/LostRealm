@@ -261,11 +261,11 @@ public final class VitalsHud {
 
         logArmorOnce(mode, armor, armorY);
 
-        final int partW = 35;
+        final int partW = 40;
         vitalsRow(g, mode, "armor", left, armorY, partW,
                 Math.min(armor, 20) / 20.0F, String.valueOf(armor), COLOR_ARMOR,
                 null, null, 0.0F, false);
-        vitalsRow(g, mode, "armor_toughness", left + 40, armorY, partW,
+        vitalsRow(g, mode, "armor_toughness", left + partW, armorY, partW,
                 Math.min(toughness, 20) / 20.0F, String.valueOf(toughness), COLOR_TOUGHNESS,
                 null, null, 0.0F, false);
         return true;
@@ -394,8 +394,12 @@ public final class VitalsHud {
         float r = Mth.clamp(ratio, 0.0F, 1.0F);
 
         HudTextures.Img bg = HudTextures.get(key + "_bg");
+        HudTextures.Img fill = HudTextures.get(key + "_fill");
+
         if (bg != null) {
-            g.blit(bg.id(), x, y, w, h, 0, 0, bg.w(), bg.h(), bg.w(), bg.h());
+            // 底图横向九宫：左右各留 1px 边框不动，只拉伸中间。
+            // 之前是把整张 160 宽的图直接压到 25~30px，边框被压成亚像素，看着就"糊成一团"。
+            bgSlice(g, bg, x, y, w, h, 1);
         } else {
             g.fill(x - 1, y - 1, x + w + 1, y + h + 1, BG_BORDER);
             g.fill(x, y, x + w, y + h, BG_TRACK);
@@ -405,15 +409,62 @@ public final class VitalsHud {
         if (filled <= 0) {
             return;
         }
-        int fx = mirror ? x + w - filled : x;
-        HudTextures.Img fill = HudTextures.get(key + "_fill");
         if (fill != null) {
-            // 镜像条取源图右侧那一段，图案跟着从右往左退
-            int sw = Math.max(1, Math.round(fill.w() * r));
-            int u = mirror ? fill.w() - sw : 0;
-            g.blit(fill.id(), fx, y, filled, h, u, 0, sw, fill.h(), fill.w(), fill.h());
+            // 往里缩 1px：底图的边框要露出来，不然填充一盖上去边框就没了
+            fillSlice(g, fill, x + 1, y + 1, w - 2, h - 2, r, mirror);
         } else {
+            int fx = mirror ? x + w - filled : x;
             g.fill(fx, y, fx + filled, y + h, color);
+        }
+    }
+
+    /**
+     * 底图横向切片：{@code b} 像素边框按原样（只做纵向 2:1 缩放），中间拉伸。
+     *
+     * <p>边框宽度是自己定的，不跟着条子长度走 —— 所以不管条子只剩 25px
+     * 还是满 80px，边框看起来都一样粗，不会"变形"。
+     */
+    private static void bgSlice(GuiGraphics g, HudTextures.Img img, int x, int y, int w, int h, int b) {
+        int texW = img.w();
+        int texH = img.h();
+        int sb = Math.max(1, b * 2);                  // 素材是 2 倍图，源边框也要 ×2
+        if (w <= b * 2 || texW <= sb * 2) {
+            g.blit(img.id(), x, y, w, h, 0, 0, texW, texH, texW, texH);
+            return;
+        }
+        g.blit(img.id(), x, y, b, h, 0, 0, sb, texH, texW, texH);                       // 左
+        g.blit(img.id(), x + w - b, y, b, h, texW - sb, 0, sb, texH, texW, texH);       // 右
+        g.blit(img.id(), x + b, y, w - b * 2, h, sb, 0, texW - sb * 2, texH, texW, texH); // 中
+    }
+
+    /** 填充图切片：端点边框不动，中间按比例拉伸（镜像条从右往左长）。 */
+    private static void fillSlice(GuiGraphics g, HudTextures.Img img, int x, int y, int w, int h,
+                                  float r, boolean mirror) {
+        int texW = img.w();
+        int texH = img.h();
+        final int b = 1;                 // 端点边框（屏幕像素）
+        final int sb = b * 2;            // 素材是 2 倍图
+        int vOffset = sb;                // 纵向也跳过源边框，剩下的正好 2:1
+        int vHeight = Math.max(1, texH - sb * 2);
+        int filled = Math.round(w * r);
+        if (filled <= 0) {
+            return;
+        }
+        int srcMid = Math.max(1, texW - sb * 2);
+        int usedMid = Math.max(1, Math.round(srcMid * r));
+        int dstMid = Math.max(0, filled - b);
+
+        if (mirror) {
+            g.blit(img.id(), x + filled - b, y, b, h, texW - sb, vOffset, sb, vHeight, texW, texH);
+            if (dstMid > 0) {
+                g.blit(img.id(), x, y, dstMid, h,
+                        texW - sb - usedMid, vOffset, usedMid, vHeight, texW, texH);
+            }
+        } else {
+            g.blit(img.id(), x, y, b, h, 0, vOffset, sb, vHeight, texW, texH);
+            if (dstMid > 0) {
+                g.blit(img.id(), x + b, y, dstMid, h, sb, vOffset, usedMid, vHeight, texW, texH);
+            }
         }
     }
 
