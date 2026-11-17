@@ -172,7 +172,7 @@ public final class VitalsHud {
         final float k = 0.5F;                 // 半号字，正好塞进 5px 高的条里
         int x0 = g.guiWidth() / 2 - 91;
         int x1 = g.guiWidth() / 2 + 91;
-        int y = g.guiHeight() - 30;           // 竖直压在条的中间（条在 -32..-28）
+        int y = g.guiHeight() - 28;           // 再往下压 2px（用户要求）
 
         // 左：累计总经验
         text(g, x0 + 2, y, String.valueOf(player.totalExperience), TEXT_XP, k);
@@ -211,13 +211,13 @@ public final class VitalsHud {
     private static void drawHealth(GuiGraphics g, Player player, int mode) {
         int left = g.guiWidth() / 2 - 91;
         int rowY = g.guiHeight() - 39;
-        int cur = Mth.ceil(player.getHealth());
+        double cur = player.getHealth();
         int max = Math.max(1, Mth.ceil(player.getMaxHealth()));
         int absorb = Mth.ceil(player.getAbsorptionAmount());
 
-        float ratio = cur / (float) max;
+        float ratio = (float) (cur / (float) max);
         Float extra = absorb > 0 ? (float) absorb : null;   // 吸收段占整条的比例
-        String label = cur + "/" + max;
+        String label = fmt(cur) + "/" + max;
         String suffix = absorb > 0 ? "+" + absorb : null;
         vitalsRow(g, mode, "health", left, rowY, BAR_W, ratio, label, COLOR_HEALTH, suffix, extra, 0.0F, false, 1);
     }
@@ -242,35 +242,53 @@ public final class VitalsHud {
      * 而不是谁多谁少：图标 9 + 间隔 1 + 条 25，两段各 35px。
      * 韧性跟护甲共用同一个显示模式（数值 / 条 / 条+数值）。
      */
+    /**
+     * 护甲那一行：<b>左半护甲、右半韧性</b>。
+     *
+     * <p>宽度是固定的（整行仍占 80px，和生命/饥饿对齐），所以是"各占一半"。
+     * 韧性跟护甲共用同一个显示模式（数值 / 条 / 条+数值），
+     * 但<b>满条按 12 点算</b>—— 原版韧性能到的上限就那么高，按 20 算永远差一截。
+     */
     private static boolean drawArmor(GuiGraphics g, Player player, int mode) {
         int left = g.guiWidth() / 2 - 91;
         int rowY = g.guiHeight() - 39;
-        int armor = player.getArmorValue();
-        int toughness = Mth.ceil(player.getAttributeValue(
-                net.minecraft.world.entity.ai.attributes.Attributes.ARMOR_TOUGHNESS));
+        double armor = player.getAttributeValue(
+                net.minecraft.world.entity.ai.attributes.Attributes.ARMOR);
+        double toughness = player.getAttributeValue(
+                net.minecraft.world.entity.ai.attributes.Attributes.ARMOR_TOUGHNESS);
         if (armor <= 0 && toughness <= 0) {
             return false;               // 没穿甲也没韧性，交回原版（原版此时也是空的）
         }
 
-        // 护甲 y：生命行顶端 -12（给 8px 字和阴影留缝）；
-        // 生命还是原版图标、且最大生命 > 20 时原版会把心往上叠排，护甲跟着让上去；
-        // 最后再加一个手动微调（配置里 -20~20）。
         int heartRows = Math.max(1, Mth.ceil(Mth.ceil(player.getMaxHealth()) / 20.0F));
         int vanillaStack = (MedalsConfig.HUD_HEALTH_MODE.get() == 0) ? (heartRows - 1) * 10 : 0;
         int armorY = rowY - 12 - vanillaStack + MedalsConfig.HUD_ARMOR_OFFSET.get();
 
-        logArmorOnce(mode, armor, armorY);
+        logArmorOnce(mode, (int) armor, armorY);
 
         final int partW = 40;
         vitalsRow(g, mode, "armor", left, armorY, partW,
-                Math.min(armor, 20) / 20.0F, String.valueOf(armor), COLOR_ARMOR,
+                (float) Math.min(armor, 20) / 20.0F, fmt(armor), COLOR_ARMOR,
                 null, null, 0.0F, false, 1);
         // 韧性：图标位置不动，条整体往左顶 1px（间隔 0），
         // 同时槽位还是 40px —— 于是条会宽 1px，右端仍然和下面的血条对齐。
         vitalsRow(g, mode, "armor_toughness", left + partW, armorY, partW,
-                Math.min(toughness, 20) / 20.0F, String.valueOf(toughness), COLOR_TOUGHNESS,
+                (float) Math.min(toughness, 12) / 12.0F, fmt(toughness), COLOR_TOUGHNESS,
                 null, null, 0.0F, false, 0);
         return true;
+    }
+
+    /**
+     * 数值格式：<b>保留两位小数，但小数位为 0 时不显示</b>。
+     *
+     * <p>例：{@code 18.5 → 18.50}、{@code 18.0 → 18}、{@code 7.25 → 7.25}。
+     */
+    private static String fmt(double v) {
+        double r = Math.round(v * 100.0) / 100.0;
+        if (Math.abs(r - Math.round(r)) < 1e-6) {
+            return String.valueOf((long) Math.round(r));
+        }
+        return String.format(java.util.Locale.ROOT, "%.2f", r);
     }
 
     private static long lastDiag;
@@ -372,7 +390,7 @@ public final class VitalsHud {
                 text(g, bx + font.width(label) + 3, y, suffix, TEXT_WHITE, 1.0F);
             }
         } else if (mode == 3) {
-            float k = 0.5F;
+            float k = 0.6F;
             int wLabel = Math.round(font.width(label) * k);
             int wExtra = suffix == null ? 0 : Math.round(font.width(suffix) * k) + 2;
             int tx = bx + (bw - wLabel - wExtra) / 2;
