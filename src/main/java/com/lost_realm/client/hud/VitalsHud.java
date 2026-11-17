@@ -265,7 +265,7 @@ public final class VitalsHud {
         vitalsRow(g, mode, "armor", left, armorY, partW,
                 Math.min(armor, 20) / 20.0F, String.valueOf(armor), COLOR_ARMOR,
                 null, null, 0.0F, false);
-        vitalsRow(g, mode, "armor_toughness", left + partW, armorY, partW,
+        vitalsRow(g, mode, "armor_toughness", left + partW - 1, armorY, partW,
                 Math.min(toughness, 20) / 20.0F, String.valueOf(toughness), COLOR_TOUGHNESS,
                 null, null, 0.0F, false);
         return true;
