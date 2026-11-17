@@ -322,7 +322,9 @@ public final class VitalsHud {
 
         if (icon != null) {
             int ix = iconRight ? x + BAR_W - iconSize : x;
-            int iy = y + BAR_DY - 2;
+            // 图标 9px、条 7px，两者中心对齐 → 图标顶端只比条高 1px。
+            // 之前写成 -2，条就整体比图标低了一像素。
+            int iy = y + BAR_DY - 1;
             g.blit(icon.id(), ix, iy, iconSize, iconSize, 0, 0,
                     icon.w(), icon.h(), icon.w(), icon.h());
         }
