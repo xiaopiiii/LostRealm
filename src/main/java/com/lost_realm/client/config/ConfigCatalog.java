@@ -42,13 +42,104 @@ public final class ConfigCatalog {
      * 没登记的选项自然归到「未分组」，老选项一行都不用改。
      */
     private static final Map<String, String> SUB_OF = new java.util.LinkedHashMap<>();
+    private static final Map<String, Integer> SUB_ORDER = new java.util.HashMap<>();
+
+    /**
+     * 二级菜单分组表：{@code 子页id:选项id,选项id,...}。
+     *
+     * <p>写成一整张表而不是逐个 {@code put}，是因为选项有两百多个，
+     * 一个个写太啰嗦；顺序就是二级菜单里从左到右的顺序。
+     * 没列进来的选项落在「其他」或者不分页。
+     */
+    private static final String[] SUB_GROUPS = {
+            "vitals_hp:hud_health_mode",
+            "vitals_hunger:hud_hunger_mode",
+            "vitals_armor:hud_armor_mode,hud_armor_offset",
+            "xp:hud_show_xp",
+            "effect:effect_hud_enabled,effect_hud_scale,effect_hud_corner,effect_hud_flow,effect_hud_timer,effect_hud_harmful_border",
+            "qol_potion:potion_infinite,potion_scan_backpack,buff_share,buff_share_radius,eat_when_full,keep_buffs_on_death",
+            "qol_misc:totem_backpack,stack_totem,elytra_armor,elytra_armor_value,elytra_toughness_value,sleep_anytime,sleep_skip_hours,one_player_sleep,farmland_protect,stack_potion,stack_ender_pearl,death_drop_centered",
+            "qol_combat:wither_skull,auto_attack,auto_attack_require_target,auto_shoot,infinite_bow_no_arrow,infinity_mending",
+            "qol_enchant:villager_trades_64,refresh_trades,refresh_enchant,refresh_enchant_cost_levels,refresh_enchant_cost_lapis,keep_lapis,enchant_preview_all",
+            "exp_level:max_level,base_exp,exp_growth_1_10,exp_growth_11_20,exp_growth_21_30,exp_growth_31_40,exp_growth_41_50,exp_growth_51_60,max_modifiers_per_uuid",
+            "exp_vx:vx_enabled,vx_base_exp,vx_decay_percent,vx_decay_step,vx_min_growth_milli,vx_growth_1_40,vx_growth_40_70,vx_growth_70_100,vx_growth_after_100",
+            "archer_growth:archer_exp_damage,archer_exp_kill_hp,archer_lv1_arrow_damage,archer_lv1_dodge,archer_lv1_draw_speed,archer_lv1_move_speed,archer_per_level_arrow_damage,archer_per_level_dodge,archer_per_level_draw_speed,archer_per_level_move_speed",
+            "archer_t5:s5_teleport_range,s5_min_height,s5_cooldown,s5_immune_chance",
+            "archer_t10:s10_damage_per_block",
+            "archer_t15:s15_near_distance,s15_chance_drop,s15_min_chance,s15_near_chance",
+            "archer_t20:s20_spread_min,s20_spread_max,s20_extra_arrow_damage,s20_multishot_bonus",
+            "archer_t25:s25_rain_height,s25_rain_area,s25_rain_min,s25_rain_max,s25_rain_chance",
+            "archer_t30:s30_duration,s30_max_extend,s30_cooldown,s30_arrow_damage,s30_draw_speed,s30_move_speed,s30_move_speed_mounted",
+            "blade_growth:blade_exp_damage,blade_exp_kill_hp,blade_lv1_attack_speed,blade_lv1_crit_chance,blade_lv1_crit_damage,blade_lv1_damage,blade_per_level_attack_speed,blade_per_level_crit_chance,blade_per_level_crit_damage,blade_per_level_damage",
+            "blade_t5:b5_bleed_seconds,b5_armor_pierce,b5_bleed_chance,b5_crit_chance",
+            "blade_t10:b10_armor_pierce_per_step,b10_hp_threshold,b10_lifesteal_per_step",
+            "blade_t15:b15_duration,b15_fire_damage,b15_target_fire_seconds,b15_attack_damage,b15_hp_cost,b15_move_speed",
+            "blade_t20:b20_cold_damage,b20_freeze_seconds,b20_freeze_chance",
+            "blade_t25:b25_duration,b25_attack_range,b25_cooldown,b25_attack_speed,b25_lifesteal,b25_move_speed",
+            "blade_t30:b30_lost_hp_damage,b30_lost_hp_damage_low,b30_low_hp_crit_chance,b30_low_hp_threshold",
+            "tank_growth:tank_exp_damage,tank_exp_heal,tank_exp_kill_hp,tank_lv1_armor,tank_lv1_damage_reduction,tank_lv1_max_health,tank_lv1_overheal,tank_per_level_armor,tank_per_level_damage_reduction,tank_per_level_max_health,tank_per_level_overheal",
+            "tank_t5:t5_slow_weapon_attack_speed,t5_crit_chance,t5_crit_damage,t5_damage",
+            "tank_t10:t10_absorb_amount,t10_interval,t10_absorb_chance",
+            "tank_t15:t15_shield_interval,t15_shield_max_block,t15_shield_max_stacks",
+            "tank_t20:t20_duration,t20_knockback_radius,t20_knockback_distance,t20_burst_damage,t20_slowness_seconds,t20_cooldown,t20_armor_bonus,t20_damage_reduction",
+            "tank_t25:t25_block_value,t25_interval,t25_block_per_value,t25_reset,t25_block_cap,t25_block_chance",
+            "tank_t30:t30_duration,t30_absorb,t30_cooldown,t30_heal_per_second,t30_hp_threshold",
+            "mage_growth:l1_spell_potency,per_spell_potency,per_casting_speed,per_soul_discount,per_spell_radius,mage_exp_kill_hp,mage_exp_soul,mage_exp_spell_damage,mage_lv1_casting_speed,mage_lv1_soul_discount,mage_lv1_spell_radius",
+            "mage_t5:m5_max_stacks,m5_window_seconds,m5_potency_per_stack,m5_soul_discount_per_stack",
+            "mage_t10:m10_base_crit_chance,m10_base_crit_damage",
+            "mage_t15:m15_debuff_refund_chance,m15_debuff_refund_ratio,m15_refund_chance,m15_refund_ratio,m15_spell_duration",
+            "mage_t20:m20_duration,m20_cooldown,m20_casting_speed,m20_cooldown_discount,m20_move_speed,m20_soul_discount,m20_spell_potency,m20_spell_radius",
+            "mage_t25:m25_soul_per_second,m25_stack_interval,m25_max_stacks,m25_cooldown,m25_casting_speed_per_stack,m25_crit_chance_per_stack,m25_potency_per_stack",
+            "mage_t30:m30_barrage_angle,m30_barrage_potency,m30_pity_increment,m30_refresh_chance,m30_spell_radius",
+            "summoner_growth:exp_servant_damage,exp_kill_hp,l1_servant_health,l1_servant_damage,l1_servant_speed,l1_servant_lifespan,per_servant_health,per_servant_damage,per_servant_speed,per_servant_lifespan",
+            "summoner_t5:su5_soul_per_hit,su5_soul_cooldown",
+            "summoner_t10:su10_servant_reduction",
+            "summoner_t15:su15_revive_chance,su15_revive_health",
+            "summoner_t20:su20_duration,su20_servant_damage,su20_servant_limit,su20_cooldown",
+            "summoner_t25:su25_extra_damage",
+            "summoner_t30:su30_servant_limit,su30_cooldown_discount,su30_servant_health",
+            "arrow_core:arrow_potion_chance,arrow_potion_seconds,arrow_explosion_power,arrow_pierce_count,arrow_pierce_falloff,arrow_no_gravity_seconds,arrow_twin_chance,arrow_twin_damage,arrow_armor_pierce,arrow_hold_chance,arrow_hold_seconds",
+            "arrow_thunder:arrow_thunder_damage,arrow_thunder_radius,arrow_thunder_paralyze_seconds",
+            "arrow_summon:arrow_summon_max,arrow_summon_cooldown_seconds,arrow_summon_health",
+            "arrow_star:arrow_star_damage,arrow_star_charge_seconds,arrow_star_pierce,arrow_star_flight_seconds,arrow_star_break_radius,arrow_star_break_blocks,arrow_star_block_drops",
+            "arrow_misc:time_capsule_max_uses,time_capsule_shorten_seconds",
+            "crystal_base:chain_radius,chain_ratio,chain_jumps,sniper_step,sniper_per_step,sniper_cap",
+            "crystal_zone:circle_radius,circle_seconds,circle_speed,circle_potency,echo_chance,echo_damage",
+            "crystal_soul:soulfire_refund,soulfire_damage,overdraft_ratio,overdraft_bonus,ember_seconds,ember_ratio",
+            "crystal_special:hexnail_max,hexnail_damage,swift_reduction,sovereign_potency,sovereign_casting,sovereign_radius,sovereign_soul",
+            "shield_base:thorns_reflect,adapt_per_hit,adapt_cap,adapt_types,adapt_window",
+            "shield_burst:shockwave_radius,shockwave_stun,sacrifice_ratio,sacrifice_radius,sacrifice_max,sacrifice_cooldown",
+            "shield_sustain:earth_seconds,earth_reduction,nourish_hp_threshold,nourish_max_food,vitality_per_layer,vitality_max_layers,vitality_window,nourish_per_food",
+            "shield_legend:vanguard_armor,vanguard_speed,eternal_armor,eternal_health,eternal_reduction,eternal_toughness,eternal_speed,devour_per_kill,devour_max,vanguard_knockback,vanguard_push,vanguard_push_radius",
+            "contract_core:refresh_interval,dominion_health,dominion_damage,dominion_soul,legion_limit,legion_life,overlord_health,overlord_damage,overlord_speed,overlord_limit",
+            "contract_bond:symbiosis_ratio,symbiosis_radius,martyr_radius,martyr_ratio,soulchain_potency,soulchain_max",
+            "contract_flesh:flesh_ratio,bone_reduction,bone_max,fission_chance,fission_ratio,decree_vulnerable,decree_seconds",
+            "sword_base:sword_crit_chance,sword_crit_damage,sword_attack_damage,sword_exp_gained",
+            "sword_slash:sword_slash_damage,sword_charge_seconds,sword_cooldown_seconds,sword_reach,sword_width,sword_height,sword_anim_ticks,sword_break_blocks,sword_hit_players",
+            "charm_base:blade_sweep_radius,blade_dual_damage,blade_dual_attack_speed,blade_crit_chance,blade_crit_damage,blade_backstab_bonus",
+            "charm_disarm:blade_disarm_chance,blade_disarm_seconds,blade_disarm_cooldown",
+            "charm_luck:blade_luck_range,blade_luck_per_point,blade_luck_floor_cap,blade_toughness_per_hit,blade_toughness_base_cap,blade_toughness_cap_per_step,blade_toughness_window_seconds",
+            "charm_dash:blade_charge_per_second,blade_charge_max,blade_dash_speed_threshold,blade_dash_distance,blade_dash_damage,blade_dash_cooldown,blade_dash_hunger,blade_dash_double_tap_ticks",
+            "boss_core:udunos_health,udunos_cruise_speed,udunos_charge_speed,udunos_contact_head,udunos_contact_body,udunos_reduction_cap,udunos_leash",
+            "boss_phase:udunos_phase_1,udunos_phase_2,udunos_phase_3",
+    };
 
     static {
-        SUB_OF.put("hud_health_mode", "vitals_hp");
-        SUB_OF.put("hud_hunger_mode", "vitals_hunger");
-        SUB_OF.put("hud_armor_mode", "vitals_armor");
-        SUB_OF.put("hud_armor_offset", "vitals_armor");
-        SUB_OF.put("hud_show_xp", "xp");
+        for (int i = 0; i < SUB_GROUPS.length; i++) {
+            String entry = SUB_GROUPS[i];
+            int c = entry.indexOf(':');
+            if (c <= 0) {
+                continue;
+            }
+            String sub = entry.substring(0, c).trim();
+            SUB_ORDER.put(sub, i);
+            for (String id : entry.substring(c + 1).split(",")) {
+                String t = id.trim();
+                if (!t.isEmpty()) {
+                    SUB_OF.put(t, sub);
+                }
+            }
+        }
     }
 
     /** 某个选项属于哪个子页；没登记返回 {@code null}。 */
@@ -64,7 +155,7 @@ public final class ConfigCatalog {
         return optionId.startsWith("effect_hud_") ? "effect" : null;
     }
 
-    /** 某分类下的子页 id 列表（按选项中出现的先后顺序，去重）。 */
+    /** 某分类下的子页 id 列表，<b>按分组表的顺序</b>（也就是二级菜单从左到右）。 */
     public static List<String> subsOf(String categoryId) {
         List<String> out = new ArrayList<>();
         for (ConfigOption o : ofCategory(categoryId)) {
@@ -73,6 +164,8 @@ public final class ConfigCatalog {
                 out.add(sub);
             }
         }
+        out.sort(java.util.Comparator.comparingInt(
+                s -> SUB_ORDER.getOrDefault(s, Integer.MAX_VALUE)));
         return out;
     }
 
