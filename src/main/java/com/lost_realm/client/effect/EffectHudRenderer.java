@@ -258,10 +258,11 @@ public final class EffectHudRenderer {
 
         // ---- 增幅等级 ----
         if (inst.getAmplifier() >= 0 && scale >= 0.5F) {
+            // 等级：贴着图标<b>右上角</b>（原来画在右下，和倒计时挤在一起）
             String lvl = String.valueOf(inst.getAmplifier() + 1);
             gfx.drawString(mc.font, lvl,
                     x + slot - mc.font.width(lvl) - 1,
-                    y + slot - (int) (mc.font.lineHeight * scale) + 1,
+                    y + 1,
                     0xFFFFFFFF, true);
         }
 
@@ -346,15 +347,24 @@ public final class EffectHudRenderer {
         return String.format("%d:%02d", minutes, seconds);
     }
 
-    /** 倒计时文本:画在图标下方居中。 */
+    /**
+     * 倒计时文本：贴在图标<b>右下角</b>，字号是原版的一半。
+     *
+     * <p>原来画在格子底部居中、还是原尺寸 —— 一个 {@code 12:34} 能横跨大半个图标，
+     * 把药水图案挡掉一半。缩一半之后只占右下角一小块，等级数字挪到右上角就不打架了。
+     */
     private static void drawTimerText(GuiGraphics gfx, String text, int x, int y, int slot) {
         Minecraft mc = Minecraft.getInstance();
-        int w = mc.font.width(text);
-        // 文本略微上移贴住格子底边;横向排布时也必须居中于本格
-        int tx = x + (slot - w) / 2;
-        int ty = y + slot - mc.font.lineHeight + 1;
-        // 描边提高可读性
-        gfx.drawString(mc.font, text, tx, ty, 0xFFFFFFFF, true);
+        final float k = 0.5F;
+        int tw = Math.max(1, Math.round(mc.font.width(text) * k));
+        int th = Math.max(1, Math.round(mc.font.lineHeight * k));
+        int tx = x + slot - tw - 1;
+        int ty = y + slot - th - 1;
+        gfx.pose().pushPose();
+        gfx.pose().translate(tx, ty, 0.0F);
+        gfx.pose().scale(k, k, 1.0F);
+        gfx.drawString(mc.font, text, 0, 0, 0xFFFFFFFF, true);
+        gfx.pose().popPose();
     }
 
     /**

@@ -172,16 +172,16 @@ public final class VitalsHud {
         final float k = 0.5F;                 // 半号字，正好塞进 5px 高的条里
         int x0 = g.guiWidth() / 2 - 91;
         int x1 = g.guiWidth() / 2 + 91;
-        int y = g.guiHeight() - 28;           // 再往下压 2px（用户要求）
+        int y = g.guiHeight() - 29;           // 上移 1px
 
         // 左：累计总经验
-        text(g, x0 + 2, y, String.valueOf(player.totalExperience), TEXT_XP, k);
+        text(g, x0 + 2, y, String.valueOf(player.totalExperience), TEXT_WHITE, k);
 
         // 右：本等级已获得 / 升到下一级所需，右对齐
         int need = Math.max(1, player.getXpNeededForNextLevel());
         int cur = Math.round(player.experienceProgress * need);
         String right = cur + "/" + need;
-        text(g, x1 - 2 - Math.round(font.width(right) * k), y, right, TEXT_XP, k);
+        text(g, x1 - 2 - Math.round(font.width(right) * k), y, right, TEXT_WHITE, k);
     }
 
     /** 兜底那部分（创造模式不在这里，`skipAll` 已经挡掉了）。 */
