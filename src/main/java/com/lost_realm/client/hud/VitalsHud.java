@@ -60,6 +60,8 @@ public final class VitalsHud {
     private static final int COLOR_HEALTH = 0xFFE03A3A;
     private static final int COLOR_HUNGER = 0xFFD98B3A;
     private static final int COLOR_ARMOR = 0xFF4E8FE0;
+    /** 护甲韧性：跟护甲区分开，用青绿。 */
+    private static final int COLOR_TOUGHNESS = 0xFF3FBFB0;
     /** 伤害吸收 / 饱和度：原版黄。 */
     private static final int COLOR_EXTRA = 0xFFFFC83A;
 
@@ -217,7 +219,7 @@ public final class VitalsHud {
         Float extra = absorb > 0 ? (float) absorb : null;   // 吸收段占整条的比例
         String label = cur + "/" + max;
         String suffix = absorb > 0 ? "+" + absorb : null;
-        vitalsRow(g, mode, "health", left, rowY, ratio, label, COLOR_HEALTH, suffix, extra, 0.0F, false);
+        vitalsRow(g, mode, "health", left, rowY, BAR_W, ratio, label, COLOR_HEALTH, suffix, extra, 0.0F, false);
     }
 
     private static void drawHunger(GuiGraphics g, Player player, int mode) {
@@ -228,15 +230,27 @@ public final class VitalsHud {
         int satInt = Mth.ceil(sat);
 
         // 饱和度：条上盖一层半透明黄（宽度按 饱和度/20），数值后面跟 +饱和度
-        vitalsRow(g, mode, "hunger", right - BAR_W, rowY, cur / 20.0F, cur + "/20", COLOR_HUNGER,
+        vitalsRow(g, mode, "hunger", right - BAR_W, rowY, BAR_W, cur / 20.0F, cur + "/20", COLOR_HUNGER,
                 satInt > 0 ? "+" + satInt : null, null,
                 Mth.clamp(sat / 20.0F, 0.0F, 1.0F), true);
     }
 
+    /**
+     * 护甲那一行：<b>左半护甲、右半韧性</b>。
+     *
+     * <p>宽度是固定的（整行仍占 80px，和生命/饥饿对齐），所以是"各占一半"
+     * 而不是谁多谁少：图标 9 + 间隔 1 + 条 25，两段各 35px。
+     * 韧性跟护甲共用同一个显示模式（数值 / 条 / 条+数值）。
+     */
     private static boolean drawArmor(GuiGraphics g, Player player, int mode) {
         int left = g.guiWidth() / 2 - 91;
         int rowY = g.guiHeight() - 39;
         int armor = player.getArmorValue();
+        int toughness = Mth.ceil(player.getAttributeValue(
+                net.minecraft.world.entity.ai.attributes.Attributes.ARMOR_TOUGHNESS));
+        if (armor <= 0 && toughness <= 0) {
+            return false;               // 没穿甲也没韧性，交回原版（原版此时也是空的）
+        }
 
         // 护甲 y：生命行顶端 -12（给 8px 字和阴影留缝）；
         // 生命还是原版图标、且最大生命 > 20 时原版会把心往上叠排，护甲跟着让上去；
@@ -245,18 +259,17 @@ public final class VitalsHud {
         int vanillaStack = (MedalsConfig.HUD_HEALTH_MODE.get() == 0) ? (heartRows - 1) * 10 : 0;
         int armorY = rowY - 12 - vanillaStack + MedalsConfig.HUD_ARMOR_OFFSET.get();
 
-        // 一条只表示 20 点，满了就是满了；超过 20 不再换色，护甲只有一个颜色
-        int color = COLOR_ARMOR;
-        float ratio = Math.min(armor, 20) / 20.0F;
-
         logArmorOnce(mode, armor, armorY);
 
-        vitalsRow(g, mode, "armor", left, armorY, ratio, String.valueOf(armor), color, null, null, 0.0F, false);
+        final int partW = 35;
+        vitalsRow(g, mode, "armor", left, armorY, partW,
+                Math.min(armor, 20) / 20.0F, String.valueOf(armor), COLOR_ARMOR,
+                null, null, 0.0F, false);
+        vitalsRow(g, mode, "armor_toughness", left + 40, armorY, partW,
+                Math.min(toughness, 20) / 20.0F, String.valueOf(toughness), COLOR_TOUGHNESS,
+                null, null, 0.0F, false);
         return true;
     }
-
-    private static long lastArmorLog;
-    private static String lastArmorState;
 
     private static long lastDiag;
 
@@ -276,6 +289,9 @@ public final class VitalsHud {
             // 诊断本身不能炸
         }
     }
+
+    private static long lastArmorLog;
+    private static String lastArmorState;
 
     /** 护甲这条一旦出问题最难查（画没画、画在哪全靠猜），留一行诊断日志。 */
     private static void logArmorOnce(int mode, int armor, int armorY) {
@@ -309,8 +325,8 @@ public final class VitalsHud {
      *
      * @param iconRight 图标是否放在右端（饥饿用 true）
      */
-    private static void vitalsRow(GuiGraphics g, int mode, String key, int x, int y, float ratio,
-                                  String label, int color, String suffix,
+    private static void vitalsRow(GuiGraphics g, int mode, String key, int x, int y, int width,
+                                  float ratio, String label, int color, String suffix,
                                   Float extraRatio, float overlay, boolean iconRight) {
         var font = Minecraft.getInstance().font;
 
@@ -318,10 +334,10 @@ public final class VitalsHud {
         final int iconSize = 9;
         int reserve = icon == null ? 0 : iconSize + 1;
         int bx = iconRight ? x : x + reserve;
-        int bw = BAR_W - reserve;
+        int bw = width - reserve;
 
         if (icon != null) {
-            int ix = iconRight ? x + BAR_W - iconSize : x;
+            int ix = iconRight ? x + width - iconSize : x;
             // 图标 9px、条 7px，两者中心对齐 → 图标顶端只比条高 1px。
             // 之前写成 -2，条就整体比图标低了一像素。
             int iy = y + BAR_DY - 1;
