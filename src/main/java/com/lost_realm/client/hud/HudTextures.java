@@ -46,13 +46,58 @@ public final class HudTextures {
     public record Img(ResourceLocation id, int w, int h, long mtime) {
     }
 
+    /** 配置目录里的覆盖图（按 mtime 热重载）。 */
     private static final Map<String, Img> CACHE = new HashMap<>();
+    /** 模组 jar 里内置的默认图（尺寸缓存，资源重载时清空）。 */
+    private static final Map<String, Img> JAR_CACHE = new HashMap<>();
     private static boolean readmeWritten;
 
     private HudTextures() {}
 
-    /** 取一张图；没有就返回 {@code null}。 */
+    /** 资源包重新加载（F3+T）时清掉尺寸缓存。 */
+    public static void clearCache() {
+        JAR_CACHE.clear();
+        CACHE.clear();
+    }
+
+    /**
+     * 取一张图；没有就返回 {@code null}。
+     *
+     * <p>顺序：<b>配置目录里的同名文件优先</b>（方便随时改），没有就用 jar 里内置的
+     * {@code assets/lost_realm/textures/gui/hud/<名字>.png}，再没有才回落到纯色矩形。
+     */
     public static Img get(String name) {
+        Img custom = fromConfig(name);
+        return custom != null ? custom : fromJar(name);
+    }
+
+    /** jar 里的内置图：尺寸只能读一次，之后按名字缓存。 */
+    private static Img fromJar(String name) {
+        Img cached = JAR_CACHE.get(name);
+        if (cached != null) {
+            return cached;
+        }
+        ResourceLocation id = new ResourceLocation(Medals.MODID, "textures/gui/hud/" + name + ".png");
+        try {
+            var res = Minecraft.getInstance().getResourceManager().getResource(id);
+            if (res.isEmpty()) {
+                return null;
+            }
+            try (var in = res.get().open()) {
+                NativeImage image = NativeImage.read(in);
+                Img img = new Img(id, image.getWidth(), image.getHeight(), -1L);
+                image.close();
+                JAR_CACHE.put(name, img);
+                return img;
+            }
+        } catch (Throwable t) {
+            Medals.LOGGER.warn("[Lost Realm] 内置 HUD 贴图 {} 读取失败", name, t);
+            return null;
+        }
+    }
+
+    /** 配置目录里的覆盖图。 */
+    private static Img fromConfig(String name) {
         try {
             Path dir = dir();
             Path file = dir.resolve(name + ".png");

@@ -76,6 +76,15 @@ public final class VitalsHud {
     /** 这一帧的原版覆盖层是不是已经被我们替换过了（见 {@link #onRenderPost}）。 */
     private static boolean preDrewThisFrame;
 
+    /** F3+T 重载资源时把贴图尺寸缓存清掉，免得换了图还是按旧尺寸裁。 */
+    @SubscribeEvent
+    public static void onReload(net.minecraftforge.client.event.RegisterClientReloadListenersEvent event) {
+        event.registerReloadListener((barrier, manager, prepProfiler, reloadProfiler, bg, game) -> {
+            game.execute(HudTextures::clearCache);
+            return java.util.concurrent.CompletableFuture.completedFuture(null);
+        });
+    }
+
     private VitalsHud() {}
 
     @SubscribeEvent
