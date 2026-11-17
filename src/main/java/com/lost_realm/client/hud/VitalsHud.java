@@ -210,7 +210,7 @@ public final class VitalsHud {
         Float extra = absorb > 0 ? (float) absorb : null;   // 吸收段占整条的比例
         String label = cur + "/" + max;
         String suffix = absorb > 0 ? "+" + absorb : null;
-        vitalsRow(g, mode, left, rowY, ratio, label, COLOR_HEALTH, suffix, extra, 0.0F);
+        vitalsRow(g, mode, "health", left, rowY, ratio, label, COLOR_HEALTH, suffix, extra, 0.0F);
     }
 
     private static void drawHunger(GuiGraphics g, Player player, int mode) {
@@ -221,7 +221,7 @@ public final class VitalsHud {
         int satInt = Mth.ceil(sat);
 
         // 饱和度：条上盖一层半透明黄（宽度按 饱和度/20），数值后面跟 +饱和度
-        vitalsRow(g, mode, right - BAR_W, rowY, cur / 20.0F, cur + "/20", COLOR_HUNGER,
+        vitalsRow(g, mode, "hunger", right - BAR_W, rowY, cur / 20.0F, cur + "/20", COLOR_HUNGER,
                 satInt > 0 ? "+" + satInt : null, null,
                 Mth.clamp(sat / 20.0F, 0.0F, 1.0F));
     }
@@ -246,10 +246,10 @@ public final class VitalsHud {
         logArmorOnce(mode, armor, armorY);
 
         if (mode == 1) {
-            text(g, left, armorY, String.valueOf(armor), TEXT_WHITE, 1.0F);
+            numberRow(g, "armor", left, armorY, String.valueOf(armor), null, 1.0F);
             return true;
         }
-        vitalsRow(g, mode, left, armorY, ratio, String.valueOf(armor), color, null, null, 0.0F);
+        vitalsRow(g, mode, "armor", left, armorY, ratio, String.valueOf(armor), color, null, null, 0.0F);
         return true;
     }
 
@@ -298,13 +298,13 @@ public final class VitalsHud {
      * @param extraRatio 条尾再接一段的比例（伤害吸收），{@code null} 表示没有
      * @param overlay    盖在已填充部分上的比例（饱和度），0 表示不画
      */
-    private static void vitalsRow(GuiGraphics g, int mode, int x, int y, float ratio,
+    private static void vitalsRow(GuiGraphics g, int mode, String key, int x, int y, float ratio,
                                   String label, int color, String suffix,
                                   Float extraRatio, float overlay) {
         var font = Minecraft.getInstance().font;
 
         if (mode == 2 || mode == 3) {
-            bar(g, x, y + BAR_DY, BAR_W, BAR_H, ratio, color);
+            bar(g, key, x, y + BAR_DY, BAR_W, BAR_H, ratio, color);
             if (overlay > 0.0F) {
                 int ow = Math.round(BAR_W * Math.min(Mth.clamp(ratio, 0.0F, 1.0F), overlay));
                 if (ow > 0) {
@@ -321,12 +321,8 @@ public final class VitalsHud {
         }
 
         if (mode == 1) {
-            text(g, x, y, label, TEXT_WHITE, 1.0F);
-            if (suffix != null) {
-                text(g, x + font.width(label) + 3, y, suffix, TEXT_WHITE, 1.0F);
-            }
+            numberRow(g, key, x, y, label, suffix, 1.0F);
         } else if (mode == 3) {
-            // 条内数字：深色，不用白
             float k = 0.5F;
             int wLabel = Math.round(font.width(label) * k);
             int wExtra = suffix == null ? 0 : Math.round(font.width(suffix) * k) + 2;
@@ -339,12 +335,52 @@ public final class VitalsHud {
         }
     }
 
-    private static void bar(GuiGraphics g, int x, int y, int w, int h, float ratio, int color) {
+    /** 数值模式：左边如果有 {@code <key>_icon.png} 就先画图标。 */
+    private static void numberRow(GuiGraphics g, String key, int x, int y,
+                                  String label, String suffix, float scale) {
+        var font = Minecraft.getInstance().font;
+        int dx = x;
+        HudTextures.Img icon = HudTextures.get(key + "_icon");
+        if (icon != null) {
+            int size = 9;
+            g.blit(icon.id(), dx, y - 1, size, size, 0, 0, icon.w(), icon.h(), icon.w(), icon.h());
+            dx += size + 1;
+        }
+        text(g, dx, y, label, TEXT_WHITE, scale);
+        if (suffix != null) {
+            text(g, dx + Math.round(font.width(label) * scale) + 3, y, suffix, TEXT_WHITE, scale);
+        }
+    }
+
+    /**
+     * 一条：优先用 {@code config/lost_realm/hud/<key>_bg.png} / {@code <key>_fill.png}，
+     * 没有就画内置的纯色矩形。
+     *
+     * <p>填充图按"满"画，这里只取左边 {@code 当前比例} 那一段，所以条子变短时
+     * 图案是<b>被裁掉</b>而不是被压扁。
+     */
+    private static void bar(GuiGraphics g, String key, int x, int y, int w, int h,
+                            float ratio, int color) {
         float r = Mth.clamp(ratio, 0.0F, 1.0F);
-        g.fill(x - 1, y - 1, x + w + 1, y + h + 1, BG_BORDER);
-        g.fill(x, y, x + w, y + h, BG_TRACK);
+
+        HudTextures.Img bg = HudTextures.get(key + "_bg");
+        if (bg != null) {
+            g.blit(bg.id(), x, y, w, h, 0, 0, bg.w(), bg.h(), bg.w(), bg.h());
+        } else {
+            g.fill(x - 1, y - 1, x + w + 1, y + h + 1, BG_BORDER);
+            g.fill(x, y, x + w, y + h, BG_TRACK);
+        }
+
         int filled = Math.round(w * r);
-        if (filled > 0) {
+        if (filled <= 0) {
+            return;
+        }
+        HudTextures.Img fill = HudTextures.get(key + "_fill");
+        if (fill != null) {
+            g.blit(fill.id(), x, y, filled, h,
+                    0, 0, Math.max(1, Math.round(fill.w() * r)), fill.h(),
+                    fill.w(), fill.h());
+        } else {
             g.fill(x, y, x + filled, y + h, color);
         }
     }
