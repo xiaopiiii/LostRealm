@@ -89,18 +89,6 @@ public final class VitalsHud {
         });
     }
 
-    /** 条子宽度 = 贴图宽度（贴图多大就画多大）。 */
-    private static int tw(String key, int def) {
-        HudTextures.Img img = HudTextures.get(key + "_bg");
-        return img == null ? def : img.w();
-    }
-
-    /** 条子高度 = 贴图高度。 */
-    private static int th(String key, int def) {
-        HudTextures.Img img = HudTextures.get(key + "_bg");
-        return img == null ? def : img.h();
-    }
-
     /** 图标宽度 = 贴图宽度（不缩放）。 */
     private static int iw(String key, int def) {
         HudTextures.Img img = HudTextures.get(key + "_icon");
@@ -232,10 +220,10 @@ public final class VitalsHud {
 
     private static void drawHealth(GuiGraphics g, Player player, int mode) {
         int left = g.guiWidth() / 2 - 91;
-        int barW = tw("health_bg", DEF_BAR_W);
-        int barH = th("health_bg", DEF_BAR_H);
-        // 三行堆叠（上下各留 2px）：饥饿在最下、生命居中、护甲在最上
-        int rowY = g.guiHeight() - 33 - barH * 2 - 2;
+        int barW = DEF_BAR_W;
+        int barH = DEF_BAR_H;
+        // 生命/饥饿同一行；底边压在经验条上沿（-32）之上
+        int rowY = g.guiHeight() - 33 - barH;
         double cur = player.getHealth();
         int max = Math.max(1, Mth.ceil(player.getMaxHealth()));
         int absorb = Mth.ceil(player.getAbsorptionAmount());
@@ -267,23 +255,23 @@ public final class VitalsHud {
      * 所以换 1 倍图就整体变小、换 2 倍图就整体变大，永远 1:1 不缩放。
      */
     private static void drawHunger(GuiGraphics g, Player player, int mode) {
-        int left = g.guiWidth() / 2 - 91;
-        int barH = th("hunger_bg", DEF_BAR_H);
+        int right = g.guiWidth() / 2 + 91;
+        int barH = DEF_BAR_H;
         int rowY = g.guiHeight() - 33 - barH;
         int cur = player.getFoodData().getFoodLevel();
         float sat = player.getFoodData().getSaturationLevel();
 
-        int hungerW = tw("hunger_bg", DEF_PART_W);
-        int satW = tw("saturation_bg", DEF_PART_W);
+        int hungerW = DEF_PART_W;
+        int satW = DEF_PART_W;
         int hungerSlot = hungerW + iw("hunger", 9) + 1;
         int satSlot = satW + iw("saturation", 10) + 1;
 
-        vitalsRow(g, mode, "hunger", left, rowY, hungerSlot, barH,
-                cur / 20.0F, cur + "/20", COLOR_HUNGER,
-                null, null, 0.0F, false, 1);
-        vitalsRow(g, mode, "saturation", left + hungerSlot, rowY, satSlot, barH,
+        vitalsRow(g, mode, "saturation", right - hungerSlot - satSlot, rowY, satSlot, barH,
                 Math.min(sat, 20.0F) / 20.0F, fmt(sat), COLOR_SATURATION,
-                null, null, 0.0F, false, 1);
+                null, null, 0.0F, true, 1);
+        vitalsRow(g, mode, "hunger", right - hungerSlot, rowY, hungerSlot, barH,
+                cur / 20.0F, cur + "/20", COLOR_HUNGER,
+                null, null, 0.0F, true, 1);
     }
 
     /**
@@ -302,8 +290,8 @@ public final class VitalsHud {
      */
     private static boolean drawArmor(GuiGraphics g, Player player, int mode) {
         int left = g.guiWidth() / 2 - 91;
-        int barH = th("armor_bg", DEF_BAR_H);
-        int rowY = g.guiHeight() - 33 - barH * 3 - 4;
+        int barH = DEF_BAR_H;
+        int rowY = g.guiHeight() - 33 - barH;
         double armor = player.getAttributeValue(
                 net.minecraft.world.entity.ai.attributes.Attributes.ARMOR);
         double toughness = player.getAttributeValue(
@@ -315,8 +303,8 @@ public final class VitalsHud {
         int armorY = rowY - barH - 2 + MedalsConfig.HUD_ARMOR_OFFSET.get();
         logArmorOnce(mode, (int) armor, armorY);
 
-        int armorW = tw("armor_bg", DEF_PART_W);
-        int toughW = tw("armor_toughness_bg", DEF_PART_W + 1);
+        int armorW = DEF_PART_W;
+        int toughW = DEF_PART_W + 1;
         int armorSlot = armorW + iw("armor", 9) + 1;
         int toughSlot = toughW + iw("armor_toughness", 9);
 
