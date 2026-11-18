@@ -413,7 +413,7 @@ public final class VitalsHud {
             int wLabel = Math.round(font.width(label) * k);
             int wExtra = suffix == null ? 0 : Math.round(font.width(suffix) * k) + 2;
             int tx = bx + (bw - wLabel - wExtra) / 2;
-            int ty = y + BAR_DY + (BAR_H - Math.round(8 * k)) / 2 - 1;   // 再上移 1px
+            int ty = y + BAR_DY + (BAR_H - Math.round(8 * k)) / 2;
             text(g, tx, ty, label, TEXT_WHITE, k);
             if (suffix != null) {
                 text(g, tx + wLabel + 2, ty, suffix, TEXT_WHITE, k);

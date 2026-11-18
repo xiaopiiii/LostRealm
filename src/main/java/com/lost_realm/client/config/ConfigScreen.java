@@ -129,8 +129,32 @@ public class ConfigScreen extends Screen {
 
     private int contentW() { return width - SIDEBAR_W - PAD * 2; }
 
+    /** 二级菜单按钮的最小宽度；窄窗口时换行而不是把按钮压成 0 宽。 */
+    private static final int SUB_MIN_W = 44;
+    private static final int SUB_GAP = 4;
+    private static final int SUB_BTN_H = 16;
+
+    /** 一行最多放几个子页按钮。 */
+    private int subPerRow() {
+        int n = subs.size();
+        if (n <= 1) {
+            return 0;
+        }
+        int per = Math.max(1, (contentW() + SUB_GAP) / (SUB_MIN_W + SUB_GAP));
+        return Math.min(n, per);
+    }
+
+    /** 需要几行。 */
+    private int subRowCount() {
+        int per = subPerRow();
+        return per <= 0 ? 0 : (subs.size() + per - 1) / per;
+    }
+
     /** 二级菜单条占用高度(没有二级菜单时为 0)。 */
-    private int subBarH() { return subs.size() > 1 ? 22 : 0; }
+    private int subBarH() {
+        int rows = subRowCount();
+        return rows <= 0 ? 0 : rows * (SUB_BTN_H + SUB_GAP);
+    }
 
     private int contentTop() { return 30 + subBarH(); }
 
@@ -203,24 +227,27 @@ public class ConfigScreen extends Screen {
      */
     private void rebuildSubTabs() {
         subButtons.clear();
-        if (subs.size() <= 1) {
+        int per = subPerRow();
+        if (per <= 0) {
             return;
         }
         int cx = contentX();
         int cw = contentW();
-        int n = subs.size();
-        int gap = 4;
-        int bw = (cw - gap * (n - 1)) / n;
-        int y = 32;
-        for (int i = 0; i < n; i++) {
+        int bw = Math.max(SUB_MIN_W, (cw - SUB_GAP * (per - 1)) / per);
+        int y = 30;
+        for (int i = 0; i < subs.size(); i++) {
             String sub = subs.get(i);
             boolean sel = sub.equals(subId);
+            int col = i % per;
+            int row = i / per;
             Button b = Button.builder(
                             Component.translatable("config.lost_realm.sub." + sub),
                             btn -> switchSub(sub))
-                    .bounds(cx + i * (bw + gap), y, bw, 16)
+                    .bounds(cx + col * (bw + SUB_GAP), y + row * (SUB_BTN_H + SUB_GAP),
+                            bw, SUB_BTN_H)
                     .build();
-            // 选中的那个不给点，避免重复重建
+            // ★ 选中的那个直接置为「不可点」：这是原版按钮自带的选中/停用样式
+            //   （灰掉），比自己画一条黄线更像原生控件。
             b.active = !sel;
             subButtons.add(b);
             addRenderableWidget(b);
@@ -781,18 +808,14 @@ public class ConfigScreen extends Screen {
         renderScrollbar(gfx, y);
     }
 
-    /** 给二级菜单里选中的那一页描个框。 */
+    /**
+     * 二级菜单不再额外描边。
+     *
+     * <p>之前用一条琥珀色细线标记当前子页，既不像原版控件、又容易和
+     * 枚举选项的高亮框混起来；选中的按钮本身已经是"不可点"的原版样式。
+     */
     private void renderSubTabs(GuiGraphics gfx) {
-        if (subButtons.isEmpty()) {
-            return;
-        }
-        for (int i = 0; i < subButtons.size(); i++) {
-            Button b = subButtons.get(i);
-            if (!b.active) {
-                gfx.renderOutline(b.getX() - 1, b.getY() - 1, b.getWidth() + 2,
-                        b.getHeight() + 2, 0xFFFFC040);
-            }
-        }
+        // 有意留空：状态完全交给按钮自身
     }
 
     private void renderScrollbar(GuiGraphics gfx, int lastY) {
