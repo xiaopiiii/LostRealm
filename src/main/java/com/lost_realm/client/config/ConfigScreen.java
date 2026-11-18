@@ -96,7 +96,7 @@ public class ConfigScreen extends Screen {
     private final Screen parent;
 
     /** 当前选中的分类 id。 */
-    private String categoryId = ConfigCategory.OVERVIEW.id();
+    private String categoryId = ConfigCategory.sidebarOrder().get(0).id();
 
     /** 选项区滚动偏移(像素)。 */
     private int scroll;
@@ -728,14 +728,8 @@ public class ConfigScreen extends Screen {
 
     private void renderSidebar(GuiGraphics gfx, int mouseX, int mouseY) {
         List<ConfigCategory> cats = ConfigCategory.sidebarOrder();
+        // 「全部配置」总览页已移除：两百多项堆一页既难找又慢，直接按分类看更清楚
         int y = 30 - catScroll;
-
-        // 「全部」总览固定在最上方,不参与滚动
-        boolean sel = categoryId.equals(ConfigCategory.OVERVIEW.id());
-        gfx.fill(0, 28, SIDEBAR_W, 28 + ROW_H, sel ? CAT_SELECTED : SIDEBAR_BG);
-        gfx.drawString(font, Component.translatable("config.lost_realm.cat.overview"),
-                PAD, 28 + 7, sel ? 0xFFFFFF : TEXT, false);
-        y = 28 + ROW_H + 2;
 
         for (ConfigCategory c : cats) {
             if (y + ROW_H >= 24 && y <= height - FOOTER_H) {
@@ -864,11 +858,7 @@ public class ConfigScreen extends Screen {
     public boolean mouseClicked(double mx, double my, int button) {
         // 侧边栏点选
         if (mx < SIDEBAR_W && my >= 28) {
-            if (my < 28 + ROW_H) {
-                switchCategory(ConfigCategory.OVERVIEW.id());
-                return true;
-            }
-            int y = 28 + ROW_H + 2 - catScroll;
+            int y = 30 - catScroll;
             for (ConfigCategory c : ConfigCategory.sidebarOrder()) {
                 if (my >= y && my < y + ROW_H) {
                     switchCategory(c.id());
