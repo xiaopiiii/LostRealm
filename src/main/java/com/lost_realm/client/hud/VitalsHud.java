@@ -60,6 +60,8 @@ public final class VitalsHud {
     private static final int COLOR_HEALTH = 0xFFE03A3A;
     private static final int COLOR_HUNGER = 0xFFD98B3A;
     private static final int COLOR_ARMOR = 0xFF4E8FE0;
+    /** 饱和度：金黄，和饥饿的橙色区分开。 */
+    private static final int COLOR_SATURATION = 0xFFFFC83A;
     /** 护甲韧性：跟护甲区分开，用青绿。 */
     private static final int COLOR_TOUGHNESS = 0xFF3FBFB0;
     /** 伤害吸收 / 饱和度：原版黄。 */
@@ -222,17 +224,25 @@ public final class VitalsHud {
         vitalsRow(g, mode, "health", left, rowY, BAR_W, ratio, label, COLOR_HEALTH, suffix, extra, 0.0F, false, 1);
     }
 
+    /**
+     * 饥饿那一行：<b>左半饥饿、右半饱和度</b>，两个条都是从右往左扣。
+     *
+     * <p>以前饱和度只是叠在饥饿条上的一层半透明金色，看不出具体数值；
+     * 现在给它单独一条，和自己的图标（原版"饥饿"效果图）。
+     */
     private static void drawHunger(GuiGraphics g, Player player, int mode) {
         int right = g.guiWidth() / 2 + 91;
         int rowY = g.guiHeight() - 39;
         int cur = player.getFoodData().getFoodLevel();
         float sat = player.getFoodData().getSaturationLevel();
-        int satInt = Mth.ceil(sat);
 
-        // 饱和度：条上盖一层半透明黄（宽度按 饱和度/20），数值后面跟 +饱和度
-        vitalsRow(g, mode, "hunger", right - BAR_W, rowY, BAR_W, cur / 20.0F, cur + "/20", COLOR_HUNGER,
-                satInt > 0 ? "+" + satInt : null, null,
-                Mth.clamp(sat / 20.0F, 0.0F, 1.0F), true, 1);
+        final int partW = 40;
+        vitalsRow(g, mode, "hunger", right - partW * 2, rowY, partW,
+                cur / 20.0F, cur + "/20", COLOR_HUNGER,
+                null, null, 0.0F, true, 1);
+        vitalsRow(g, mode, "saturation", right - partW, rowY, partW,
+                Math.min(sat, 20.0F) / 20.0F, fmt(sat), COLOR_SATURATION,
+                null, null, 0.0F, true, 1);
     }
 
     /**
