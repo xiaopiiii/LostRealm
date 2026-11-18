@@ -45,8 +45,10 @@ import com.lost_realm.config.MedalsConfig;
 @Mod.EventBusSubscriber(modid = Medals.MODID, value = Dist.CLIENT)
 public final class VitalsHud {
 
-    private static final int BAR_W = 80;
-    private static final int BAR_H = 7;
+    /** 没有贴图时的兜底尺寸（贴图存在就以贴图为准，永远 1:1，不缩放）。 */
+    private static final int DEF_BAR_W = 70;
+    private static final int DEF_BAR_H = 7;
+    private static final int DEF_PART_W = 30;
 
     /**
      * 条子相对生命行顶端的下移量。
@@ -55,7 +57,7 @@ public final class VitalsHud {
      * （看着就像"血条把护甲压住了"）。往下让 3px，中间留出干净的一条缝，
      * 同时不会碰到下面的经验条。
      */
-    private static final int BAR_DY = 1;
+    private static final int BAR_DY = 0;
 
     private static final int COLOR_HEALTH = 0xFFE03A3A;
     private static final int COLOR_HUNGER = 0xFFD98B3A;
@@ -85,6 +87,24 @@ public final class VitalsHud {
             game.execute(HudTextures::clearCache);
             return java.util.concurrent.CompletableFuture.completedFuture(null);
         });
+    }
+
+    /** 条子宽度 = 贴图宽度（贴图多大就画多大）。 */
+    private static int tw(String key, int def) {
+        HudTextures.Img img = HudTextures.get(key + "_bg");
+        return img == null ? def : img.w();
+    }
+
+    /** 条子高度 = 贴图高度。 */
+    private static int th(String key, int def) {
+        HudTextures.Img img = HudTextures.get(key + "_bg");
+        return img == null ? def : img.h();
+    }
+
+    /** 图标宽度 = 贴图宽度（不缩放）。 */
+    private static int iw(String key, int def) {
+        HudTextures.Img img = HudTextures.get(key + "_icon");
+        return img == null ? 0 : img.w();
     }
 
     private VitalsHud() {}
@@ -212,7 +232,10 @@ public final class VitalsHud {
 
     private static void drawHealth(GuiGraphics g, Player player, int mode) {
         int left = g.guiWidth() / 2 - 91;
-        int rowY = g.guiHeight() - 39;
+        int barW = tw("health_bg", DEF_BAR_W);
+        int barH = th("health_bg", DEF_BAR_H);
+        // 三行堆叠（上下各留 2px）：饥饿在最下、生命居中、护甲在最上
+        int rowY = g.guiHeight() - 33 - barH * 2 - 2;
         double cur = player.getHealth();
         int max = Math.max(1, Mth.ceil(player.getMaxHealth()));
         int absorb = Mth.ceil(player.getAbsorptionAmount());
@@ -221,7 +244,8 @@ public final class VitalsHud {
         Float extra = absorb > 0 ? (float) absorb : null;   // 吸收段占整条的比例
         String label = fmt(cur) + "/" + max;
         String suffix = absorb > 0 ? "+" + absorb : null;
-        vitalsRow(g, mode, "health", left, rowY, BAR_W, ratio, label, COLOR_HEALTH, suffix, extra, 0.0F, false, 1);
+        vitalsRow(g, mode, "health", left, rowY, barW, barH, ratio, label,
+                COLOR_HEALTH, suffix, extra, 0.0F, false, 1);
     }
 
     /**
@@ -236,22 +260,30 @@ public final class VitalsHud {
      * <p>两个槽宽度不一样：饱和度图标是 12×12，图标多大就占多大，
      * 条宽保持 30px 不变（贴图 60×14），所以它的槽是 12+1+30=43。
      */
+    /**
+     * 饥饿那一行：<b>左边饱和度、右边饥饿</b>，两个条都从右往左扣。
+     *
+     * <p>每段的宽度 = 条的贴图宽 + 图标贴图宽 + 间隔，全部按像素算，
+     * 所以换 1 倍图就整体变小、换 2 倍图就整体变大，永远 1:1 不缩放。
+     */
     private static void drawHunger(GuiGraphics g, Player player, int mode) {
-        int right = g.guiWidth() / 2 + 91;
-        int rowY = g.guiHeight() - 39;
+        int left = g.guiWidth() / 2 - 91;
+        int barH = th("hunger_bg", DEF_BAR_H);
+        int rowY = g.guiHeight() - 33 - barH;
         int cur = player.getFoodData().getFoodLevel();
         float sat = player.getFoodData().getSaturationLevel();
 
-        final int barW = 30;
-        final int hungerSlot = barW + 10;      // 30 + 图标 9 + 间隔 1
-        final int satSlot = barW + 13;         // 30 + 图标 12 + 间隔 1
+        int hungerW = tw("hunger_bg", DEF_PART_W);
+        int satW = tw("saturation_bg", DEF_PART_W);
+        int hungerSlot = hungerW + iw("hunger", 9) + 1;
+        int satSlot = satW + iw("saturation", 10) + 1;
 
-        vitalsRow(g, mode, "saturation", right - hungerSlot - satSlot, rowY, satSlot,
-                Math.min(sat, 20.0F) / 20.0F, fmt(sat), COLOR_SATURATION,
-                null, null, 0.0F, true, 1);
-        vitalsRow(g, mode, "hunger", right - hungerSlot, rowY, hungerSlot,
+        vitalsRow(g, mode, "hunger", left, rowY, hungerSlot, barH,
                 cur / 20.0F, cur + "/20", COLOR_HUNGER,
-                null, null, 0.0F, true, 1);
+                null, null, 0.0F, false, 1);
+        vitalsRow(g, mode, "saturation", left + hungerSlot, rowY, satSlot, barH,
+                Math.min(sat, 20.0F) / 20.0F, fmt(sat), COLOR_SATURATION,
+                null, null, 0.0F, false, 1);
     }
 
     /**
@@ -270,28 +302,28 @@ public final class VitalsHud {
      */
     private static boolean drawArmor(GuiGraphics g, Player player, int mode) {
         int left = g.guiWidth() / 2 - 91;
-        int rowY = g.guiHeight() - 39;
+        int barH = th("armor_bg", DEF_BAR_H);
+        int rowY = g.guiHeight() - 33 - barH * 3 - 4;
         double armor = player.getAttributeValue(
                 net.minecraft.world.entity.ai.attributes.Attributes.ARMOR);
         double toughness = player.getAttributeValue(
                 net.minecraft.world.entity.ai.attributes.Attributes.ARMOR_TOUGHNESS);
         if (armor <= 0 && toughness <= 0) {
-            return false;               // 没穿甲也没韧性，交回原版（原版此时也是空的）
+            return false;
         }
 
-        int heartRows = Math.max(1, Mth.ceil(Mth.ceil(player.getMaxHealth()) / 20.0F));
-        int vanillaStack = (MedalsConfig.HUD_HEALTH_MODE.get() == 0) ? (heartRows - 1) * 10 : 0;
-        int armorY = rowY - 12 - vanillaStack + MedalsConfig.HUD_ARMOR_OFFSET.get();
-
+        int armorY = rowY - barH - 2 + MedalsConfig.HUD_ARMOR_OFFSET.get();
         logArmorOnce(mode, (int) armor, armorY);
 
-        final int partW = 40;
-        vitalsRow(g, mode, "armor", left, armorY, partW,
+        int armorW = tw("armor_bg", DEF_PART_W);
+        int toughW = tw("armor_toughness_bg", DEF_PART_W + 1);
+        int armorSlot = armorW + iw("armor", 9) + 1;
+        int toughSlot = toughW + iw("armor_toughness", 9);
+
+        vitalsRow(g, mode, "armor", left, armorY, armorSlot, barH,
                 (float) Math.min(armor, 20) / 20.0F, fmt(armor), COLOR_ARMOR,
                 null, null, 0.0F, false, 1);
-        // 韧性：图标位置不动，条整体往左顶 1px（间隔 0），
-        // 同时槽位还是 40px —— 于是条会宽 1px，右端仍然和下面的血条对齐。
-        vitalsRow(g, mode, "armor_toughness", left + partW, armorY, partW,
+        vitalsRow(g, mode, "armor_toughness", left + armorSlot, armorY, toughSlot, barH,
                 (float) Math.min(toughness, 12) / 12.0F, fmt(toughness), COLOR_TOUGHNESS,
                 null, null, 0.0F, false, 0);
         return true;
@@ -364,14 +396,13 @@ public final class VitalsHud {
      *
      * @param iconRight 图标是否放在右端（饥饿用 true）
      */
-    private static void vitalsRow(GuiGraphics g, int mode, String key, int x, int y, int width,
-                                  float ratio, String label, int color, String suffix,
+    private static void vitalsRow(GuiGraphics g, int mode, String key, int x, int y,
+                                  int width, int height, float ratio,
+                                  String label, int color, String suffix,
                                   Float extraRatio, float overlay, boolean iconRight, int iconGap) {
         var font = Minecraft.getInstance().font;
 
         HudTextures.Img icon = HudTextures.get(key + "_icon");
-        // ★ 图标按<b>贴图原始像素</b>画，绝不缩放：用户画 9×9 就是 9px，
-        //   画 12×12 就是 12px。之前写死 9×9，把人家的 12×12 图压扁了。
         int iw = icon == null ? 0 : icon.w();
         int ih = icon == null ? 0 : icon.h();
         int reserve = icon == null ? 0 : iw + iconGap;
@@ -380,40 +411,42 @@ public final class VitalsHud {
 
         if (icon != null) {
             int ix = iconRight ? x + width - iw : x;
-            int iy = y + BAR_DY + (BAR_H - ih) / 2;   // 竖直居中对齐条子
+            int iy = y + (height - ih) / 2;        // 竖直居中对齐条子
             g.blit(icon.id(), ix, iy, iw, ih, 0, 0, iw, ih, iw, ih);
         }
 
         if (mode == 2 || mode == 3) {
-            bar(g, key, bx, y + BAR_DY, bw, BAR_H, ratio, color, iconRight);
+            bar(g, key, bx, y, bw, height, ratio, color, iconRight);
             if (overlay > 0.0F) {
                 int ow = Math.round(bw * Math.min(Mth.clamp(ratio, 0.0F, 1.0F), overlay));
                 if (ow > 0) {
-                    // 镜像条（饥饿）的饱和度也从右边开始
                     int ox = iconRight ? bx + bw - ow : bx;
-                    g.fill(ox, y + BAR_DY, ox + ow, y + BAR_DY + BAR_H, 0x66FFD24A);
+                    g.fill(ox, y, ox + ow, y + height, 0x66FFD24A);
                 }
             }
             if (extraRatio != null && extraRatio > 0.0F) {
                 int base = Math.round(bw * Mth.clamp(ratio, 0.0F, 1.0F));
                 int add = Math.min(bw - base, Math.round(bw * extraRatio));
                 if (add > 0) {
-                    g.fill(bx + base, y + BAR_DY, bx + base + add, y + BAR_DY + BAR_H, COLOR_EXTRA);
+                    int ex = iconRight ? bx + bw - base - add : bx + base;
+                    g.fill(ex, y, ex + add, y + height, COLOR_EXTRA);
                 }
             }
         }
 
         if (mode == 1) {
-            text(g, bx, y, label, TEXT_WHITE, 1.0F);
+            // 数值模式：竖直居中对齐条子
+            int ty = y + (height - font.lineHeight) / 2;
+            text(g, bx, ty, label, TEXT_WHITE, 1.0F);
             if (suffix != null) {
-                text(g, bx + font.width(label) + 3, y, suffix, TEXT_WHITE, 1.0F);
+                text(g, bx + font.width(label) + 3, ty, suffix, TEXT_WHITE, 1.0F);
             }
         } else if (mode == 3) {
             float k = 0.6F;
             int wLabel = Math.round(font.width(label) * k);
             int wExtra = suffix == null ? 0 : Math.round(font.width(suffix) * k) + 2;
             int tx = bx + (bw - wLabel - wExtra) / 2;
-            int ty = y + BAR_DY + (BAR_H - Math.round(8 * k)) / 2;
+            int ty = y + (height - Math.round(8 * k)) / 2;
             text(g, tx, ty, label, TEXT_WHITE, k);
             if (suffix != null) {
                 text(g, tx + wLabel + 2, ty, suffix, TEXT_WHITE, k);
@@ -421,13 +454,6 @@ public final class VitalsHud {
         }
     }
 
-    /**
-     * 一条：优先用 {@code config/lost_realm/hud/<key>_bg.png} / {@code <key>_fill.png}，
-     * 没有就画内置的纯色矩形。
-     *
-     * <p>填充图按"满"画，这里只取左边 {@code 当前比例} 那一段，所以条子变短时
-     * 图案是<b>被裁掉</b>而不是被压扁。
-     */
     /**
      * 一条：直接用 {@code <key>_bg.png} / {@code <key>_fill.png}。
      *
