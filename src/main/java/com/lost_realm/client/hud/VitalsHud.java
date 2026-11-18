@@ -230,18 +230,27 @@ public final class VitalsHud {
      * <p>以前饱和度只是叠在饥饿条上的一层半透明金色，看不出具体数值；
      * 现在给它单独一条，和自己的图标（原版"饥饿"效果图）。
      */
+    /**
+     * 饥饿那一行：<b>左边饱和度、右边饥饿</b>，两个条都从右往左扣。
+     *
+     * <p>两个槽宽度不一样：饱和度图标是 12×12，图标多大就占多大，
+     * 条宽保持 30px 不变（贴图 60×14），所以它的槽是 12+1+30=43。
+     */
     private static void drawHunger(GuiGraphics g, Player player, int mode) {
         int right = g.guiWidth() / 2 + 91;
         int rowY = g.guiHeight() - 39;
         int cur = player.getFoodData().getFoodLevel();
         float sat = player.getFoodData().getSaturationLevel();
 
-        final int partW = 40;
-        vitalsRow(g, mode, "hunger", right - partW * 2, rowY, partW,
-                cur / 20.0F, cur + "/20", COLOR_HUNGER,
-                null, null, 0.0F, true, 1);
-        vitalsRow(g, mode, "saturation", right - partW, rowY, partW,
+        final int barW = 30;
+        final int hungerSlot = barW + 10;      // 30 + 图标 9 + 间隔 1
+        final int satSlot = barW + 13;         // 30 + 图标 12 + 间隔 1
+
+        vitalsRow(g, mode, "saturation", right - hungerSlot - satSlot, rowY, satSlot,
                 Math.min(sat, 20.0F) / 20.0F, fmt(sat), COLOR_SATURATION,
+                null, null, 0.0F, true, 1);
+        vitalsRow(g, mode, "hunger", right - hungerSlot, rowY, hungerSlot,
+                cur / 20.0F, cur + "/20", COLOR_HUNGER,
                 null, null, 0.0F, true, 1);
     }
 
@@ -361,18 +370,18 @@ public final class VitalsHud {
         var font = Minecraft.getInstance().font;
 
         HudTextures.Img icon = HudTextures.get(key + "_icon");
-        final int iconSize = 9;
-        int reserve = icon == null ? 0 : iconSize + iconGap;
+        // ★ 图标按<b>贴图原始像素</b>画，绝不缩放：用户画 9×9 就是 9px，
+        //   画 12×12 就是 12px。之前写死 9×9，把人家的 12×12 图压扁了。
+        int iw = icon == null ? 0 : icon.w();
+        int ih = icon == null ? 0 : icon.h();
+        int reserve = icon == null ? 0 : iw + iconGap;
         int bx = iconRight ? x : x + reserve;
         int bw = width - reserve;
 
         if (icon != null) {
-            int ix = iconRight ? x + width - iconSize : x;
-            // 图标 9px、条 7px，两者中心对齐 → 图标顶端只比条高 1px。
-            // 之前写成 -2，条就整体比图标低了一像素。
-            int iy = y + BAR_DY - 1;
-            g.blit(icon.id(), ix, iy, iconSize, iconSize, 0, 0,
-                    icon.w(), icon.h(), icon.w(), icon.h());
+            int ix = iconRight ? x + width - iw : x;
+            int iy = y + BAR_DY + (BAR_H - ih) / 2;   // 竖直居中对齐条子
+            g.blit(icon.id(), ix, iy, iw, ih, 0, 0, iw, ih, iw, ih);
         }
 
         if (mode == 2 || mode == 3) {
